@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8' />
+    <title>Glorious Kings</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <link rel="apple-touch-icon" sizes="57x57" href="../img/favicon/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="../img/favicon/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="../img/favicon/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="../img/favicon/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="../img/favicon/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="../img/favicon/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="../img/favicon/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="../img/favicon/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../img/favicon/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192"  href="../img/favicon/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../img/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="../img/favicon/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../img/favicon/favicon-16x16.png">
+    <link rel="manifest" href="../img/favicon/manifest.json">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="../img/favicon/ms-icon-144x144.png">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link href='../static/superhero.min.css' rel='stylesheet' />
+    <link href='./main.css' rel='stylesheet' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.41.0/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.41.0/mapbox-gl.css' rel='stylesheet' />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <script src='./heroes.js'></script>
+</head>
+
+<body>
+    <div class='modal'>
+        <div class="modal-content jumbotron p2">
+            <h1 class='name'>Name</h1>
+            <p class='description mt-1'>Description</p>
+            <p><small>
+                <i class="material-icons">person</i><span class='more'>Time | Source</span><br>
+                <i class="material-icons">room</i><span class='location'>Location</span>
+            </small></p>
+            <p><a class='btn btn-default mt-1' href='#' target='_blank'>Learn more</a></p>
+        </div>
+    </div>
+    <div id='map'></div>
+    <div class='overlay timeline'>
+        <div class='time-header'>按时代</div>
+        <div class='time'>上古</div>
+        <div class='time'>商周</div>
+        <div class='time'>春秋战国</div>
+        <div class='time'>希腊罗马</div>
+        <div class='time'>楚汉相争</div>
+        <div class='time'>汉</div>
+        <div class='time'>三国</div>
+        <div class='time'>南北朝</div>
+        <div class='time'>隋唐</div>
+        <div class='time'>元</div>
+        <div class='time'>幕府时代</div>
+        <div class='time'>虚空</div>
+        <div class='time-chevron'>&#9656;</div>
+    </div>
+    <div class='overlay legend'>
+        <div class='bucket'>
+            <div class='circle color-history'></div>历史人物
+        </div>
+        <div class='bucket'>
+            <div class='circle color-legend'></div>神话传说
+        </div>
+        <div class='bucket'>
+            <div class='circle color-art'></div>文艺作品
+        </div>
+        <div class='bucket'>
+            <div class='circle color-original'></div>游戏虚构
+        </div>
+    <script>
+    var dictionary = {
+        '历史人物': 'history',
+        '神话传说': 'legend',
+        '艺术作品': 'art',
+        '游戏虚构': 'original'
+    };
+
+    var isMobile = detectMobile();
+    var bboxAll = [[-0.3817805,23.113628],[140.3326038,51.528308]];
+
+    function detectMobile() {
+       if(window.innerWidth <= 800 && window.innerHeight <= 600) {
+         return true;
+       } else {
+         return false;
+       }
+    }
+
+    function fitMap( bbox ) {
+        var viewportPT = isMobile ? 90 : 100;
+        var viewportPB = isMobile ? 30 : 60;
+        var viewportPY = isMobile ? 10 : 30;
+        map.fitBounds(bbox, { padding: {top:viewportPT, left:viewportPY, right:viewportPY, bottom:viewportPB} });
+    }
+
+    var heroMap = new Map();
+    // assuming the earlier on the list, the more important the hero is
+
+    heroes.forEach(function(hero) {
+        const precision = 1000000;
+        var lnglat = Math.round(hero.lng * precision) / precision +
+            "," + Math.round(hero.lat * precision) / precision;
+        if (!heroMap.has(lnglat)) {
+            heroMap.set(lnglat, []);
+        }
+        heroMap.get(lnglat).push(hero);
+    });
+
+    function drawMarkers() {
+        for (var lnglat of heroMap.keys()) {
+            var coordinates = [parseFloat(lnglat.split(',')[0]), parseFloat(lnglat.split(',')[1])];
+            var shortlist = heroMap.get(lnglat);
+
+            // container div
+            var el = document.createElement('div');
+            el.className = 'avatar-container';
+
+            // all avatars of this location
+            shortlist.forEach(function(hero) {
+
+                // marker
+                var avatar = document.createElement('div');
+                avatar.className = 'avatar avatar-s border-' +
+                    dictionary[hero.fictious] + ' h' +
+                    hero.id;
+                avatar.style.backgroundImage = "url(./img/avatars/" +
+                    hero.id + ".jpg)";
+                $(avatar).attr('data-toggle', 'tooltip');
+                $(avatar).attr('data-placement', 'bottom');
+                $(avatar).attr('data-original-title', hero.name);
+
+                // popup
+                avatar.addEventListener('click', function() {
+                    $('.modal-content').css('backgroundImage', 'url(https://' + hero.bg + ')');
+                    $('.modal .name').text(hero.name);
+                    $('.modal .description').text(hero.description);
+                    $('.modal .more').text(hero.fictious + " · " + hero.time);
+                    $('.modal .location').text(hero.location);
+                    $('.modal .btn').attr('href', hero.href);
+                    $('.modal').show();
+                    $('#map').css('filter', 'blur(2px)');
+                });
+                // add to container
+                el.appendChild(avatar);
+            });
+
+            // add marker to map
+            new mapboxgl.Marker(el)
+                .setLngLat(coordinates)
+                .addTo(map);
+        }
+    }
+
+    mapboxgl.accessToken = 'pk.eyJ1IjoieXVuamllbGkiLCJhIjoiY2lxdmV5MG5rMDAxNmZta3FlNGhyMmpicSJ9.CTEQgAyZGROcpJouZuzJyA';
+
+    var map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/yunjieli/cj8v6a1b2f0f62rnz9yh0373m',
+        maxZoom: 10,
+        hash: true
+    });
+
+    fitMap(bboxAll);
+
+    map.on('load', function() {
+        drawMarkers();
+
+        $(function() {
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+
+        $('.time-chevron').click(function() {
+            $(this).toggleClass('collapsed');
+            $('.timeline').toggleClass('collapsed');
+            $('.time').toggle();
+        });
+
+        map.on('zoom', function() {
+            var zoom = map.getZoom();
+            if (zoom < 5) {
+                $('.avatar').addClass('avatar-s');
+            } else {
+                $('.avatar').removeClass('avatar-s');
+            }
+        });
+
+        $('.modal').click(function() {
+            $(this).hide();
+            $('#map').css('filter', 'none');
+        });
+        
+        $('.time').click(function() {
+            // all heroes
+            var bbox;
+            if($(this).hasClass('active')) {
+                $(this).removeClass('active');
+                $('.avatar').show();
+                bbox = bboxAll;
+            } else {
+                $('.time').removeClass('active');
+                $(this).addClass('active');
+                var now = this.innerHTML;
+                var live = heroes.filter(function(hero) {
+                    return (hero.time === now);
+                });
+                $('.avatar').hide();
+
+                var lngMin, lngMax, latMin, latMax;
+                live.forEach(function(hero) {
+                    $('.h'+hero.id).show();
+                    lngMin = lngMin ? Math.min(lngMin, hero.lng) : hero.lng;
+                    lngMax = lngMax ? Math.max(lngMax, hero.lng) : hero.lng;
+                    latMin = latMin ? Math.min(latMin, hero.lat) : hero.lat;
+                    latMax = latMax ? Math.max(latMax, hero.lat) : hero.lat;
+                });
+                bbox = [ [lngMin,latMin],[lngMax,latMax] ];
+            }
+            fitMap(bbox);
+        });
+
+    });
+    </script>
+</body>
+
+</html>

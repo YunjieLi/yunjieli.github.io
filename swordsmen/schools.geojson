@@ -1,0 +1,170 @@
+﻿{
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "洛阳",
+        "type": "city"
+      },
+      "geometry": {
+        "coordinates": [
+          112.421753,
+          34.658699
+        ],
+        "type": "Point"
+      },
+      "id": "33422e72fd0d845b7454739af494b063"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "西岳华山",
+        "type": "mountain"
+      },
+      "geometry": {
+        "coordinates": [
+          110.06944,
+          34.47888
+        ],
+        "type": "Point"
+      },
+      "id": "3bcba975e81ae2880f62a3967b296066"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "北岳恒山",
+        "type": "mountain"
+      },
+      "geometry": {
+        "coordinates": [
+          113.71467,
+          39.66312
+        ],
+        "type": "Point"
+      },
+      "id": "3d34cc5724b23510a6d0d036a9da8fd6"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "mountain",
+        "name": "中岳嵩山"
+      },
+      "geometry": {
+        "coordinates": [
+          113.00394,
+          34.51965
+        ],
+        "type": "Point"
+      },
+      "id": "7d4f37bbd709e363bb2f24dce1e4c035"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "福州",
+        "type": "city"
+      },
+      "geometry": {
+        "coordinates": [
+          119.292081,
+          26.077731
+        ],
+        "type": "Point"
+      },
+      "id": "b95aab5d916d976ff1e0bfba6b3ca918"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "少林寺",
+        "type": "mountain"
+      },
+      "geometry": {
+        "coordinates": [
+          112.94206,
+          34.50654
+        ],
+        "type": "Point"
+      },
+      "id": "c79fdef8e2053f5d0a37ef498ec832ac"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "武当山",
+        "type": "mountain"
+      },
+      "geometry": {
+        "coordinates": [
+          111.029267,
+          32.423668
+        ],
+        "type": "Point"
+      },
+      "id": "c7b281fde5a3bea0a5012b8ec773108c"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "杭州",
+        "type": "city"
+      },
+      "geometry": {
+        "coordinates": [
+          120.152353,
+          30.276471
+        ],
+        "type": "Point"
+      },
+      "id": "d1e03a79ab0f08fee323b4d1512fd62c"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "南岳衡山",
+        "type": "mountain"
+      },
+      "geometry": {
+        "coordinates": [
+          112.719912,
+          27.251833
+        ],
+        "type": "Point"
+      },
+      "id": "d2cd8cc66f2ff81577e8311c81b342ad"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "黑木崖",
+        "type": "mountain"
+      },
+      "geometry": {
+        "coordinates": [
+          113.80943,
+          37.90899
+        ],
+        "type": "Point"
+      },
+      "id": "d50d30189e4d92c8f00c7153bce0a3cb"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "东岳泰山",
+        "type": "mountain"
+      },
+      "geometry": {
+        "coordinates": [
+          117.104015,
+          36.25607
+        ],
+        "type": "Point"
+      },
+      "id": "ec2f67c6cbc4cd2fc3479ac89364af1c"
+    }
+  ],
+  "type": "FeatureCollection"
+}

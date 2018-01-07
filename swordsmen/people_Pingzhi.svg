@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="20" height="20" viewBox="0 0 20 20">
+  <defs>
+    <clipPath id="a">
+      <circle cx="10" cy="10" r="10" fill="none"/>
+    </clipPath>
+  </defs>
+  <title>people</title>
+  <g clip-path="url(#a)">
+    <rect width="20" height="20" fill="#b79199"/>
+    <rect x="8" y="17" width="4" height="3" fill="#d9edde"/>
+    <polygon points="5 6 5 9 4 9 4 11 5 12 6 14 9 17 10 17 10 6 5 6" fill="#efe8e4"/>
+    <polygon points="15 9 15 6 10 6 10 17 11 17 14 14 15 12 16 11 16 9 15 9" fill="#f4eee9"/>
+    <polygon points="13 6 14 9 13 19 13 9 12 6 13 6" fill="#3a3530"/>
+    <polygon points="7 4 8 2 9 1 11 1 12 2 13 4 7 4" fill="#3a3530"/>
+    <rect x="7" y="2" width="6" height="1" fill="#96d696"/>
+    <polygon points="6 8 7 7 10 8 13 7 14 8 15 12 15 10 16 10 16 7 15 5 14 3 11 2 9 2 6 3 5 5 4 7 4 10 5 10 5 12 6 8" fill="#3a3530"/>
+    <polygon points="12 16 13 17 13 20 12 20 12 16" fill="#fcf97e"/>
+    <polygon points="10 18 8 16 8 17 9.5 18.5 8 20 8.984 20 12 17 12 16 10 18" fill="#cbc3d8"/>
+    <polygon points="9 17 10 18 11 17 9 17" fill="#f4c9e5"/>
+    <polygon points="8 16 7 17 7 20 8 20 8 16" fill="#fcf97e"/>
+    <polygon points="16 18 14 18 13 17 13 20 15.333 20 16 18" fill="#96d696"/>
+    <polygon points="7 20 7 17 6 18 4 18 4.333 20 7 20" fill="#96d696"/>
+  </g>
+</svg>
