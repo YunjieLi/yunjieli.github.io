@@ -4,7 +4,7 @@ const library = [
     list: [
         {
             name: "梅花三弄",
-            sheets: ["梅花三弄1.jpg", "梅花三弄2.jpg", "梅花三弄3.jpg"]
+            sheets: ["meihua1.jpg", "meihua2.jpg", "meihua3.jpg"]
         },{
             name: "夕阳箫鼓",
             sheets: []
@@ -205,8 +205,8 @@ window.onload = ()=>{
         section.list.forEach((piece)=>{
             var note = piece.note ? '<small>' + piece.note + '</small>' : '';
             var disabled = piece.sheets ? ' disabled' : '';
-            list += '<div class="piece' + disabled + '" id="'
-                + piece.name + '"><div>' + piece.name + note + '</div></div>'
+            list += '<a href="meihua.html"><div class="piece' + disabled + '" id="'
+                + piece.name + '"><div>' + piece.name + note + '</div></div></a>'
         })
         list += '</div>';
         html += '<div class="section">' + header + list + '</div>';
