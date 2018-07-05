@@ -2440,7 +2440,7 @@ window.onload = function() {
 			// Update the route with calculated arc coordinates
 			route.features[0].geometry.coordinates = arc;
 
-			// Add the route to paths 
+			// Add the route to paths
 			trips.features.push(route.features[0]);
 		});
 
@@ -2450,33 +2450,9 @@ window.onload = function() {
 		});
 	};
 
-	// console.log(JSON.stringify(trips));
+	console.log(JSON.stringify(trips));
 	// console.log(JSON.stringify(events));
 
-	var html = "<div class='slide pad1' id='intro'><h2>重温笑傲江湖</h2></div>";;
-	// load years
-	$('#sidebar').html(html);
-	// add events
-	events.features.forEach(function(event) {
-
-		if (event.properties.people.length === 1) {
-			var icons = "<img class='lg' src='./people_" + event.properties.people[0] + ".svg'>";
-		} else {
-			var icons = "<img src='./people_" + event.properties.people[0] + ".svg'><img src='./people_" + event.properties.people[1] + ".svg'>";
-		};
-
-		// add slides to html
-		html = "<div class='slide pad1' id=" + event.properties.segID + "><div class='col4 center'>" + icons + "</div><div class='col8'><p><strong>第" + event.properties.chapter + "回 </strong>" + event.properties.event + "</p></div></div>";
-		$('#sidebar').append(html);
-	});
-	// add footer
-	html = "<div id='footer' class='fill-gray pad1' style='background-color: #ddd;'><p>Information about the athletes is from <a href='https://en.wikipedia.org/wiki/Refugee_Olympic_Team_at_the_2016_Summer_Olympics'>Wikipedia</a>, <a href='https://www.olympic.org/news/refugee-olympic-team-to-shine-spotlight-on-worldwide-refugee-crisis'>olympic.org</a>, <a href='https://www.rio2016.com/en/search-news?q=olympic+refugee+team'>rio2016.com</a>, and <a href='http://www.unhcr.org/uk/news/latest/2016/6/575154624/10-refugees-compete-2016-olympics-rio.html'>UNHCR</a>. You can also read about how this map was made in <a href='http://mapbox.com/blog/team-refugee-rio2016/'>our blog</a>. <p class='show-mobile'>And view the desktop version to see more!</p></div>";
-	$('#slideshow').append(html)
-
-	// on mobile, set #intro differently
-	if (isMobile) {};
-
-	$('#intro').addClass('active');
 };
 
 map.on('load', function() {
@@ -2573,7 +2549,7 @@ map.on('load', function() {
 	$(".slide").hover(function() {
 		if (this.id !== idActive) {
 			idActive = this.id;
-			animateJourney(idActive);
+			// animateJourney(idActive);
 		}
 	});
 });
@@ -2594,7 +2570,7 @@ function animateJourney(idActive) {
             tripIndex = i;
 	        tripActive.features.push( JSON.parse(JSON.stringify(trip)) );
 	        tripActive.features[0].geometry.coordinates = [];
-	    };    
+	    };
     });
 
 	// update the background static layers
@@ -2624,7 +2600,7 @@ function animateJourney(idActive) {
 		function animate() {
 			// if the last segment, end animation
 			if (counter === segmentNumber+1 ) {
-				cancelAnimationFrame(animationID);	
+				cancelAnimationFrame(animationID);
 				// console.log("end");
 			} else {
 				tripActive.features[0].geometry.coordinates.push(trips.features[tripIndex].geometry.coordinates[counter]);
