@@ -29,6 +29,27 @@
 
 		#footer { width:100%; background-color:#D1D9E0; color:#666; text-align:center; padding:20px;}
 
+		.jumbotron {
+			background-size: cover;
+			background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7));
+			color: white;
+		}
+		.jumbotron.bg-nyc {
+			background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url(./img/jumbotron-nyc.png);
+		}
+		.jumbotron.bg-boston {
+			background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url(./img/jumbotron-boston.png);
+		}
+		.jumbotron.bg-lush {
+			background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url(./img/jumbotron-lush.jpg);
+		}
+		.jumbotron.bg-heroes {
+			background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url(./img/jumbotron-heroes.png);
+		}
+		.jumbotron.bg-swordsmen {
+			background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url(./img/jumbotron-swordsmen.png);
+		}
+
 	</style>
 </head>
 <body>
@@ -38,15 +59,30 @@
 		<h1>顺流而上</h1>
 		<p>Upsdream | 用地图装故事，用故事装X。</p>
 	</div>
-	<div class="jumbotron">
+	<div class="jumbotron bg-nyc">
+	  <h1>Restaurants Noise of NYC</h1>
+	  <p>Visualizing NYC 311 Data in 3D</p>
+	  <p><a class="btn btn-primary btn-lg" href='https://www.mapbox.com/bites/00304/' target="_blank">Learn more</a></p>
+	</div>
+	<div class="jumbotron bg-boston">
+	  <h1>Historical Boston</h1>
+	  <p>Data viz + Urban History</p>
+	  <p><a class="btn btn-primary btn-lg" href='https://www.mapbox.com/bites/00287/' target="_blank">Learn more</a></p>
+	</div>
+	<div class="jumbotron bg-lush">
+	  <h1>Mono <> Colors</h1>
+	  <p>Map Design - Greenifying this world </p>
+	  <p><a class="btn btn-primary btn-lg" href='https://www.mapbox.com/bites/00299/compare.html' target="_blank">Learn more</a></p>
+	</div>
+	<div class="jumbotron bg-heroes">
 	  <h1>Glorious Kings</h1>
 	  <p>王者荣耀·英雄地图。</p>
-	  <p><a class="btn btn-primary btn-lg" href='../kings/index.html'>Learn more</a></p>
+	  <p><a class="btn btn-primary btn-lg" href='../kings/index.html' target="_blank">Learn more</a></p>
 	</div>
-	<div class="jumbotron">
+	<div class="jumbotron bg-swordsmen">
 	  <h1>Smiling Swordsmen</h1>
-	  <p>在地图上重读笑傲江湖。</p>
-	  <p><a class="btn btn-primary btn-lg" href='../swordsmen/index.html'>Learn more</a></p>
+	  <p>在地图上重读《笑傲江湖》。</p>
+	  <p><a class="btn btn-primary btn-lg" href='../swordsmen/index.html' target="_blank">Learn more</a></p>
 	</div>
 </div>
 <div id='footer'>萧远珊，2016</div>
