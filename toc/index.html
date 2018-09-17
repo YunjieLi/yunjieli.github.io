@@ -27,6 +27,8 @@
 		.page-header img,h1 {display: inline-block; vertical-align: bottom}
 		.page-header p { margin-top: 1em; color:#666; }
 
+		.page-header h1 {margin-left: 1rem;}
+
 		#footer { width:100%; background-color:#D1D9E0; color:#666; text-align:center; padding:20px;}
 
 		.btn-primary {
@@ -44,6 +46,44 @@
 			color: white;
 			border-radius: 3px;
 		}
+
+		.jumbotron a {
+			color: white;
+			opacity: .7;
+		}
+
+		.jumbotron.jumbotron--grid {
+			background: none;
+			padding: 0;
+			margin: 0;
+		}
+
+		@media only screen and (min-width: 800px) {
+
+			.jumbotron.jumbotron--grid {
+				display: flex;
+				padding: 0;
+				margin-bottom: 0;
+				background: none;
+			}
+
+			.jumbotron.jumbotron--card{
+				flex-grow: 1;
+				width: 50%;
+			}
+			.jumbotron.jumbotron--card:nth-child(even) {
+				margin-left: 30px;
+			}
+
+			.jumbotron.jumbotron--card h1{
+				font-size: 20px;
+			}
+			.jumbotron.jumbotron--card p{
+				font-size: 14px;
+			}
+		}
+
+
 		.jumbotron.bg-nyc {
 			background-image: url(./img/jumbotron-nyc.png);
 		}
@@ -67,32 +107,34 @@
 	<div class="page-header">
 		<img src="./img/icon_full.png">
 		<h1>顺流而上</h1>
-		<p>Upsdream | 用地图装故事，用故事装X。</p>
+		<p>用设计，用代码，用地图装故事。用故事装X。</p>
 	</div>
 	<div class="jumbotron bg-nyc">
 	  <h1>Restaurants Noise of NYC</h1>
-	  <p>Visualizing NYC 311 Data in 3D</p>
-	  <p><a class="btn btn-primary btn-lg" href='https://www.mapbox.com/bites/00304/' target="_blank">Learn more</a></p>
+	  <p><a href="https://blog.mapbox.com/exploring-nyc-open-data-with-3d-hexbins-5af2b7d8bc46" target="_blank"> Mapbox Blog</a> · Visualizing NYC 311 Data in 3D</p>
+	  <p><a class="btn btn-primary btn-lg" href='https://www.mapbox.com/bites/00304/' target="_blank">Check it out</a></p>
 	</div>
 	<div class="jumbotron bg-boston">
 	  <h1>Historical Boston</h1>
-	  <p>Data viz + Urban History</p>
-	  <p><a class="btn btn-primary btn-lg" href='https://www.mapbox.com/bites/00287/' target="_blank">Learn more</a></p>
+	  <p><a href="https://blog.mapbox.com/mapping-historic-boston-in-the-mapbox-studio-dataset-editor-838c49209bd1" target="_blank"> Mapbox Blog</a> · Mapping, Urban History</p>
+	  <p><a class="btn btn-primary btn-lg" href='https://www.mapbox.com/bites/00287/' target="_blank">Check it out</a></p>
 	</div>
 	<div class="jumbotron bg-lush">
 	  <h1>Mono <> Colors</h1>
-	  <p>Map Design - Greenifying this world </p>
-	  <p><a class="btn btn-primary btn-lg" href='https://www.mapbox.com/bites/00299/compare.html' target="_blank">Learn more</a></p>
+	  <p><a href="https://blog.mapbox.com/mobile-runtime-styling-get-active-553b0c9aaa16" target="_blank"> Mapbox Blog</a> · Map Design - Greenifying this world </p>
+	  <p><a class="btn btn-primary btn-lg" href='https://www.mapbox.com/bites/00299/compare.html' target="_blank">Check it out</a></p>
 	</div>
-	<div class="jumbotron bg-heroes">
-	  <h1>Glorious Kings</h1>
-	  <p>王者荣耀·英雄地图。</p>
-	  <p><a class="btn btn-primary btn-lg" href='../kings/index.html' target="_blank">Learn more</a></p>
-	</div>
-	<div class="jumbotron bg-swordsmen">
-	  <h1>Smiling Swordsmen</h1>
-	  <p>在地图上重读《笑傲江湖》。</p>
-	  <p><a class="btn btn-primary btn-lg" href='../swordsmen/index.html' target="_blank">Learn more</a></p>
+	<div class="jumbotron jumbotron--grid">
+		<div class="jumbotron jumbotron--card bg-heroes col">
+		  <h1>Glorious Kings</h1>
+		  <p>#自嗨 王者荣耀·英雄地图。</p>
+		  <p><a class="btn btn-primary btn-lg" href='../kings/index.html' target="_blank">Check it out</a></p>
+		</div>
+		<div class="jumbotron jumbotron--card bg-swordsmen col">
+		  <h1>Smiling Swordsmen</h1>
+		  <p>#自嗨 在地图上重读《笑傲江湖》。</p>
+		  <p><a class="btn btn-primary btn-lg" href='../swordsmen/index.html' target="_blank">Check it out</a></p>
+		</div>
 	</div>
 </div>
 <div id='footer'>萧远珊，2016</div>
