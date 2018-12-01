@@ -3,88 +3,103 @@
 <head>
     <title>顺流而上</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-    <link href='https://bootswatch.com/4/yeti/bootstrap.min.css' rel='stylesheet' />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <script src="../static/jquery-3.3.1.slim.min.js"></script>
     <style>
-    .container {
-        text-align: center;
-    }
 
-.box {
-  width: 300px;
-  height: 300px;
-  margin: auto;
-  border-radius: 4px;
-  background: lighten(#f0f4c3, 10%);
-  position: relative;
-  overflow: hidden;
-}
+      body {
+        background-color: #1e1e1e;
+        overflow: hidden;
+      }
 
-.wave {
-  opacity: .4;
-  position: absolute;
-  top: 3%;
-  left: 50%;
-  background: #0af;
-  width: 500px;
-  height: 500px;
-  margin-left: -250px;
-  margin-top: -200px;
-  transform-origin: 50% 48%;
-  border-radius: 34%;
-  animation: drift 6000ms infinite linear;
-}
+      .container {
+        margin: 8em 1em;
+        width: 330px;
+        height: 180px;
+        margin: auto;
+        margin-top: 100px;
+      }
 
-.wave.-two {
-  animation: drift 9000ms infinite linear;
-  opacity: .1;
-  background: yellow;
-}
+      .circle {
+        height: 60px;
+        width: 60px;
+        border-radius: 50%;
+        box-shadow: 0 0 0 2px white;
+        display: inline-block;
+      }
 
-.box:after {
-  content: '';
-  display: block;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(to bottom, rgba(#e8a, 1), rgba(#def, 0) 80%, rgba(white, .5));
-  z-index: 11;
-  transform: translate3d(0, 0, 0);
-}
+      .circle.end {
+        margin-left: 200px;
+      }
 
-.note {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  z-index: 1;
-  line-height: 300px;
-  text-align: center;
-  color: white;
-  font-size: 20em;
-}
-@keyframes drift {
-  from { transform: rotate(0deg); }
-  from { transform: rotate(360deg); }
-}
+      .target {
+        height: 60px;
+        width: 60px;
+        border-radius: 50%;
+        background-color: #f27557;
+        position: absolute;
+        box-shadow: inset 0 0 0 2px rgba(0,0,0,.1);
+        transition: all 1600ms linear;
+      }
+
+      .target.right {
+        transform: translateX(265px);
+        /*background-color: #5c9;*/
+      }
+
+      .options {
+        margin-top: 4em;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+      }
+      .button {
+        border: 2px solid #e1e1e1;
+        border-radius: 2px;
+        color: #e1e1e1;
+        padding: .5em;
+      }
+      .button.active {
+        background-color: #e1e1e1;
+        color: #1e1e1e;
+
+      }
+
     </style>
 </head>
 
 <body>
-    <div class="container mt-5">
-        <h1 class="title">长音</h1>
-        <div class="description mt-3"><span class="duration">6</span>秒</div>
-        <div class="box mt-5">
-            <div class='wave -one'></div>
-			<div class='wave -two'></div>
-			<div class='note'>1</div>
-        </div>
-        <div class="controls mt-4">
-            <button type="button" class="btn" ic="play">Play</button>
-        </div>
+    <div class="container">
+      <div class="chart">
+        <div class="target"></div>
+        <div class="circle start"></div>
+        <div class="circle end"></div>
+      </div>
+      <div class="options">
+        <div class="button active" id="linear">Linear</div>
+        <div class="button" id="ease-in">Ease-in</div>
+        <div class="button" id="ease-out">Ease-out</div>
     </div>
+    </div>
+
 </body>
+
+<script>
+
+      let bezier = "linear";
+
+      $('.chart').click(function(){
+        $('.target').toggleClass('right', );
+      });
+
+      $('.button').click(function(){
+        $('.button').removeClass('active');
+        $(this).addClass('active');
+        bezier = this.id;
+        let transition = "all 1600ms " + bezier;
+        $('.target').css('transition', transition);
+      })
+
+</script>
 
 </html>
