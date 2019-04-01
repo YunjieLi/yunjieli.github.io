@@ -4,6 +4,7 @@ const Notes = function(selector, tuner) {
   this.$root = document.querySelector(selector)
   this.$notesList = this.$root.querySelector('.notes-list')
   this.$frequency = this.$root.querySelector('.frequency')
+  this.$cents = this.$root.querySelector('.cents')
   this.$notes = []
   this.$notesMap = {}
   this.createNotes()
@@ -75,6 +76,9 @@ Notes.prototype.update = function(note) {
     this.$frequency.childNodes[0].textContent = parseFloat(
       note.frequency
     ).toFixed(1)
+    let errorSign = note.cents > 0 ? '+' : '-';
+    let error = errorSign + Math.abs(note.cents) ;
+    this.$cents.textContent = error;
   }
 }
 
