@@ -1,90 +1,33 @@
-const Notes = function(selector, tuner) {
+const tolerance = 20   // error tolorance of the tuner
+
+const Notes = function(tuner) {
   this.tuner = tuner
   this.isAutoMode = true
-  this.$root = document.querySelector(selector)
-  this.$notesList = this.$root.querySelector('.notes-list')
-  this.$frequency = this.$root.querySelector('.frequency')
-  this.$cents = this.$root.querySelector('.cents')
-  this.$notes = []
-  this.$notesMap = {}
-  this.createNotes()
-}
-
-Notes.prototype.createNotes = function() {
-  const minOctave = 2
-  const maxOctave = 5
-  for (var octave = minOctave; octave <= maxOctave; octave += 1) {
-    for (var n = 0; n < 12; n += 1) {
-      const $note = document.createElement('div')
-      $note.className = 'note'
-      $note.dataset.name = this.tuner.noteStrings[n]
-      $note.dataset.value = 12 * (octave + 1) + n
-      $note.dataset.octave = octave.toString()
-      $note.dataset.frequency = this.tuner.getStandardFrequency(
-        $note.dataset.value
-      )
-      $note.innerHTML =
-        $note.dataset.name[0] +
-        '<span class="note-sharp">' +
-        ($note.dataset.name[1] || '') +
-        '</span>' +
-        '<span class="note-octave">' +
-        $note.dataset.octave +
-        '</span>'
-      this.$notesList.appendChild($note)
-      this.$notes.push($note)
-      this.$notesMap[$note.dataset.value] = $note
-    }
-  }
-
-  const self = this
-  this.$notes.forEach(function($note) {
-    $note.addEventListener('click', function() {
-      if (self.isAutoMode) {
-        return
-      }
-
-      const $active = self.$notesList.querySelector('.active')
-      if ($active === this) {
-        self.tuner.stop()
-        $active.classList.remove('active')
-      } else {
-        self.tuner.play(this.dataset.frequency)
-        self.update($note.dataset)
-      }
-    })
-  })
-}
-
-Notes.prototype.active = function($note) {
-  this.clearActive()
-  $note.classList.add('active')
-  this.$notesList.scrollLeft =
-    $note.offsetLeft - (this.$notesList.clientWidth - $note.clientWidth) / 2
-}
-
-Notes.prototype.clearActive = function() {
-  const $active = this.$notesList.querySelector('.active')
-  if ($active) {
-    $active.classList.remove('active')
-  }
 }
 
 Notes.prototype.update = function(note) {
-  if (note.value in this.$notesMap) {
-    this.active(this.$notesMap[note.value])
-    this.$frequency.childNodes[0].textContent = parseFloat(
-      note.frequency
-    ).toFixed(1)
-    let errorSign = note.cents > 0 ? '+' : '-';
-    let error = errorSign + Math.abs(note.cents) ;
-    this.$cents.textContent = error;
+  let name = note.name[0];
+  let sharp = note.name[1] ? note.name[1] : ' ';
+  let error = note.cents;
+  let $name = $('.note .name');
+
+  $('.note .name-letter').text(name);
+  $('.note .name-sharp').text(sharp);
+  $('.note .octave').text(note.octave);
+  $('.note .frequency').text(Math.round(note.frequency));
+  $('.note .cents').text(error);
+
+  $name.removeClass('flat sharp');
+  if (error > tolerance) {
+    $name.addClass('sharp');
+  } else if ( error < -tolerance ) {
+    $name.addClass('flat');
   }
 }
 
 Notes.prototype.toggleAutoMode = function() {
   if (this.isAutoMode) {
-    this.clearActive()
+    // this.clearActive()
   }
   this.isAutoMode = !this.isAutoMode
 }
