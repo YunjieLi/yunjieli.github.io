@@ -1,4 +1,7 @@
-const tolerance = 20   // error tolorance of the tuner
+const tolerance = 10;   // error tolorance of the tuner
+const limit = 40;
+const opacityMax = .7;
+const translateMax = 60;
 
 const Notes = function(tuner) {
   this.tuner = tuner
@@ -6,23 +9,22 @@ const Notes = function(tuner) {
 }
 
 Notes.prototype.update = function(note) {
-  let name = note.name[0];
   let sharp = note.name[1] ? note.name[1] : ' ';
-  let error = note.cents;
-  let $name = $('.note .name');
+  let cents = note.cents;
+  // if within a small difference, treat it as "tuned"
+  // if (Math.abs(cents) < tolerance) cents = 0;
+  let percentage = Math.min(Math.abs(cents/limit), 1);
+  let sign = cents > 0 ? 1 : -1;
+  let opacity = opacityMax * percentage;
+  let shift = translateMax * percentage * sign;
 
-  $('.note .name-letter').text(name);
+  $('.note .name-letter').text(note.name[0]);
   $('.note .name-sharp').text(sharp);
   $('.note .octave').text(note.octave);
-  $('.note .frequency').text(Math.round(note.frequency));
-  $('.note .cents').text(error);
+  $('.note .cents').text(note.cents);
 
-  $name.removeClass('flat sharp');
-  if (error > tolerance) {
-    $name.addClass('sharp');
-  } else if ( error < -tolerance ) {
-    $name.addClass('flat');
-  }
+  // $('.note-ghost').css('opacity', opacity);
+    $('.note-ghost').css('transform', 'translateX(' + cents + 'px)');
 }
 
 Notes.prototype.toggleAutoMode = function() {
