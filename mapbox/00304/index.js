@@ -195,7 +195,7 @@ map.on('load', function() {
                 var numberComplaints = query[0].properties[activeType];
                 var numberBusinesses = query[0].properties.businesses;
                 var label = activeType.charAt(0).toUpperCase() + activeType.slice(1);
-                html = "<div class='grid grid--gut6 color-white align-center'>" + "<div class='col--6'><div class='txt-xl txt-bold custom-ffc300'>" + numberComplaints + "</div><p class='mx3'>" + label + " complaints</p></div>" + "<div class='col--6'><div class='txt-xl txt-bold custom-ffc300'>" + numberBusinesses + "</div><p class='mx3'>Restaurants and bars</p></div>" + "<div class='col--12 color-gray mt12'>Click to learn more</div></div>";
+                html = "<div class='grid color-white align-center'>" + "<div class='col--6'><div class='txt-xl txt-bold custom-ffc300'>" + numberComplaints + "</div><p class='mx3'>" + label + " complaints</p></div>" + "<div class='col--6'><div class='txt-xl txt-bold custom-ffc300'>" + numberBusinesses + "</div><p class='mx3'>Restaurants and bars</p></div>" + "<div class='col--12 color-gray mt12'>Click to learn more</div></div>";
             };
             map.getSource('grid-active').setData(gridActive);
             // else: "dotted" or "inspector"
@@ -207,9 +207,9 @@ map.on('load', function() {
                 var numberComplaints = queryComplaints.length;
                 var labelComplaints = numberComplaints == 1 ? " complaint" : " complaints";
                 var typeComplaints = activeType === 'total' ? '' : ' about ' + activeType;
-                html += "<div class='grid grid--gut6 color-white align-center'>"
-                    + "<div class='col--12 px6'><div class='txt-xl txt-bold custom-ffc300'>" + numberComplaints
-                    + "</div><p>" + labelComplaints + " from this address" + typeComplaints + "</p></div><div class='col--12 mx12 pl6 grid my12'>";
+                html += "<div class='grid color-white align-center'>"
+                    + "<div class='col--12'><div class='txt-xl txt-bold custom-ffc300'>" + numberComplaints
+                    + "</div><div class='txt-m'>" + labelComplaints + "<br>from this address" + typeComplaints + "</div></div><div class='col--12 grid mt6'>";
 
                 if (activeType === 'total') {
                     var typeCount = typeList.map(function(type) {
@@ -225,7 +225,7 @@ map.on('load', function() {
                     });
 
                     for (var i = 1; i < typeList.length; i++) {
-                        html += "<div class='col--4 " + typeList[i] + " grid pt6 color-gray-light'><div class='icon mx3'></div>" + typeCount[i] + "</div>";
+                        html += "<div class='col--4 mt6 " + typeList[i] + " grid color-gray-light txt-m center-center'><div class='icon icon--ml'></div><div class='wmin18'>" + typeCount[i] + "</div></div>";
                     }
                 }
                 html += "</div>";
