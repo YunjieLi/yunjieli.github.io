@@ -1,0 +1,79 @@
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title></title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.23.0/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.23.0/mapbox-gl.css' rel='stylesheet' />
+    <link href='https://www.mapbox.com/base/latest/base.css' rel='stylesheet' />
+    <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+    <style>
+
+      @font-face {
+        font-family: 'SF UI Display';
+        src: url('SF-UI-Display/SF-UI-Display-Regular.otf');
+        font-weight: normal;
+      }
+      
+      @font-face {
+        font-family: 'SF UI Display';
+        src: url('SF-UI-Display/SF-UI-Display-Heavy.otf');
+        font-weight: bold;
+      }
+      
+      @font-face {
+        font-family: 'SF UI Display';
+        src: url('SF-UI-Display/SF-UI-Display-Light.otf');
+        font-weight: 200;
+      }
+      
+      body {
+        margin: 0;
+        padding: 0;
+        background: no-repeat url('phone.png');
+        font: 15px/20px 'SF UI Display', sans-serif
+      }
+
+      #map { 
+        position:absolute; 
+        left:272px; top:180px; 
+        height: 428px; width: 249px; }
+
+      #menu {
+        position: absolute;
+        padding:10px;
+      }
+
+      #console { 
+        position:absolute; right:0px;
+        padding:10px 0;
+        width:200px ; height: 100%; 
+        background-color: #e4ebec;
+      }
+      .step {
+        padding:10px;
+      }
+      .step.greenified {
+        background-color: #dfc
+      }
+      #console h1{
+        font-size: 14px; line-height: 20px
+      }
+      #console p{
+        font-size: 12px; line-height: 15px; margin:0;
+      }
+
+    </style>
+</head>
+<body>
+
+<div id='map'></div>
+
+<div id='console'>
+  <div class='keyline-bottom center'><h1>Steps to greenify</h1></div>
+</div>
+
+</body>
+
+<script src='index.js'></script>
+</html>
