@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+  <title>Online Tuner</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+</head>
+<body>
+<canvas class="frequency-bars"></canvas>
+<button>Fine.</button>
+<div class="note">
+  <div class="name">
+    <div class="name-letter"></div>
+    <div class="octave"></div>
+    <div class="name-sharp"></div>
+  </div>
+  <div class="cents"></div>
+  <div class="note-ghost"></div>
+</div>
+<!-- <script src="https://cdn.bootcss.com/sweetalert/2.1.0/sweetalert.min.js"></script> -->
+<script src="aubio.js"></script>
+<script src="tuner.js"></script>
+<script src="frequency-bars.js"></script>
+<script src="notes.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

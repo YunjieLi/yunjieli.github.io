@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8' />
+    <title>Restaurant Complaints NYC</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.27.0/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.27.0/mapbox-gl.css' rel='stylesheet' />
+    <script src='https://npmcdn.com/@turf/turf@3.5.1/turf.min.js'></script>
+    <link href='https://www.mapbox.com/base/latest/base.css' rel='stylesheet'/>
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans" />
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+    <style>
+    body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+    }   
+    a {
+        text-decoration: none;
+    }    
+    a:-webkit-any-link {
+        color: #999;
+    }
+    ::-webkit-scrollbar { 
+        display: none; 
+    }
+    .mapboxgl-ctrl-attrib a {
+        color: inherit;
+    }
+
+    #map {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 260px;
+        width: calc(100% - 260px);
+    }
+    
+    h1 {
+        margin: 10px;
+        font-size: 16px;
+        color: #f9886c;
+        line-height: 30px;
+    }
+    
+    h2 {
+        margin: 4px;
+        font-size: 14px;
+        text-align: center;
+        color: #f9886c;
+    }
+    p {
+        font-size: 14px;
+        margin: 5px 0;
+        word-break: normal;
+    }
+
+    .mapboxgl-ctrl-group {
+        filter: invert(100%);
+    }
+
+    #control-pitch {
+        background-image: url("./img/control_2d.svg");
+    }  
+    #control-pitch.pitch {
+        background-image: url("./img/control_3d.svg");
+    }
+  
+    
+    #sidebar {
+        background-color: #404040;
+        color: white;
+        width: 260px;
+        height: 100%;
+        position: absolute;
+        border: 1px solid #222;
+        overflow: scroll;
+    }
+    
+    #title {
+        margin-bottom: 10px
+    }    
+    .session {
+        margin: 15px;
+        margin-bottom: 10px;
+    }
+
+    #camera { 
+        display: none;
+    }
+    
+    .legend {
+        display: flex;
+        align-items: stretch;
+    }
+    .legend > div {
+        flex-grow: 1;
+    }
+    .btn:hover {
+        cursor: pointer;
+    } 
+
+    .label {
+        font-size: 12px;
+        font-weight:600;
+        text-align: center;
+    }  
+    .icon {
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: auto 100%;
+      height: 30px;
+      width: 30px;
+      margin: auto;
+    }
+
+    .btn {
+        background-color: none;
+        color: white;
+        border-radius: 5px;
+    }
+    .btn.wrap {
+        padding: 5px 0;
+    }
+    .btn:hover, .btn.active {
+        background-color: #FFc300;
+    } 
+
+    /*camera session    */
+    #dotted .icon { background-image: url(./img/map0_dotted.svg); }
+    #hexbin .icon { background-image: url(./img/map0_hexbin.svg); }    
+
+    /*styles session*/
+    .style .chart {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: flex-end;
+        margin: 10px 0;
+    }
+   #style-hexbin .bar {
+        flex-basis: 20%;
+    }
+   .style .min {
+        text-align:left;
+   }
+    #style .max {
+        text-align:right;
+    }
+   .style .chart-title {
+        flex-basis: 60%;
+    }
+    .style p {
+        margin:0;
+    }
+    #complaint .icon { background-image: url(./img/dot_complaint.svg); }
+    #restaurant .icon { background-image: url(./img/dot_restaurant.svg); }   
+
+    #style-dotted {
+        display: none;
+    }
+
+    /*types session*/
+    #types .legend {
+      flex-wrap: wrap;
+    }
+    #types .btn {
+      flex-basis: 50%;
+    }
+    #types .label {
+      margin-bottom: 5px;
+    }
+    #noise .icon { background-image: url(./img/type0_noise.svg); }
+    #establishment .icon { background-image: url(./img/type0_establishment.svg); }
+    #poisoning .icon { background-image: url(./img/type0_poisoning.svg); }
+    #drinking .icon { background-image: url(./img/type0_drinking.svg); }
+    #smoking .icon { background-image: url(./img/type0_smoking.svg); }
+    #others .icon { background-image: url(./img/type0_others.svg); }
+
+
+    .mapboxgl-popup {
+        margin-top: 5px;
+    }
+    .mapboxgl-popup-tip {
+        filter: invert(100%);
+        opacity: 0.8
+    }
+    .mapboxgl-popup-content {
+        background-color: rgba(0,0,0,0.8);
+        color: white;
+        line-height: 18px;
+        max-width: 200px;
+        overflow: scroll;
+    }
+
+    #back {
+        position: absolute;
+        left: 20px;
+        top: 20px;
+        padding: 10px;
+        background-color: #222;
+        z-index: 10;
+        display: none;
+    }
+    #back h1 {
+        color: white;
+    }
+
+    .mobile-hide {
+        display: inline-block !important;
+    }
+    .mobile-show {
+        display: none !important;
+    }
+
+    @media only screen and (max-width: 640px) {
+        .mobile-hide {
+            display: none !important;
+        }
+        .mobile-show {
+            display: inline-block !important;
+        }
+
+        #sidebar {
+            width: 100%;
+            margin: 0;
+            left: 0;
+            top: 0;
+            height: 30vh;
+        }
+        #map {
+            left: 0;
+            bottom:0;
+            top: 30vh;
+            width:100%;
+            height: calc(100% - 30vh);
+        }
+        .mobile-btn {
+            border: 1px solid #999;
+            color: #999;
+            border-radius: 5px;
+            height: 20px;
+            width: 80%;
+            margin: 10px 10%;
+            text-align: center;
+        }
+        .session {
+            display:none;
+        }
+        #title, .session-alt {
+            display:block;
+        }
+        .session-alt{
+            width:100%;
+        }
+        .show-less {
+            display: none;
+        }
+        #types .btn {
+          flex-basis: 33%;
+        }
+        p {
+            display: inline-block;
+            font-size: 1em;
+        }
+    }
+
+    @media only screen and (max-width: 320px) {
+        #title {
+            margin: 10px;
+        }
+        p {
+            font-size: 14px;
+        }
+    }
+
+    </style>
+</head>
+
+<body>
+    <div id='map'>
+        <div class='btn' id='back'><h1>Back to overview</h1></div>
+        <a class='pin-bottomleft z1 pad1' target='_blank' href='https://www.mapbox.com/'>
+  <img src='data:image/svg+xml;base64,PHN2ZyB4bWxuczpzdmc9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZlcnNpb249IjEuMSIgeD0iMCIgeT0iMCIgd2lkdGg9IjU5LjEiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCA1OS4xIDE4IiBlbmFibGUtYmFja2dyb3VuZD0ibmV3IDAgMCA1OS4xMTkgMTgiIHhtbDpzcGFjZT0icHJlc2VydmUiPjxwYXRoIGQ9Ik0xLjQgMEMwLjYgMC4xIDAgMC44IDAgMS41TDAgMTMuNEMwIDE0LjIgMC43IDE0LjggMS41IDE0LjhMMy4zIDE0LjhDNCAxNC44IDQuNyAxNC4yIDQuOCAxMy40TDQuOCA5LjEgNS41IDEwLjNDNiAxMS4yIDcuNSAxMS4yIDggMTAuM0w4LjggOS4xIDguOCAxMy40QzguOCAxNC4xIDkuNSAxNC44IDEwLjIgMTQuOEwxMiAxNC44QzEyLjggMTQuOCAxMy41IDE0LjIgMTMuNSAxMy40TDEzLjUgMTMuMkMxNC41IDE0LjMgMTUuOSAxNSAxNy42IDE1TDIxLjcgMTUgMjEuNyAxNi41QzIxLjcgMTcuMyAyMi4zIDE4IDIzLjEgMThMMjQuOSAxOEMyNS43IDE4IDI2LjQgMTcuMyAyNi40IDE2LjVMMjYuNCAxNUMyOC4xIDE1IDI5LjUgMTQuNCAzMC41IDEzLjNMMzAuNSAxMy41QzMwLjUgMTMuOSAzMC43IDE0LjMgMzEgMTQuNiAzMS4zIDE0LjkgMzEuNiAxNSAzMiAxNUwzNS4zIDE1QzM3LjQgMTUgMzkuMiAxNCA0MC4zIDEyLjMgNDEuMyAxMy45IDQzLjEgMTUgNDUuMSAxNSA0Ni4yIDE1IDQ3LjEgMTQuOCA0Ny45IDE0LjMgNDguMiAxNC42IDQ4LjcgMTQuOCA0OS4xIDE0LjhMNTEuMyAxNC44QzUxLjcgMTQuOCA1Mi4yIDE0LjYgNTIuNSAxNC4yTDUzLjQgMTIuOSA1NC4zIDE0LjJDNTQuNiAxNC42IDU1LjEgMTQuOCA1NS41IDE0LjhMNTcuNyAxNC44QzU4LjggMTQuOCA1OS41IDEzLjQgNTguOSAxMi41TDU2LjMgOC45IDU4LjcgNS41QzU5LjQgNC42IDU4LjYgMy4xIDU3LjUgMy4xTDU1LjMgMy4xQzU0LjkgMy4xIDU0LjQgMy40IDU0LjEgMy44TDUzLjQgNC44IDUyLjcgMy44QzUyLjQgMy40IDUxLjkgMy4xIDUxLjQgMy4xTDQ5LjMgMy4xQzQ4LjggMy4xIDQ4LjMgMy40IDQ4IDMuOCA0Ny4yIDMuMyA0Ni4yIDMgNDUuMSAzIDQzLjEgMyA0MS4zIDQuMSA0MC4yIDUuNyAzOS4yIDQgMzcuNCAzIDM1LjMgM0wzNS4zIDEuNUMzNS4zIDEuMSAzNS4xIDAuNyAzNC44IDAuNCAzNC42IDAuMiAzNC4yIDAgMzMuOCAwTDMyIDBDMzEuMyAwIDMwLjUgMC44IDMwLjUgMS41TDMwLjUgNC43QzI5LjUgMy42IDI4LjEgMyAyNi41IDNMMjMuMSAzQzIyLjQgMyAyMS43IDMuNyAyMS43IDQuNUwyMS43IDQuOEMyMC42IDMuNyAxOS4yIDMgMTcuNiAzIDE1LjkgMyAxNC41IDMuNyAxMy41IDQuOEwxMy41IDEuNUMxMy41IDAuNyAxMi44IDAgMTIgMEwxMC42IDBDOS42IDAgOC40IDAuNCA3LjggMS40TDYuOCAzLjEgNS44IDEuNEM1LjEgMC40IDMuOSAwIDIuOSAwTDEuNSAwIDEuNCAwek0xLjUgMS41TDIuOSAxLjVDMy42IDEuNSA0LjIgMS43IDQuNSAyLjJMNi44IDYuMSA5IDIuMkM5LjMgMS43IDkuOSAxLjUgMTAuNiAxLjVMMTIgMS41IDEyIDEzLjUgMTAuMiAxMy41IDEwLjIgMy42IDYuOCA5LjUgMy4zIDMuNiAzLjMgMTMuNSAxLjUgMTMuNSAxLjUgMS41ek0zMi4xIDEuNUwzMy44IDEuNSAzMy44IDQuNUMzNC40IDQuNSAzNC44IDQuNSAzNS4zIDQuNSAzNy44IDQuNSAzOS43IDYuNCAzOS43IDkgMzkuNyAxMS42IDM3LjggMTMuNSAzNS4zIDEzLjVMMzIuMSAxMy41IDMyLjEgMS41ek0xNy42IDQuNUMyMCA0LjUgMjEuOCA2LjQgMjEuOCA5TDIxLjggMTMuNSAxNy42IDEzLjVDMTUuMSAxMy41IDEzLjQgMTEuNiAxMy40IDkgMTMuNCA2LjQgMTUuMSA0LjUgMTcuNiA0LjV6TTQ1LjEgNC41QzQ3LjUgNC41IDQ5LjUgNi41IDQ5LjUgOSA0OS41IDExLjUgNDcuNSAxMy41IDQ1LjEgMTMuNSA0Mi43IDEzLjUgNDAuNyAxMS41IDQwLjcgOSA0MC43IDYuNSA0Mi43IDQuNSA0NS4xIDQuNXpNMjMuMSA0LjVMMjYuNSA0LjVDMjguOSA0LjUgMzAuOCA2LjQgMzAuOCA5IDMwLjggMTEuNiAyOC45IDEzLjUgMjYuNSAxMy41TDI0LjkgMTMuNSAyNC45IDE2LjUgMjMuMSAxNi41IDIzLjEgNC41ek00OS4zIDQuNUw1MS40IDQuNSA1My40IDcuMyA1NS4zIDQuNSA1Ny41IDQuNSA1NC41IDguOSA1Ny43IDEzLjUgNTUuNSAxMy41IDUzLjQgMTAuNCA1MS4yIDEzLjUgNDkuMSAxMy41IDUyLjMgOC45IDQ5LjMgNC41ek0xNy42IDYuMkMxNi4yIDYuMiAxNS4xIDcuNCAxNS4xIDkgMTUuMSAxMC42IDE2LjIgMTEuOCAxNy42IDExLjhMMjAgMTEuOCAyMCA5QzIwIDcuNCAxOSA2LjIgMTcuNiA2LjJ6TTQ1LjEgNi4yQzQzLjcgNi4yIDQyLjUgNy41IDQyLjUgOSA0Mi41IDEwLjUgNDMuNyAxMS44IDQ1LjEgMTEuOCA0Ni42IDExLjggNDcuNyAxMC41IDQ3LjcgOSA0Ny43IDcuNSA0Ni42IDYuMiA0NS4xIDYuMnpNMjQuOSA2LjNMMjQuOSAxMS44IDI2LjUgMTEuOEMyNy45IDExLjggMjkuMSAxMC41IDI5LjEgOSAyOS4xIDcuNSAyOC4xIDYuMyAyNi41IDYuM0wyNC45IDYuM3pNMzMuOCA2LjNMMzMuOCAxMS44IDM1LjMgMTEuOEMzNi45IDExLjggMzggMTAuNSAzOCA5IDM4IDcuNSAzNi44IDYuMyAzNS4zIDYuM0wzMy44IDYuM3pNMTcuNiA3LjdDMTguMSA3LjcgMTguNSA4LjEgMTguNSA5TDE4LjUgMTAuMyAxNy42IDEwLjNDMTcgMTAuMyAxNi42IDkuOSAxNi42IDkgMTYuNiA4LjEgMTcgNy43IDE3LjYgNy43ek0yNi40IDcuN0MyNy4yIDcuNyAyNy42IDguNCAyNy42IDkgMjcuNiA5LjkgMjYuOSAxMC4zIDI2LjQgMTAuM0wyNi40IDcuN3pNMzUuMSA3LjdDMzUuOCA3LjcgMzYuNSA4LjMgMzYuNSA5IDM2LjUgOS44IDM1LjkgMTAuMyAzNS4xIDEwLjNMMzUuMSA3Ljd6TTQ1LjEgNy43QzQ1LjcgNy43IDQ2LjIgOC4yIDQ2LjIgOSA0Ni4yIDkuOCA0NS43IDEwLjMgNDUuMSAxMC4zIDQ0LjUgMTAuMyA0NCA5LjggNDQgOSA0NCA4LjIgNDQuNSA3LjcgNDUuMSA3Ljd6IiBvcGFjaXR5PSIwLjMiLz48cGF0aCBkPSJtMS41IDEuNSAwIDEyIDEuOCAwIDAtOS45IDMuNSA1LjkgMy41LTUuOSAwIDkuOSAxLjggMCAwLTEyLTEuNCAwQzkuOSAxLjUgOS4zIDEuNyA5IDIuMkw2LjggNi4xIDQuNSAyLjJDNC4yIDEuNyAzLjYgMS41IDIuOSAxLjVMMS41IDEuNVptMzAuNiAwIDAgMTIgMy4zIDBjMi40IDAgNC40LTEuOSA0LjQtNC41IDAtMi42LTEuOS00LjUtNC40LTQuNS0wLjUgMC0wLjkgMC0xLjUgMGwwLTMtMS43IDB6TTE3LjYgNC41Yy0yLjQgMC00LjIgMS45LTQuMiA0LjUgMCAyLjYgMS44IDQuNSA0LjIgNC41bDQuMiAwTDIxLjggOWMwLTIuNi0xLjctNC41LTQuMi00LjV6bTI3LjYgMGMtMi40IDAtNC40IDItNC40IDQuNSAwIDIuNSAyIDQuNSA0LjQgNC41IDIuNCAwIDQuMy0yIDQuMy00LjUgMC0yLjUtMS45LTQuNS00LjMtNC41em0tMjIgMCAwIDEyIDEuOCAwIDAtMyAxLjYgMGMyLjQgMCA0LjMtMS45IDQuMy00LjUgMC0yLjYtMS45LTQuNS00LjMtNC41bC0zLjMgMHptMjYuMiAwIDMgNC40LTMuMiA0LjYgMi4xIDAgMi4yLTMuMSAyLjEgMy4xIDIuMiAwTDU0LjUgOC45IDU3LjUgNC41IDU1LjMgNC41IDUzLjQgNy4zIDUxLjQgNC41IDQ5LjMgNC41Wk0xNy42IDYuMkMxOSA2LjIgMjAgNy40IDIwIDlsMCAyLjgtMi40IDBjLTEuNCAwLTIuNC0xLjItMi40LTIuOCAwLTEuNiAxLTIuOCAyLjQtMi44em0yNy42IDBjMS40IDAgMi42IDEuMiAyLjYgMi44IDAgMS41LTEuMiAyLjgtMi42IDIuOEM0My43IDExLjggNDIuNSAxMC41IDQyLjUgOWMwLTEuNSAxLjItMi44IDIuNi0yLjh6bS0yMC4yIDAgMS42IDBjMS42IDAgMi42IDEuMyAyLjYgMi44IDAgMS41LTEuMSAyLjgtMi42IDIuOGwtMS42IDAgMC01LjV6bTkgMCAxLjUgMGMxLjUgMCAyLjYgMS4zIDIuNiAyLjggMCAxLjUtMSAyLjgtMi42IDIuOGwtMS41IDAgMC01LjV6IiBmaWxsPSIjZmZmIi8+PC9zdmc+' alt='Mapbox' />
+</a>
+    </div>
+    <div id='sidebar'>
+        <div id='title' class='session'>
+            <h1>Restaurant Complaints in New York City</h1>
+            <!-- offensive, disturbing,  -->
+            <p class='prose'>Where are the restaurants in NYC that get the most complaints? Read more on <a href='https://www.mapbox.com/blog/3d-hexbin/' target="_blank">our blog</a>.</p>
+            <p class='prose'>Source: <a href="https://data.cityofnewyork.us/Social-Services/311-Service-Requests-from-2010-to-Present/erm2-nwe9" target="_blank">311</a> and <a href="https://data.cityofnewyork.us/Business/Inspections/jzhd-m6uv" target="_blank">DCA</a> open data</p>
+        </div>
+        <div class='mobile-show session-alt'>
+            <div class='mobile-btn show-more'>Show more</div>
+            <div class='mobile-btn show-less'>Show less</div>
+        </div>
+        <div id='style-hexbin' class='style session'>
+            <h2>Legend</h2>
+            <div class='chart'>
+                <div class='bar' style='height:10px; background-color:#222'></div>
+                <div class='bar' style='height:15px; background-color:#ffc300'></div>
+                <div class='bar' style='height:20px; background-color:#ff8d19'></div>
+                <div class='bar' style='height:25px; background-color:#ff5733'></div>
+                <div class='bar' style='height:30px; background-color:#ff2e00'></div>
+                
+            </div>
+            <div class='chart'>
+                <div class='label bar min'>0</div>
+                <div class='label chart-title'># of Complaints</div>
+                <div class='label bar max'>141.5</div>
+            </div>
+            <div class='chart'>
+                <input type="checkbox" id='density' checked><p>Normalize by # of restaurants</p>
+            </div>
+        </div>
+        <div id='style-dotted' class='style session'>
+            <h2>Legend</h2>
+            <div class='legend'>
+                <div class='wrap small' id='complaint'>
+                    <div class='icon'></div>
+                    <div class='label'><!-- <input type="checkbox" id='points-complaints' checked> -->Complaint</div>
+                </div>
+                <div class='wrap small' id='restaurant'>
+                    <div class='icon'></div>
+                    <div class='label'><!-- <input type="checkbox" id='points-businesses' checked> -->Restaurant</div>
+                </div>
+            </div>
+        </div>
+        <div id='types' class='session'>
+            <h2>Filter by complaint type</h2>
+            <div class='legend'>
+                <div class='btn wrap small' id='noise'><div class='icon'></div><div class='label'>Noise</div></div>
+                <div class='btn wrap small' id='establishment'><div class='icon'></div><div class='label'>Food establishment</div></div>
+                <div class='btn wrap small' id='poisoning'><div class='icon'></div><div class='label'>Food poisoning</div></div>
+                <div class='btn wrap small' id='drinking'><div class='icon'></div><div class='label'>Drinking</div></div>
+                <div class='btn wrap small' id='smoking'><div class='icon'></div><div class='label'>Smoking</div></div>
+                <div class='btn wrap small' id='others'><div class='icon'></div><div class='label'>Others</div></div>
+            </div>
+        </div>
+    </div>
+    <script src='./grids.js'></script>
+    <script src='./old.js'></script>
+</body>
+
+</html>

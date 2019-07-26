@@ -1,0 +1,118 @@
+/*
+hsl: 0 - red - 30 - yellow - 60
+#cb081a
+#212020
+*/
+
+
+body {
+    background: linear-gradient(-99deg, #212020, #161414);
+    overflow: hidden;
+    font-family: Signika Negative, Asap, sans-serif;
+    color: white;
+}
+
+#contents,
+#bg {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+}
+
+#contents {
+    z-index: 999;
+}
+
+/*----------------header--------------------*/
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.lily {
+    height: 36vh;
+    width: 36vh;
+    margin-top: 4vh;
+}
+.lily .cls-1 {
+    fill: #fff;
+}
+.lily .cls-2 {
+    fill: #cb081a;
+}
+
+.names {
+    display: flex;
+    justify-content: space-between;
+    flex-direction: row;
+    width: 18vh;
+    margin-top: 4vh;
+}
+.names .cls-1 {
+    fill: #ccc;
+}
+
+.name {
+    width: 6vh;
+    flex-direction: column;
+
+}
+.name .pseudo {
+    margin: 18px auto 12px auto;
+    text-align: center;
+    color: #ccc;
+}
+
+/*----------------footer--------------------*/
+
+.footer {
+    position: absolute;
+    width: 16vw;
+    margin-left: 42vw;
+    bottom: 4vh;
+}
+.footer .cls-1 {
+    fill: #86666B;
+}
+
+
+/*----------------photos--------------------*/
+
+.human {
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center;
+    position: absolute;
+    bottom: 0px;
+    height: 60vh;
+    width: 36vh;
+}
+
+#zihao {
+    background-image: url(images/zihao.png);
+    right: 6vh;
+}
+#yunjie {
+    background-image: url(images/yunjie.png);
+    left: 6vh;   
+}
+
+/*----------------bg--------------------*/
+
+.bg svg {
+    width: 100%;
+    height: 100%;
+    z-index: -100;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    position: absolute;
+    background-color: #00FF00;
+    border-radius: 20px;
+    z-index: 2;
+}

@@ -1,0 +1,142 @@
+<html lang="zh">
+<head>
+	<title>顺流而上</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<link href='./static/yeti.min.css' rel='stylesheet' />
+	<link rel="apple-touch-icon" sizes="57x57" href="./img/favicon/apple-icon-57x57.png">
+	<link rel="apple-touch-icon" sizes="60x60" href="./img/favicon/apple-icon-60x60.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="./img/favicon/apple-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="76x76" href="./img/favicon/apple-icon-76x76.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="./img/favicon/apple-icon-114x114.png">
+	<link rel="apple-touch-icon" sizes="120x120" href="./img/favicon/apple-icon-120x120.png">
+	<link rel="apple-touch-icon" sizes="144x144" href="./img/favicon/apple-icon-144x144.png">
+	<link rel="apple-touch-icon" sizes="152x152" href="./img/favicon/apple-icon-152x152.png">
+	<link rel="apple-touch-icon" sizes="180x180" href="./img/favicon/apple-icon-180x180.png">
+	<link rel="icon" type="image/png" sizes="192x192"  href="./img/favicon/android-icon-192x192.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="./img/favicon/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="96x96" href="./img/favicon/favicon-96x96.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="./img/favicon/favicon-16x16.png">
+	<link rel="manifest" href="./img/favicon/manifest.json">
+	<meta name="msapplication-TileColor" content="#ffffff">
+	<meta name="msapplication-TileImage" content="./img/favicon/ms-icon-144x144.png">
+	<meta name="theme-color" content="#ffffff">
+	<style>
+		.page-header img { height:54px; width:54px; }
+		.page-header img,h1 {display: inline-block; vertical-align: bottom}
+		.page-header p { margin-top: 1em; color:#666; }
+
+		.page-header h1 {margin-left: 1rem;}
+
+		#footer { width:100%; background-color:#D1D9E0; color:#666; text-align:center; padding:20px;}
+
+		.btn-primary {
+			background-color: #333;
+			border-color: rgba(0,0,0,.3);
+		}
+		.btn-primary:hover {
+			background-color: #223;
+			border-color: rgba(0,0,0,.3);
+		}
+
+		.jumbotron {
+			background-size: cover;
+			background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7));
+			color: white;
+			border-radius: 3px;
+		}
+
+		.jumbotron a {
+			color: white;
+			opacity: .7;
+		}
+
+		.jumbotron.jumbotron--grid {
+			background: none;
+			padding: 0;
+			margin: 0;
+		}
+
+		@media only screen and (min-width: 800px) {
+
+			.jumbotron.jumbotron--grid {
+				display: flex;
+				padding: 0;
+				margin-bottom: 0;
+				background: none;
+			}
+
+			.jumbotron.jumbotron--card{
+				flex-grow: 1;
+				width: 50%;
+			}
+			.jumbotron.jumbotron--card:nth-child(even) {
+				margin-left: 30px;
+			}
+
+			.jumbotron.jumbotron--card h1{
+				font-size: 20px;
+			}
+			.jumbotron.jumbotron--card p{
+				font-size: 14px;
+			}
+		}
+
+
+		.jumbotron.bg-nyc {
+			background-image: url(./img/jumbotron-nyc.png);
+		}
+		.jumbotron.bg-boston {
+			background-image: url(./img/jumbotron-boston.png);
+		}
+		.jumbotron.bg-lush {
+			background-image: url(./img/jumbotron-lush.png);
+		}
+		.jumbotron.bg-heroes {
+			background-image: url(./img/jumbotron-heroes.png);
+		}
+		.jumbotron.bg-swordsmen {
+			background-image: url(./img/jumbotron-swordsmen.png);
+		}
+
+	</style>
+</head>
+<body>
+<div class="container">
+	<div class="page-header">
+		<img src="./img/icon_full.png">
+		<h1>顺流而上</h1>
+		<p>用设计，用代码，用地图装故事。用故事装X。</p>
+	</div>
+	<div class="jumbotron bg-nyc">
+	  <h1>Restaurants Noise of NYC</h1>
+	  <p><a href="https://blog.mapbox.com/exploring-nyc-open-data-with-3d-hexbins-5af2b7d8bc46" target="_blank"> Mapbox Blog</a> · Visualizing NYC 311 Data in 3D</p>
+	  <p><a class="btn btn-primary btn-lg" href='https://www.mapbox.com/bites/00304/' target="_blank">Check it out</a></p>
+	</div>
+	<div class="jumbotron bg-boston">
+	  <h1>Historical Boston</h1>
+	  <p><a href="https://blog.mapbox.com/mapping-historic-boston-in-the-mapbox-studio-dataset-editor-838c49209bd1" target="_blank"> Mapbox Blog</a> · Mapping, Urban History</p>
+	  <p><a class="btn btn-primary btn-lg" href='https://www.mapbox.com/bites/00287/' target="_blank">Check it out</a></p>
+	</div>
+	<div class="jumbotron bg-lush">
+	  <h1>Mono <> Colors</h1>
+	  <p><a href="https://blog.mapbox.com/mobile-runtime-styling-get-active-553b0c9aaa16" target="_blank"> Mapbox Blog</a> · Map Design - Greenifying this world </p>
+	  <p><a class="btn btn-primary btn-lg" href='https://www.mapbox.com/bites/00299/compare.html' target="_blank">Check it out</a></p>
+	</div>
+	<div class="jumbotron jumbotron--grid">
+		<div class="jumbotron jumbotron--card bg-heroes col">
+		  <h1>Glorious Kings</h1>
+		  <p>#自嗨 王者荣耀·英雄地图。</p>
+		  <p><a class="btn btn-primary btn-lg" href='../kings/index.html' target="_blank">Check it out</a></p>
+		</div>
+		<div class="jumbotron jumbotron--card bg-swordsmen col">
+		  <h1>Smiling Swordsmen</h1>
+		  <p>#自嗨 在地图上重读《笑傲江湖》。</p>
+		  <p><a class="btn btn-primary btn-lg" href='../swordsmen/index.html' target="_blank">Check it out</a></p>
+		</div>
+	</div>
+</div>
+<div id='footer'>萧远珊，2016</div>
+</body>
+</html>

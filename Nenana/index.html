@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<header>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+  <style>
+
+    .year-label {
+      font-size: 20px;
+    }
+    .year-label::before {
+      content: "⛸";
+      font-size: 36px;
+      margin-right: 12px;
+    }
+
+    .bar {
+        fill: #4de;
+        transition: opacity 200ms ease;
+    }
+
+    .bar:hover {
+      opacity: .6;
+    }
+
+    .chart text {
+        fill: white;
+        font: 10px sans-serif;
+        text-anchor: end;
+    }
+  </style>
+</header>
+
+<body>
+<div class="container">
+  <h3>Nenana Ice thickness</h3>
+  <div class="card">
+    <div class="year-label">2018</div>
+    <svg class="chart"></svg>
+  </div>
+</div>
+<script src="//d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script>
+var data = [
+    {
+        "monthDay": "Feb 10",
+        "thickness": 28
+    },
+    {
+        "monthDay": "Feb 25",
+        "thickness": 34
+    },
+    {
+        "monthDay": "March 4",
+        "thickness": 36
+    },
+    {
+        "monthDay": "March 12",
+        "thickness": 28.3
+    },
+    {
+        "monthDay": "March 19",
+        "thickness": 32
+    },
+    {
+        "monthDay": "March 26",
+        "thickness": 26.5
+    },
+    {
+        "monthDay": "April 2",
+        "thickness": 26.8
+    },
+    {
+        "monthDay": "April 5",
+        "thickness": 26.7
+    },
+    {
+        "monthDay": "April 9",
+        "thickness": 26.8
+    },
+    {
+        "monthDay": "April 14",
+        "thickness": 24.7
+    },
+    {
+        "monthDay": "April 18",
+        "thickness": 25
+    }
+];
+
+var width = 240,
+    height = 300,
+    barWidth = width / data.length;
+
+var y = d3.scale.linear()
+    .domain([0, 60])
+    .range([height, 0]);
+
+var chart = d3.select(".chart")
+    .attr("width", width)
+    .attr("height", height);
+
+var bar = chart.selectAll(".bar")
+    .data(data)
+    .enter().append("g")
+    .attr("transform", (d, i) => { 
+      return "translate(" + i * barWidth + ", " + -y(d.thickness) + ")"; 
+    });
+
+bar.append("rect")
+    .attr("class", "bar")
+    .attr("y", (d)=>{ return y(d.thickness); })
+    .attr("height", (d)=>{ return height - y(d.thickness); })
+    .attr("width", barWidth - 4);
+
+bar.append("text")
+    .attr("x", barWidth / 2)
+    .attr("y", (d) => { return y(d.thickness) + 3; });
+    // .attr("dy", "0")
+    // .text((d) => { return d.monthDay; });
+</script>
+</body>

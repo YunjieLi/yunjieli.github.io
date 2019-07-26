@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8' />
+    <title>连城诀</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src="https://unpkg.com/deck.gl@^6.2.0/deckgl.min.js"></script>
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.51.0/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.51.0/mapbox-gl.css' rel='stylesheet' />
+    <style>
+    body {
+        margin: 0;
+        padding: 0;
+    }
+
+    #map {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 100%;
+    }
+    </style>
+</head>
+
+<body>
+    <div id='map'></div>
+    <script>
+    const itineraryDY = [
+        {
+            "Storyline": "狄云",
+            "Seg": 1,
+            "Origin": "麻溪铺",
+            "Target": "荆州",
+            "Chapter0": 1,
+            "Chapter1": 1,
+            "Notes": "湘西沅陵南郊",
+            "Lat0": 28.307442,
+            "Lng0": 110.348119,
+            "Lat1": 30.35408,
+            "Lng1": 112.18817
+        },
+        {
+            "Storyline": "狄云",
+            "Seg": 2,
+            "Origin": "荆州",
+            "Target": "江边破庙",
+            "Chapter0": 1,
+            "Chapter1": 4,
+            "Notes": "万家-监牢-凌退思府-废园-万家",
+            "Lat0": 30.35408,
+            "Lng0": 112.18817,
+            "Lat1": 29.778493,
+            "Lng1": 112.926704
+        },
+        {
+            "Storyline": "狄云",
+            "Seg": 3,
+            "Origin": "江边破庙",
+            "Target": "华容县",
+            "Chapter0": 5,
+            "Chapter1": 5,
+            "Notes": "近程家集，在湖北监利县之北。长江在这里折而向南。狄云借丁大哥尸身之毒杀死了宝象。",
+            "Lat0": 29.778493,
+            "Lng0": 112.926704,
+            "Lat1": 29.742251,
+            "Lng1": 112.919555
+        },
+        {
+            "Storyline": "狄云",
+            "Seg": 4,
+            "Origin": "华容县",
+            "Target": "小市镇",
+            "Chapter0": 5,
+            "Chapter1": 5,
+            "Notes": "在这里偶遇剑铃双侠。",
+            "Lat0": 29.742251,
+            "Lng0": 112.919555,
+            "Lat1": 29.72201,
+            "Lng1": 112.916401
+        },
+        {
+            "Storyline": "狄云",
+            "Seg": 5,
+            "Origin": "小市镇",
+            "Target": "山坡",
+            "Chapter0": 5,
+            "Chapter1": 6,
+            "Notes": "下游十余里处。血刀老祖出场。",
+            "Lat0": 29.72201,
+            "Lng0": 112.916401,
+            "Lat1": 29.733442,
+            "Lng1": 112.814302
+        },
+        {
+            "Storyline": "狄云",
+            "Seg": 6,
+            "Origin": "山坡",
+            "Target": "渝州",
+            "Chapter0": 6,
+            "Chapter1": 6,
+            "Notes": "落花流水出场。",
+            "Lat0": 29.733442,
+            "Lng0": 112.814302,
+            "Lat1": 29.55,
+            "Lng1": 106.50694
+        },
+        {
+            "Storyline": "狄云",
+            "Seg": 7,
+            "Origin": "渝州",
+            "Target": "雪谷",
+            "Chapter0": 6,
+            "Chapter1": 6,
+            "Notes": "两湖和巴蜀的江湖人物纷纷加入追赶血刀老祖的队伍中。",
+            "Lat0": 29.55,
+            "Lng0": 106.50694,
+            "Lat1": 29.578248,
+            "Lng1": 101.886356
+        },
+        {
+            "Storyline": "狄云",
+            "Seg": 8,
+            "Origin": "雪谷",
+            "Target": "麻溪铺",
+            "Chapter0": 6,
+            "Chapter1": 9,
+            "Notes": "在川西边陲的大雪山山脉，再往西就是藏边。雪崩之后，血刀僧恶斗落花流水。之后狄云和水笙在此度过了一个冬天。",
+            "Lat0": 29.578248,
+            "Lng0": 101.886356,
+            "Lat1": 28.307442,
+            "Lng1": 110.348119
+        },
+        {
+            "Storyline": "狄云",
+            "Seg": 9,
+            "Origin": "麻溪铺",
+            "Target": "唐诗山洞",
+            "Chapter0": 9,
+            "Chapter1": 9,
+            "Notes": "狄云发现二师伯言伯乾在戚长发老宅上寻宝。",
+            "Lat0": 28.307442,
+            "Lng0": 110.348119,
+            "Lat1": 28.312949,
+            "Lng1": 110.353151
+        },
+        {
+            "Storyline": "狄云",
+            "Seg": 10,
+            "Origin": "唐诗山洞",
+            "Target": "麻溪铺",
+            "Chapter0": 9,
+            "Chapter1": 9,
+            "Notes": "狄云重访唐诗山洞，拿走了《唐诗选辑》。",
+            "Lat0": 28.312949,
+            "Lng0": 110.353151,
+            "Lat1": 28.307442,
+            "Lng1": 110.348119
+        },
+        {
+            "Storyline": "狄云",
+            "Seg": 11,
+            "Origin": "麻溪铺",
+            "Target": "荆州",
+            "Chapter0": 9,
+            "Chapter1": 9,
+            "Notes": "万震山之子万圭中了言伯乾的毒蝎子之毒。",
+            "Lat0": 28.307442,
+            "Lng0": 110.348119,
+            "Lat1": 30.35408,
+            "Lng1": 112.18817
+        },
+        {
+            "Storyline": "狄云",
+            "Seg": 12,
+            "Origin": "荆州",
+            "Target": "天宁寺",
+            "Chapter0": 10,
+            "Chapter1": 12,
+            "Notes": "狄云重访万府，万震山发现了《连城剑谱》的秘密。狄云完成丁大哥与霜华合葬的心愿，连城剑诀最终重现人间。",
+            "Lat0": 30.35408,
+            "Lng0": 112.18817,
+            "Lat1": 30.318208,
+            "Lng1": 112.15832
+        },
+        {
+            "Storyline": "狄云",
+            "Seg": 13,
+            "Origin": "天宁寺",
+            "Target": "雪谷",
+            "Chapter0": 12,
+            "Chapter1": 12,
+            "Notes": "江陵城南偏西天宁寺大殿佛像向之虔诚膜拜通灵祝告如来赐福往生极乐",
+            "Lat0": 30.318208,
+            "Lng0": 112.15832,
+            "Lat1": 29.578248,
+            "Lng1": 101.886356
+        },
+        {
+            "Storyline": "狄云",
+            "Seg": 14,
+            "Origin": "雪谷",
+            "Target": "雪谷",
+            "Chapter0": 12,
+            "Chapter1": 12,
+            "Notes": "狄云带着空心菜回到雪谷，人间不值得。",
+            "Lat0": 29.578248,
+            "Lng0": 101.886356,
+            "Lat1": 29.578248,
+            "Lng1": 101.886356
+        }
+    ];
+
+    const itineraryDD = [
+        {
+            "Storyline": "丁典-凌霜华",
+            "Seg": 1,
+            "Origin": "荆门",
+            "Target": "三斗坪",
+            "Chapter0": 3,
+            "Chapter1": 3,
+            "Notes": "丁典是荆门的武林世家",
+            "Lat0": 31.03806,
+            "Lng0": 112.21139,
+            "Lat1": 30.812535,
+            "Lng1": 111.015551
+        },
+        {
+            "Storyline": "丁典-凌霜华",
+            "Seg": 2,
+            "Origin": "三斗坪",
+            "Target": "荆门",
+            "Chapter0": 3,
+            "Chapter1": 3,
+            "Notes": "十五年前，在三峡三斗坪，丁典救治梅念笙。",
+            "Lat0": 30.812535,
+            "Lng0": 111.015551,
+            "Lat1": 31.03806,
+            "Lng1": 112.21139
+        },
+        {
+            "Storyline": "丁典-凌霜华",
+            "Seg": 3,
+            "Origin": "荆门",
+            "Target": "关外",
+            "Chapter0": 3,
+            "Chapter1": 3,
+            "Notes": "回到荆门老家，但寻宝和寻武功秘籍的纷至沓来。",
+            "Lat0": 31.03806,
+            "Lng0": 112.21139,
+            "Lat1": 40.65621,
+            "Lng1": 109.83454
+        },
+        {
+            "Storyline": "丁典-凌霜华",
+            "Seg": 4,
+            "Origin": "关外",
+            "Target": "荆门",
+            "Chapter0": 3,
+            "Chapter1": 3,
+            "Notes": "隐姓埋名，去关外买卖牲口。",
+            "Lat0": 40.65621,
+            "Lng0": 109.83454,
+            "Lat1": 31.03806,
+            "Lng1": 112.21139
+        },
+        {
+            "Storyline": "丁典-凌霜华",
+            "Seg": 5,
+            "Origin": "荆门",
+            "Target": "汉口",
+            "Chapter0": 3,
+            "Chapter1": 3,
+            "Notes": "五六年后回到荆门，家已烧成白地。",
+            "Lat0": 31.03806,
+            "Lng0": 112.21139,
+            "Lat1": 30.585516,
+            "Lng1": 114.286732
+        },
+        {
+            "Storyline": "丁典-凌霜华",
+            "Seg": 6,
+            "Origin": "汉口",
+            "Target": "长沙",
+            "Chapter0": 3,
+            "Chapter1": 3,
+            "Notes": "九年前，汉口菊花会与霜华不期而遇。",
+            "Lat0": 30.585516,
+            "Lng0": 114.286732,
+            "Lat1": 28.19611,
+            "Lng1": 112.97222
+        },
+        {
+            "Storyline": "丁典-凌霜华",
+            "Seg": 7,
+            "Origin": "长沙",
+            "Target": "荆州",
+            "Chapter0": 3,
+            "Chapter1": 3,
+            "Notes": "与霜华失散后，偶然听说万震山在荆州城。",
+            "Lat0": 28.19611,
+            "Lng0": 112.97222,
+            "Lat1": 30.35408,
+            "Lng1": 112.18817
+        },
+        {
+            "Storyline": "丁典-凌霜华",
+            "Seg": 8,
+            "Origin": "荆州",
+            "Target": "荆州",
+            "Chapter0": 3,
+            "Chapter1": 4,
+            "Notes": "在荆州与霜华重聚。霜华逝世。丁典逝世。",
+            "Lat0": 30.35408,
+            "Lng0": 112.18817,
+            "Lat1": 30.35408,
+            "Lng1": 112.18817
+        }
+    ];
+
+    const itineraryLC = [
+        {
+            "Storyline": "连城诀",
+            "Seg": 1,
+            "Origin": "三斗坪",
+            "Target": "荆门",
+            "Chapter0": 3,
+            "Chapter1": 3,
+            "Notes": "梅念笙传给丁典。",
+            "Lat0": 30.812535,
+            "Lng0": 111.015551,
+            "Lat1": 31.03806,
+            "Lng1": 112.21139
+        },
+        {
+            "Storyline": "连城诀",
+            "Seg": 2,
+            "Origin": "荆门",
+            "Target": "关外",
+            "Chapter0": 3,
+            "Chapter1": 3,
+            "Notes": "丁典",
+            "Lat0": 31.03806,
+            "Lng0": 112.21139,
+            "Lat1": 40.65621,
+            "Lng1": 109.83454
+        },
+        {
+            "Storyline": "连城诀",
+            "Seg": 3,
+            "Origin": "关外",
+            "Target": "荆门",
+            "Chapter0": 3,
+            "Chapter1": 3,
+            "Notes": "丁典",
+            "Lat0": 40.65621,
+            "Lng0": 109.83454,
+            "Lat1": 31.03806,
+            "Lng1": 112.21139
+        },
+        {
+            "Storyline": "连城诀",
+            "Seg": 4,
+            "Origin": "荆门",
+            "Target": "汉口",
+            "Chapter0": 3,
+            "Chapter1": 3,
+            "Notes": "丁典",
+            "Lat0": 31.03806,
+            "Lng0": 112.21139,
+            "Lat1": 30.585516,
+            "Lng1": 114.286732
+        },
+        {
+            "Storyline": "连城诀",
+            "Seg": 5,
+            "Origin": "汉口",
+            "Target": "长沙",
+            "Chapter0": 3,
+            "Chapter1": 3,
+            "Notes": "丁典",
+            "Lat0": 30.585516,
+            "Lng0": 114.286732,
+            "Lat1": 28.19611,
+            "Lng1": 112.97222
+        },
+        {
+            "Storyline": "连城诀",
+            "Seg": 6,
+            "Origin": "长沙",
+            "Target": "荆州",
+            "Chapter0": 3,
+            "Chapter1": 3,
+            "Notes": "丁典",
+            "Lat0": 28.19611,
+            "Lng0": 112.97222,
+            "Lat1": 30.35408,
+            "Lng1": 112.18817
+        },
+        {
+            "Storyline": "连城诀",
+            "Seg": 7,
+            "Origin": "荆州",
+            "Target": "荆州",
+            "Chapter0": 3,
+            "Chapter1": 4,
+            "Notes": "丁典告诉了凌霜华。凌霜华临终前将数字写在了棺盖上。丁典去世。",
+            "Lat0": 30.35408,
+            "Lng0": 112.18817,
+            "Lat1": 30.35408,
+            "Lng1": 112.18817
+        },
+        {
+            "Storyline": "连城诀",
+            "Seg": 8,
+            "Origin": "三斗坪",
+            "Target": "小旅店",
+            "Chapter0": 10,
+            "Chapter1": 10,
+            "Notes": "师兄弟三人联手害死了师父梅念笙，抢到《连城剑谱》。",
+            "Lat0": 30.812535,
+            "Lng0": 111.015551,
+            "Lat1": 30.703583,
+            "Lng1": 111.275259
+        },
+        {
+            "Storyline": "连城诀",
+            "Seg": 9,
+            "Origin": "小旅店",
+            "Target": "麻溪铺",
+            "Chapter0": 10,
+            "Chapter1": 10,
+            "Notes": "剑谱被戚长发偷走。",
+            "Lat0": 30.703583,
+            "Lng0": 111.275259,
+            "Lat1": 28.307442,
+            "Lng1": 110.348119
+        },
+        {
+            "Storyline": "连城诀",
+            "Seg": 10,
+            "Origin": "麻溪铺",
+            "Target": "唐诗山洞",
+            "Chapter0": 10,
+            "Chapter1": 10,
+            "Notes": "戚长发来到乡下隐姓埋名。",
+            "Lat0": 28.307442,
+            "Lng0": 110.348119,
+            "Lat1": 28.312949,
+            "Lng1": 110.353151
+        },
+        {
+            "Storyline": "连城诀",
+            "Seg": 11,
+            "Origin": "唐诗山洞",
+            "Target": "荆州",
+            "Chapter0": 9,
+            "Chapter1": 10,
+            "Notes": "剑谱被戚芳拿到山洞中。",
+            "Lat0": 28.312949,
+            "Lng0": 110.353151,
+            "Lat1": 30.35408,
+            "Lng1": 112.18817
+        },
+        {
+            "Storyline": "连城诀",
+            "Seg": 12,
+            "Origin": "荆州",
+            "Target": "荆州",
+            "Chapter0": 10,
+            "Chapter1": 12,
+            "Notes": "剑谱被狄云无意中带到荆州，落入万震山手中，后被毁。狄云为丁典、凌霜华合葬时重新发现剑诀。",
+            "Lat0": 30.35408,
+            "Lng0": 112.18817,
+            "Lat1": 30.35408,
+            "Lng1": 112.18817
+        }
+    ];
+
+    const stops = {
+        "type": "FeatureCollection",
+        "features": [{
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [110.348119, 28.307442]
+                },
+                "properties": {
+                    "StopID": 1,
+                    "Origin": "麻溪铺",
+                    "Notes": "湘西沅陵南郊",
+                    "Impact": 3,
+                    "Confidence": 3
+                }
+            },
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [112.18817, 30.35408]
+                },
+                "properties": {
+                    "StopID": 2,
+                    "Origin": "荆州",
+                    "Notes": "万家-监牢-凌退思府-废园-万家",
+                    "Impact": 3,
+                    "Confidence": 3
+                }
+            },
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [112.926704, 29.778493]
+                },
+                "properties": {
+                    "StopID": 3,
+                    "Origin": "江边破庙",
+                    "Notes": "近程家集，在湖北监利县之北。长江在这里折而向南。狄云借丁大哥尸身之毒杀死了宝象。",
+                    "Impact": 2,
+                    "Confidence": 1
+                }
+            },
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [112.919555, 29.742251]
+                },
+                "properties": {
+                    "StopID": 4,
+                    "Origin": "华容县",
+                    "Notes": "在这里偶遇剑铃双侠。",
+                    "Impact": 1,
+                    "Confidence": 1
+                }
+            },
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [112.916401, 29.72201]
+                },
+                "properties": {
+                    "StopID": 5,
+                    "Origin": "小市镇",
+                    "Notes": "下游十余里处。血刀老祖出场。",
+                    "Impact": 1,
+                    "Confidence": 1
+                }
+            },
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [112.814302, 29.733442]
+                },
+                "properties": {
+                    "StopID": 6,
+                    "Origin": "山坡",
+                    "Notes": "落花流水出场。",
+                    "Impact": 1,
+                    "Confidence": 1
+                }
+            },
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [106.50694, 29.55]
+                },
+                "properties": {
+                    "StopID": 7,
+                    "Origin": "渝州",
+                    "Notes": "两湖和巴蜀的江湖人物纷纷加入追赶血刀老祖的队伍中。",
+                    "Impact": 1,
+                    "Confidence": 3
+                }
+            },
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [101.886356, 29.578248]
+                },
+                "properties": {
+                    "StopID": 8,
+                    "Origin": "雪谷",
+                    "Notes": "在川西边陲的大雪山山脉，再往西就是藏边。雪崩之后，血刀僧恶斗落花流水。之后狄云和水笙在此度过了一个冬天。",
+                    "Impact": 3,
+                    "Confidence": 2
+                }
+            },
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [110.353151, 28.312949]
+                },
+                "properties": {
+                    "StopID": 9,
+                    "Origin": "唐诗山洞",
+                    "Notes": "狄云重访唐诗山洞，拿走了《唐诗选辑》。",
+                    "Impact": 2,
+                    "Confidence": 1
+                }
+            },
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [112.15832, 30.318208]
+                },
+                "properties": {
+                    "StopID": 10,
+                    "Origin": "天宁寺",
+                    "Notes": "江陵城南偏西天宁寺大殿佛像向之虔诚膜拜通灵祝告如来赐福往生极乐",
+                    "Impact": 2,
+                    "Confidence": 1
+                }
+            },
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [112.21139, 31.03806]
+                },
+                "properties": {
+                    "StopID": 11,
+                    "Origin": "荆门",
+                    "Notes": "丁典是荆门的武林世家",
+                    "Impact": 1,
+                    "Confidence": 3
+                }
+            },
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [111.015551, 30.812535]
+                },
+                "properties": {
+                    "StopID": 12,
+                    "Origin": "三斗坪",
+                    "Notes": "十五年前，在三峡三斗坪，丁典救治梅念笙。",
+                    "Impact": 2,
+                    "Confidence": 3
+                }
+            },
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [109.83454, 40.65621]
+                },
+                "properties": {
+                    "StopID": 13,
+                    "Origin": "关外",
+                    "Notes": "隐姓埋名，去关外买卖牲口。",
+                    "Impact": 1,
+                    "Confidence": 1
+                }
+            },
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [114.286732, 30.585516]
+                },
+                "properties": {
+                    "StopID": 14,
+                    "Origin": "汉口",
+                    "Notes": "九年前，汉口菊花会与霜华不期而遇。",
+                    "Impact": 1,
+                    "Confidence": 3
+                }
+            },
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [112.97222, 28.19611]
+                },
+                "properties": {
+                    "StopID": 15,
+                    "Origin": "长沙",
+                    "Notes": "与霜华失散后，偶然听说万震山在荆州城。",
+                    "Impact": 1,
+                    "Confidence": 3
+                }
+            },
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [111.275259, 30.703583]
+                },
+                "properties": {
+                    "StopID": 16,
+                    "Origin": "小旅店",
+                    "Notes": "师兄弟三人联手害死了师父梅念笙，抢到《连城剑谱》。",
+                    "Impact": 1,
+                    "Confidence": 1
+                }
+            }
+        ]
+    };
+
+    mapboxgl.accessToken = 'pk.eyJ1IjoieXVuamllbGkiLCJhIjoiY2lxdmV5MG5rMDAxNmZta3FlNGhyMmpicSJ9.CTEQgAyZGROcpJouZuzJyA';
+
+    var map = new mapboxgl.Map({
+        container: 'map', // container id
+        style: 'mapbox://styles/yunjieli/cjojkt21802ew2sn2a22kkajy', // stylesheet location
+        center: [117, 33], // starting position [lng, lat]
+        zoom: 5, // starting zoom
+        hash: true
+    });
+
+    // Create a mapbox-compatible deck.gl layer
+    const arcsDD = new MapboxLayer({
+        id: 'arcsDD',
+        type: ArcLayer,
+        data: itineraryDD,
+        fp64: true,
+        opacity: .1,
+        getSourcePosition: d => [d.Lng0, d.Lat0],
+        getTargetPosition: d => [d.Lng1, d.Lat1],
+        getSourceColor: d => [248, 225, 56, 100],
+        getTargetColor: d => [208, 221, 137, 100],
+        getStrokeWidth: d => 2
+    });
+
+    const arcsDY = new MapboxLayer({
+        id: 'arcsDY',
+        type: ArcLayer,
+        data: itineraryDY,
+        fp64: true,
+        opacity: .4,
+        getSourcePosition: d => [d.Lng0, d.Lat0],
+        getTargetPosition: d => [d.Lng1, d.Lat1],
+        getSourceColor: d => [18, 82, 163],
+        getTargetColor: d => [16, 107, 136],
+        getStrokeWidth: d => 5
+    });
+
+    // Insert the layer before mapbox labels 
+    map.on('load', () => {
+
+        map.addSource('stops', {
+            type: 'geojson',
+            data: stops
+        });
+
+        map.addLayer({
+                id: 'stops',
+                type: 'circle',
+                source: 'stops',
+                paint: {
+                    'circle-radius': {
+                        property: 'Impact',
+                        stops: [
+                          [1, 3],
+                          [2, 8],
+                          [3, 20]
+                        ]
+                    },
+                    'circle-color': 'rgb(18,82,163)',
+                    'circle-opacity': .7,
+                    'circle-pitch-alignment': 'map'
+                }
+            })
+            .addLayer(arcsDD)
+            .addLayer(arcsDY)
+            .addLayer({
+                id: 'stops-name',
+                type: 'symbol',
+                source: 'stops',
+                layout: {
+                    'text-field': '{Origin}',
+                    'text-size': 16,
+                    'text-max-width': 1,
+                    'text-anchor': 'top'
+                    // 'text-allow-overlap': true
+                },
+                paint: {
+                    'text-color': '#fff',
+                    'text-translate': [0, 8],
+                    'text-halo-width': 3,
+                    'text-halo-color': 'rgba(0,0,0,.6)',
+                    'text-translate-anchor': 'viewport'
+                },
+                filter: ['==', 'Impact', 3]
+            });
+    });
+    </script>
+</body>
+
+</html>
