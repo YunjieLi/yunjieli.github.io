@@ -76,14 +76,16 @@ const mockRange = .3;
 const mockBase =.9;
 const mockPercentages = [84, 51, 41, 43, 29, 24, 22, 10, 9, 6, 6, 2];
 function generateArray(first, size) {
-    var array = [first];
-    var last = first;
-    for (var i = 0; i < size - 1; i++) {
-        last = Math.floor(last * (Math.random() * mockRange + mockBase));
+    const heights = [100, 180, 200, 300, 240, 340, 360, 400, 380, 360, 420, 380, 440, 640, 700, 820, 800, 900];
+    var array = [];
+    for (var i = 0; i < size ; i++) {
+        last = Math.floor( first * (heights[i] / heights[0]) * (Math.random() * .2 + .9) );
         array.push(last);
     }
+    console.log(array);
     return array;
 }
+
 
 const chartLabels = ['Jan 24', 'Jan 31', 'Feb 7', 'Feb 14', 'Jan 24', 'Jan 31', 'Feb 7', 'Feb 14', 'Feb 21', 'Feb 28', 'Mar 7', 'Mar 14', 'Mar 21', 'Mar 28', 'Apr 4', 'Apr 11', 'Apr 18', 'Apr 25'];
 const elementsCount = [142,53,19,11];
