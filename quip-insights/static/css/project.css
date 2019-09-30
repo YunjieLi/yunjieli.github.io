@@ -41,7 +41,7 @@
 }
 /* global.css */
 html {
-  background: #DDE4ED !important;
+  background: #e0e5ee !important;
 }
 body {
   overflow: hidden;
@@ -97,16 +97,16 @@ body {
   background-color: #52B7D8;
 }
 .custom-bar-container.second {
-  background-color: #F7DACF;
-}
-.custom-bar-container.second .custom-bar-content {
-  background-color: #E16032;
-}
-.custom-bar-container.third {
   background-color: #FBECD6;
 }
-.custom-bar-container.third .custom-bar-content {
+.custom-bar-container.second .custom-bar-content {
   background-color: #FFB03B;
+}
+.custom-bar-container.third {
+  background-color: #F7DACF;
+}
+.custom-bar-container.third .custom-bar-content {
+  background-color: #E16032;
 }
 /**************  card ***************/
 .slds-card__header {
@@ -23860,4 +23860,10 @@ a.slds-button_inverse:focus {
 .slds-tabs_default__content {
   padding-top: 2rem;
   padding-bottom: 0;
+}
+.w-100 {
+  width: 100%;
+}
+.slds-input.slds-combobox__input {
+  cursor: pointer;
 }

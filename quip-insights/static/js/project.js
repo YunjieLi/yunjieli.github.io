@@ -65,7 +65,7 @@ const chartOptions = {
                 titleFontStyle: 'normal',
                 titleMarginBottom: 8,
                 bodyFontSize: 13,
-                bodySpacing: 4,
+                bodySpacing: 6,
                 xPadding: 8,
                 yPadding: 8,
                 cornerRadius: 4
@@ -105,26 +105,26 @@ Jetski.onLoad(() => {
         data: {
             labels: chartLabels,
             datasets: [{
-                label: 'Weekly active users',
-                data: generateArray(22,chartLabels.length),
+                label: ' Weekly active users',
+                data: generateArray(92,chartLabels.length),
                 borderColor: colorCategory[3],
                 backgroundColor: 'transparent',
                 pointBackgroundColor: colorCategory[3]
             }, {
-                label: 'Monthly active users',
-                data: generateArray(81,chartLabels.length),
+                label: ' Monthly active users',
+                data: generateArray(381,chartLabels.length),
                 borderColor: colorCategory[2],
                 backgroundColor: 'transparent',
                 pointBackgroundColor: colorCategory[2]
             }, {
-                label: '90 day active users',
-                data: generateArray(655,chartLabels.length),
+                label: ' 90 day active users',
+                data: generateArray(755,chartLabels.length),
                 borderColor: colorCategory[1],
                 backgroundColor: 'transparent',
                 pointBackgroundColor: colorCategory[1]
             }, {
-                label: 'All active users',
-                data: generateArray(1202,chartLabels.length),
+                label: ' All active users',
+                data: generateArray(1101,chartLabels.length),
                 borderColor: colorCategory[0],
                 backgroundColor: 'transparent',
                 pointBackgroundColor: colorCategory[0]
@@ -175,31 +175,31 @@ Jetski.onLoad(() => {
         data: {
             labels: chartLabels,
             datasets: [{
-                label: 'Web',
+                label: ' Web',
                 data: generateArray(1121,chartLabels.length),
                 borderColor: colorCategory[0],
                 backgroundColor: 'transparent',
                 pointBackgroundColor: colorCategory[0]
             }, {
-                label: 'Mac',
+                label: ' Mac',
                 data: generateArray(604,chartLabels.length),
                 borderColor: colorCategory[3],
                 backgroundColor: 'transparent',
                 pointBackgroundColor: colorCategory[3]
             }, {
-                label: 'Windows',
+                label: ' Windows',
                 data: generateArray(522,chartLabels.length),
                 borderColor: colorCategory[2],
                 backgroundColor: 'transparent',
                 pointBackgroundColor: colorCategory[2]
             }, {
-                label: 'iOS',
+                label: ' iOS',
                 data: generateArray(315,chartLabels.length),
                 borderColor: colorCategory[5],
                 backgroundColor: 'transparent',
                 pointBackgroundColor: colorCategory[5]
             }, {
-                label: 'Android',
+                label: ' Android',
                 data: generateArray(42,chartLabels.length),
                 borderColor: colorCategory[1],
                 backgroundColor: 'transparent',
@@ -249,21 +249,21 @@ Jetski.onLoad(() => {
         data: {
             labels: chartLabels,
             datasets: [{
-                label: 'Slides',
-                data: generateArray(62,chartLabels.length),
+                label: ' Slides',
+                data: generateArray(112,chartLabels.length),
                 fill: 'origin',
                 borderColor: colorCategory[2],
                 backgroundColor: colorCategory[2] + '33',
                 pointBackgroundColor: colorCategory[2]
             }, {
-                label: 'Spreadsheets',
+                label: ' Spreadsheets',
                 data: generateArray(265,chartLabels.length),
                 fill: '-1',
                 borderColor: colorCategory[1],
                 backgroundColor: colorCategory[1] + '33',
                 pointBackgroundColor: colorCategory[1]
             },{
-                label: 'Documents',
+                label: ' Documents',
                 data: generateArray(504,chartLabels.length),
                 fill: '-1',
                 borderColor: colorCategory[0],
@@ -317,14 +317,14 @@ Jetski.onLoad(() => {
         data: {
             labels: chartLabels,
             datasets: [{
-                label: 'Private',
+                label: ' Private',
                 data: generateArray(424,chartLabels.length),
                 fill: 'origin',
                 borderColor: colorCategory[3],
                 backgroundColor: colorCategory[3] + '33',
                 pointBackgroundColor: colorCategory[3]
             }, {
-                label: 'Shared',
+                label: ' Shared',
                 data: generateArray(615,chartLabels.length),
                 fill: '-1',
                 borderColor: colorCategory[0],

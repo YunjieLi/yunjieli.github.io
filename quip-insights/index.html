@@ -80,53 +80,92 @@
         <div class="slds-no-flex slds-grid slds-grid_vertical-align-center">
             <div class="slds-text-color_weak slds-m-right_x-small">Updated 1 day ago</div>
             <div class="slds-form-element">
-    <div class="slds-form-element__control">
-        <div class="slds-combobox_container slds-size_small">
-            <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-combobox-picklist" aria-expanded="false" aria-haspopup="listbox" role="combobox">
-                <div class="dropdown-time slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right">
-                    <input type="text" class="slds-input slds-combobox__input" id="combobox-unique-id-26" placeholder="Past 6 months" readonly="" />
-                    <span class="slds-icon_container slds-icon-utility-down slds-input__icon slds-input__icon_right ">
-                        <svg class="slds-icon slds-icon slds-icon_x-small slds-icon-text-default">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="down" width="100%" height="100%"><path d="M3.8 6.5h16.4c.4 0 .8.6.4 1l-8 9.8c-.3.3-.9.3-1.2 0l-8-9.8c-.4-.4-.1-1 .4-1z"></path></svg>
-                        </svg>
-                    </span>
-                </div>
-                <div class="listbox-time slds-dropdown slds-dropdown_fluid">
-                    <ul class="slds-listbox slds-listbox_vertical" role="presentation">
-                        <li class="slds-listbox__item">
-                            <div id="listbox-option-unique-id-01" class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small slds-media_center" role="option">
-                                <span class="slds-media__body">
-                                    <span class="slds-truncate" title="Option A">Past 1 month</span>
-                                </span>
-                            </div>
-                        </li>
-                                                <li class="slds-listbox__item">
-                            <div id="listbox-option-unique-id-02" class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small slds-media_center" role="option">
-                                <span class="slds-media__body">
-                                    <span class="slds-truncate" title="Option A">Past 3 months</span>
-                                </span>
-                            </div>
-                        </li>
-                                                <li class="slds-listbox__item">
-                            <div id="listbox-option-unique-id-01" class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small slds-media_center" role="option">
-                                <span class="slds-media__body">
-                                    <span class="slds-truncate" title="Option A">Past 6 months</span>
-                                </span>
-                            </div>
-                        </li>
-                                                </li>
-                                                <li class="slds-listbox__item">
-                            <div id="listbox-option-unique-id-01" class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small slds-media_center" role="option">
-                                <span class="slds-media__body">
-                                    <span class="slds-truncate" title="Option A">Past 12 months</span>
-                                </span>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-            </div>
+  <div class="slds-form-element__control">
+    <div class="slds-combobox_container slds-size_small">
+      <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-combobox-picklist" aria-expanded="false" aria-haspopup="listbox" role="combobox">
+        <div class="dropdown-time slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right">
+          <input type="text" class="slds-input slds-combobox__input" id="combobox-unique-id-26" placeholder="Past 6 months" readonly="" />
+          <span class="slds-icon_container slds-icon-utility-down slds-input__icon slds-input__icon_right ">
+            <svg class="slds-icon slds-icon slds-icon_x-small slds-icon-text-default">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="down" width="100%" height="100%">
+                <path d="M3.8 6.5h16.4c.4 0 .8.6.4 1l-8 9.8c-.3.3-.9.3-1.2 0l-8-9.8c-.4-.4-.1-1 .4-1z"></path>
+              </svg>
+            </svg>
+          </span>
         </div>
+        <div class="listbox-time slds-dropdown slds-dropdown_fluid">
+          <div class="slds-p-horizontal_small slds-p-vertical_xx-small">
+            <div class="slds-form-element slds-dropdown-trigger slds-dropdown-trigger_click slds-is-open w-100">
+              <label class="slds-form-element__label" for="date-input-id">Start Date</label>
+              <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon_right">
+                <input type="text" id="date-input-id" placeholder="01-27-2019" class="slds-input" />
+                <button class="slds-button slds-button_icon slds-input__icon slds-input__icon_right" title="Select a date">
+                  <svg class="slds-button__icon" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="event">
+  <path
+    d="M21.5 9.2h-19c-.3 0-.7.4-.7.7v11.3c0 1 .9 1.9 1.9 1.9h16.6c1 0 1.9-.9 1.9-1.9V9.9c0-.3-.4-.7-.7-.7zM8.8 19.4c0 .3-.2.4-.5.4H6.5c-.3 0-.5-.1-.5-.4v-1.9c0-.2.2-.4.5-.4h1.8c.3 0 .5.2.5.4v1.9zm0-4.6c0 .2-.2.4-.5.4H6.5c-.3 0-.5-.2-.5-.4v-1.9c0-.3.2-.4.5-.4h1.8c.3 0 .5.1.5.4v1.9zm4.6 4.6c0 .3-.2.4-.5.4h-1.8c-.3 0-.5-.1-.5-.4v-1.9c0-.2.2-.4.5-.4h1.8c.3 0 .5.2.5.4v1.9zm0-4.6c0 .2-.2.4-.5.4h-1.8c-.3 0-.5-.2-.5-.4v-1.9c0-.3.2-.4.5-.4h1.8c.3 0 .5.1.5.4v1.9zm4.6 4.6c0 .3-.2.4-.5.4h-1.8c-.3 0-.5-.1-.5-.4v-1.9c0-.2.2-.4.5-.4h1.8c.3 0 .5.2.5.4v1.9zm0-4.6c0 .2-.2.4-.5.4h-1.8c-.3 0-.5-.2-.5-.4v-1.9c0-.3.2-.4.5-.4h1.8c.3 0 .5.1.5.4v1.9zm2.3-11.6H18v-.9c0-.7-.6-1.4-1.4-1.4-.7 0-1.4.6-1.4 1.4v.9H8.8v-.9c0-.7-.6-1.4-1.4-1.4C6.6.9 6 1.5 6 2.3v.9H3.7c-1 0-1.9.9-1.9 1.9v1.1c0 .4.4.7.7.7h19c.3 0 .7-.3.7-.7V5.1c0-1-.9-1.9-1.9-1.9z">
+  </path>
+</svg>
+                  <span class="slds-assistive-text">Select a date</span>
+                </button>
+              </div>
+            </div>
+            <div class="slds-form-element slds-dropdown-trigger slds-dropdown-trigger_click slds-is-open w-100 slds-p-top_x-small">
+              <label class="slds-form-element__label" for="date-input-id">End Date</label>
+              <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon_right">
+                <input type="text" id="date-input-id" placeholder="07-27-2019" class="slds-input" />
+                <button class="slds-button slds-button_icon slds-input__icon slds-input__icon_right" title="Select a date">
+                  <svg class="slds-button__icon" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="event">
+  <path
+    d="M21.5 9.2h-19c-.3 0-.7.4-.7.7v11.3c0 1 .9 1.9 1.9 1.9h16.6c1 0 1.9-.9 1.9-1.9V9.9c0-.3-.4-.7-.7-.7zM8.8 19.4c0 .3-.2.4-.5.4H6.5c-.3 0-.5-.1-.5-.4v-1.9c0-.2.2-.4.5-.4h1.8c.3 0 .5.2.5.4v1.9zm0-4.6c0 .2-.2.4-.5.4H6.5c-.3 0-.5-.2-.5-.4v-1.9c0-.3.2-.4.5-.4h1.8c.3 0 .5.1.5.4v1.9zm4.6 4.6c0 .3-.2.4-.5.4h-1.8c-.3 0-.5-.1-.5-.4v-1.9c0-.2.2-.4.5-.4h1.8c.3 0 .5.2.5.4v1.9zm0-4.6c0 .2-.2.4-.5.4h-1.8c-.3 0-.5-.2-.5-.4v-1.9c0-.3.2-.4.5-.4h1.8c.3 0 .5.1.5.4v1.9zm4.6 4.6c0 .3-.2.4-.5.4h-1.8c-.3 0-.5-.1-.5-.4v-1.9c0-.2.2-.4.5-.4h1.8c.3 0 .5.2.5.4v1.9zm0-4.6c0 .2-.2.4-.5.4h-1.8c-.3 0-.5-.2-.5-.4v-1.9c0-.3.2-.4.5-.4h1.8c.3 0 .5.1.5.4v1.9zm2.3-11.6H18v-.9c0-.7-.6-1.4-1.4-1.4-.7 0-1.4.6-1.4 1.4v.9H8.8v-.9c0-.7-.6-1.4-1.4-1.4C6.6.9 6 1.5 6 2.3v.9H3.7c-1 0-1.9.9-1.9 1.9v1.1c0 .4.4.7.7.7h19c.3 0 .7-.3.7-.7V5.1c0-1-.9-1.9-1.9-1.9z">
+  </path>
+</svg>
+                  <span class="slds-assistive-text">Select a date</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <ul class="slds-listbox slds-listbox_vertical" role="presentation">
+            <li class="slds-has-divider_top-space" role="separator"></li>
+            <li class="slds-listbox__item">
+              <div id="listbox-option-unique-id-01" class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small slds-media_center" role="option">
+                <span class="slds-media__body">
+                  <svg class="slds-icon slds-icon_selected slds-icon_x-small slds-icon-text-default slds-m-right_x-small" aria-hidden="true"></svg>
+                  <span class="slds-truncate" title="Option A">Past 1 month</span>
+                </span>
+              </div>
+            </li>
+            <li class="slds-listbox__item">
+              <div id="listbox-option-unique-id-02" class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small slds-media_center" role="option">
+                <span class="slds-media__body">
+                  <svg class="slds-icon slds-icon_selected slds-icon_x-small slds-icon-text-default slds-m-right_x-small" aria-hidden="true"></svg>
+                  <span class="slds-truncate" title="Option A">Past 3 months</span>
+                </span>
+              </div>
+            </li>
+            <li class="slds-listbox__item">
+              <div id="listbox-option-unique-id-01" class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small slds-media_center" role="option">
+                <span class="slds-media__body">
+                  <svg class="slds-icon slds-icon_selected slds-icon_x-small slds-icon-text-default slds-m-right_x-small" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="check">
+  <path d="M8.8 19.6L1.2 12c-.3-.3-.3-.8 0-1.1l1-1c.3-.3.8-.3 1 0L9 15.7c.1.2.5.2.6 0L20.9 4.4c.2-.3.7-.3 1 0l1 1c.3.3.3.7 0 1L9.8 19.6c-.2.3-.7.3-1 0z"></path>
+</svg>
+                  <span class="slds-truncate" title="Option A">Past 6 months</span>
+                </span>
+              </div>
+            </li>
+            </li>
+            <li class="slds-listbox__item">
+              <div id="listbox-option-unique-id-01" class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small slds-media_center" role="option">
+                <span class="slds-media__body">
+                  <svg class="slds-icon slds-icon_selected slds-icon_x-small slds-icon-text-default slds-m-right_x-small" aria-hidden="true"></svg>
+                  <span class="slds-truncate" title="Option A">Past 12 months</span>
+                </span>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
     </div>
+  </div>
 </div>
             <button class="slds-button slds-button_neutral slds-m-left_x-small">Export to CSV</button>
         </div>
@@ -190,7 +229,7 @@
   
   <div class="whitespace"></div>
   <div class="slds-p-horizontal_medium">
-    <div class="sparkline-description slds-text-body_small slds-text-color_weak">A brief explanation of how "collaborators" are defined and why you should care about it.</div>
+    <div class="sparkline-description slds-text-body_small slds-text-color_weak">* A brief explanation of how "collaborators" are defined in Quip, and why it's an important measure of productivity.</div>
   </div>
   
 </div>
@@ -349,53 +388,92 @@
     <div class="slds-no-flex slds-grid slds-grid_vertical-align-center">
       <div class="slds-text-color_weak slds-m-right_x-small">Updated 1 day ago</div>
       <div class="slds-form-element">
-    <div class="slds-form-element__control">
-        <div class="slds-combobox_container slds-size_small">
-            <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-combobox-picklist" aria-expanded="false" aria-haspopup="listbox" role="combobox">
-                <div class="dropdown-time slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right">
-                    <input type="text" class="slds-input slds-combobox__input" id="combobox-unique-id-26" placeholder="Past 6 months" readonly="" />
-                    <span class="slds-icon_container slds-icon-utility-down slds-input__icon slds-input__icon_right ">
-                        <svg class="slds-icon slds-icon slds-icon_x-small slds-icon-text-default">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="down" width="100%" height="100%"><path d="M3.8 6.5h16.4c.4 0 .8.6.4 1l-8 9.8c-.3.3-.9.3-1.2 0l-8-9.8c-.4-.4-.1-1 .4-1z"></path></svg>
-                        </svg>
-                    </span>
-                </div>
-                <div class="listbox-time slds-dropdown slds-dropdown_fluid">
-                    <ul class="slds-listbox slds-listbox_vertical" role="presentation">
-                        <li class="slds-listbox__item">
-                            <div id="listbox-option-unique-id-01" class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small slds-media_center" role="option">
-                                <span class="slds-media__body">
-                                    <span class="slds-truncate" title="Option A">Past 1 month</span>
-                                </span>
-                            </div>
-                        </li>
-                                                <li class="slds-listbox__item">
-                            <div id="listbox-option-unique-id-02" class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small slds-media_center" role="option">
-                                <span class="slds-media__body">
-                                    <span class="slds-truncate" title="Option A">Past 3 months</span>
-                                </span>
-                            </div>
-                        </li>
-                                                <li class="slds-listbox__item">
-                            <div id="listbox-option-unique-id-01" class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small slds-media_center" role="option">
-                                <span class="slds-media__body">
-                                    <span class="slds-truncate" title="Option A">Past 6 months</span>
-                                </span>
-                            </div>
-                        </li>
-                                                </li>
-                                                <li class="slds-listbox__item">
-                            <div id="listbox-option-unique-id-01" class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small slds-media_center" role="option">
-                                <span class="slds-media__body">
-                                    <span class="slds-truncate" title="Option A">Past 12 months</span>
-                                </span>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-            </div>
+  <div class="slds-form-element__control">
+    <div class="slds-combobox_container slds-size_small">
+      <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-combobox-picklist" aria-expanded="false" aria-haspopup="listbox" role="combobox">
+        <div class="dropdown-time slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right">
+          <input type="text" class="slds-input slds-combobox__input" id="combobox-unique-id-26" placeholder="Past 6 months" readonly="" />
+          <span class="slds-icon_container slds-icon-utility-down slds-input__icon slds-input__icon_right ">
+            <svg class="slds-icon slds-icon slds-icon_x-small slds-icon-text-default">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="down" width="100%" height="100%">
+                <path d="M3.8 6.5h16.4c.4 0 .8.6.4 1l-8 9.8c-.3.3-.9.3-1.2 0l-8-9.8c-.4-.4-.1-1 .4-1z"></path>
+              </svg>
+            </svg>
+          </span>
         </div>
+        <div class="listbox-time slds-dropdown slds-dropdown_fluid">
+          <div class="slds-p-horizontal_small slds-p-vertical_xx-small">
+            <div class="slds-form-element slds-dropdown-trigger slds-dropdown-trigger_click slds-is-open w-100">
+              <label class="slds-form-element__label" for="date-input-id">Start Date</label>
+              <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon_right">
+                <input type="text" id="date-input-id" placeholder="01-27-2019" class="slds-input" />
+                <button class="slds-button slds-button_icon slds-input__icon slds-input__icon_right" title="Select a date">
+                  <svg class="slds-button__icon" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="event">
+  <path
+    d="M21.5 9.2h-19c-.3 0-.7.4-.7.7v11.3c0 1 .9 1.9 1.9 1.9h16.6c1 0 1.9-.9 1.9-1.9V9.9c0-.3-.4-.7-.7-.7zM8.8 19.4c0 .3-.2.4-.5.4H6.5c-.3 0-.5-.1-.5-.4v-1.9c0-.2.2-.4.5-.4h1.8c.3 0 .5.2.5.4v1.9zm0-4.6c0 .2-.2.4-.5.4H6.5c-.3 0-.5-.2-.5-.4v-1.9c0-.3.2-.4.5-.4h1.8c.3 0 .5.1.5.4v1.9zm4.6 4.6c0 .3-.2.4-.5.4h-1.8c-.3 0-.5-.1-.5-.4v-1.9c0-.2.2-.4.5-.4h1.8c.3 0 .5.2.5.4v1.9zm0-4.6c0 .2-.2.4-.5.4h-1.8c-.3 0-.5-.2-.5-.4v-1.9c0-.3.2-.4.5-.4h1.8c.3 0 .5.1.5.4v1.9zm4.6 4.6c0 .3-.2.4-.5.4h-1.8c-.3 0-.5-.1-.5-.4v-1.9c0-.2.2-.4.5-.4h1.8c.3 0 .5.2.5.4v1.9zm0-4.6c0 .2-.2.4-.5.4h-1.8c-.3 0-.5-.2-.5-.4v-1.9c0-.3.2-.4.5-.4h1.8c.3 0 .5.1.5.4v1.9zm2.3-11.6H18v-.9c0-.7-.6-1.4-1.4-1.4-.7 0-1.4.6-1.4 1.4v.9H8.8v-.9c0-.7-.6-1.4-1.4-1.4C6.6.9 6 1.5 6 2.3v.9H3.7c-1 0-1.9.9-1.9 1.9v1.1c0 .4.4.7.7.7h19c.3 0 .7-.3.7-.7V5.1c0-1-.9-1.9-1.9-1.9z">
+  </path>
+</svg>
+                  <span class="slds-assistive-text">Select a date</span>
+                </button>
+              </div>
+            </div>
+            <div class="slds-form-element slds-dropdown-trigger slds-dropdown-trigger_click slds-is-open w-100 slds-p-top_x-small">
+              <label class="slds-form-element__label" for="date-input-id">End Date</label>
+              <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon_right">
+                <input type="text" id="date-input-id" placeholder="07-27-2019" class="slds-input" />
+                <button class="slds-button slds-button_icon slds-input__icon slds-input__icon_right" title="Select a date">
+                  <svg class="slds-button__icon" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="event">
+  <path
+    d="M21.5 9.2h-19c-.3 0-.7.4-.7.7v11.3c0 1 .9 1.9 1.9 1.9h16.6c1 0 1.9-.9 1.9-1.9V9.9c0-.3-.4-.7-.7-.7zM8.8 19.4c0 .3-.2.4-.5.4H6.5c-.3 0-.5-.1-.5-.4v-1.9c0-.2.2-.4.5-.4h1.8c.3 0 .5.2.5.4v1.9zm0-4.6c0 .2-.2.4-.5.4H6.5c-.3 0-.5-.2-.5-.4v-1.9c0-.3.2-.4.5-.4h1.8c.3 0 .5.1.5.4v1.9zm4.6 4.6c0 .3-.2.4-.5.4h-1.8c-.3 0-.5-.1-.5-.4v-1.9c0-.2.2-.4.5-.4h1.8c.3 0 .5.2.5.4v1.9zm0-4.6c0 .2-.2.4-.5.4h-1.8c-.3 0-.5-.2-.5-.4v-1.9c0-.3.2-.4.5-.4h1.8c.3 0 .5.1.5.4v1.9zm4.6 4.6c0 .3-.2.4-.5.4h-1.8c-.3 0-.5-.1-.5-.4v-1.9c0-.2.2-.4.5-.4h1.8c.3 0 .5.2.5.4v1.9zm0-4.6c0 .2-.2.4-.5.4h-1.8c-.3 0-.5-.2-.5-.4v-1.9c0-.3.2-.4.5-.4h1.8c.3 0 .5.1.5.4v1.9zm2.3-11.6H18v-.9c0-.7-.6-1.4-1.4-1.4-.7 0-1.4.6-1.4 1.4v.9H8.8v-.9c0-.7-.6-1.4-1.4-1.4C6.6.9 6 1.5 6 2.3v.9H3.7c-1 0-1.9.9-1.9 1.9v1.1c0 .4.4.7.7.7h19c.3 0 .7-.3.7-.7V5.1c0-1-.9-1.9-1.9-1.9z">
+  </path>
+</svg>
+                  <span class="slds-assistive-text">Select a date</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <ul class="slds-listbox slds-listbox_vertical" role="presentation">
+            <li class="slds-has-divider_top-space" role="separator"></li>
+            <li class="slds-listbox__item">
+              <div id="listbox-option-unique-id-01" class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small slds-media_center" role="option">
+                <span class="slds-media__body">
+                  <svg class="slds-icon slds-icon_selected slds-icon_x-small slds-icon-text-default slds-m-right_x-small" aria-hidden="true"></svg>
+                  <span class="slds-truncate" title="Option A">Past 1 month</span>
+                </span>
+              </div>
+            </li>
+            <li class="slds-listbox__item">
+              <div id="listbox-option-unique-id-02" class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small slds-media_center" role="option">
+                <span class="slds-media__body">
+                  <svg class="slds-icon slds-icon_selected slds-icon_x-small slds-icon-text-default slds-m-right_x-small" aria-hidden="true"></svg>
+                  <span class="slds-truncate" title="Option A">Past 3 months</span>
+                </span>
+              </div>
+            </li>
+            <li class="slds-listbox__item">
+              <div id="listbox-option-unique-id-01" class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small slds-media_center" role="option">
+                <span class="slds-media__body">
+                  <svg class="slds-icon slds-icon_selected slds-icon_x-small slds-icon-text-default slds-m-right_x-small" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="check">
+  <path d="M8.8 19.6L1.2 12c-.3-.3-.3-.8 0-1.1l1-1c.3-.3.8-.3 1 0L9 15.7c.1.2.5.2.6 0L20.9 4.4c.2-.3.7-.3 1 0l1 1c.3.3.3.7 0 1L9.8 19.6c-.2.3-.7.3-1 0z"></path>
+</svg>
+                  <span class="slds-truncate" title="Option A">Past 6 months</span>
+                </span>
+              </div>
+            </li>
+            </li>
+            <li class="slds-listbox__item">
+              <div id="listbox-option-unique-id-01" class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small slds-media_center" role="option">
+                <span class="slds-media__body">
+                  <svg class="slds-icon slds-icon_selected slds-icon_x-small slds-icon-text-default slds-m-right_x-small" aria-hidden="true"></svg>
+                  <span class="slds-truncate" title="Option A">Past 12 months</span>
+                </span>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
     </div>
+  </div>
 </div>
       <button class="slds-button slds-button_neutral slds-m-left_x-small">Export to CSV</button>
     </div>
@@ -431,10 +509,10 @@
         </div>
       </div>
     </div>
-    <div class="divider slds-m-bottom_large"></div>
+    <div class="divider slds-m-vertical_medium"></div>
     <div class="slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
       <div class=" slds-text-heading_small slds-m-vertical_medium">Collaborative Activity</div>
-      <div class="slds-text-color_weak slds-m-right_x-small">Updated 1 day ago · showing the past 6 months</div>
+      <div class="slds-text-color_weak slds-m-right_x-small">Updated 1 day ago · Showing the past 6 months</div>
     </div>
     <div class="sparklines-wrapper slds-grid slds-gutters slds-gutters_direct-x-small">
       <div class="slds-col slds-size_1-of-3">
@@ -519,6 +597,7 @@
 </div>
       </div>
     </div>
+    <!-- <div class="slds-text-body_small slds-text-color_weak slds-p-top_medium slds-p-bottom_x-small">* All sparklines show monthly activity. Each daily data point shows the number of users who have taken the labeled action during the month leading up to that date.</div> -->
   </div>
 </article>
     <article class="slds-card slds-m-bottom_medium" id="card-embedded">
