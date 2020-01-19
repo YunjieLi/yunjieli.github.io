@@ -1,0 +1,97 @@
+<html lang="zh">
+
+<head>
+    <title>Read Chinese Names</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link href='https://bootswatch.com/4/yeti/bootstrap.min.css' rel='stylesheet' />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+    <script src="index.js"></script>
+    <script src="data.js"></script>
+    <style>
+
+      body {
+        color: #4D4D4D;
+      }
+
+    </style>
+
+
+<body>
+  <div class="jumbotron">
+    <h1 class="display-4">Read Chinese Names</h1>
+    <p class="lead">Understand Pinyin, the standard phonetic system for Mandarin Chinese: rules and exceptions</p>
+    </p>
+  </div>
+    <section class="container general">
+      <h1>General Rules</h1>
+        <ul>
+          <li>It always breaks into syllables of consonant + vowel</li>
+          <ul>
+            <li>Vowel only is OK</li>
+          </ul>
+          <li>There's no silent letters*</li>
+          <li>In names, the tones are usually dropped</li>
+        </ul>
+    </section>
+    <section class="container chart mt-5">
+      <div class="row">
+        <div class="col">
+          <h1>Vowels</h1>
+          <div class="set basic-vowels">
+            <div>a, o, e, i, u, ü</div>
+          </div>
+          <div class="set compound-vowels">
+            <div>ai, ei, ui, ao, ou, iu, ie, üe</div>
+            <div>an, en, in, un</div>
+            <div>ang, eng, ing, ong</div>
+            <div>er</div>
+          </div>
+          <div class="set exceptions">
+            <div>Special rules</div>
+            <ul>
+              <li>Xüe → Xue, this applies to j,q,x</li>
+              <li>Lü → Lv? Lu? Lyu?</li>
+            </ul>
+          </div>
+        </div>
+        <div class="col">
+          <h1>Consonants</h1>
+          <div class="set consonants-easy">
+            <div>b, p, m, f, d, t, n, l, g (always gh), k, h</div>
+          </div>
+          <div class="set consonants-zcsr">
+            <div>z, c, s, r</div>
+            <div>zh, ch, sh</div>
+          </div>
+          <div class="set consonants-jqx">
+            <div>j, q, x</div>
+          </div>
+          <div class="set consonants-yw">
+            <div>y, w</div>
+          </div>
+          <div class="set exceptions">
+            <div>Special rules</div>
+            <ul>
+              <li>i as a placeholder vowel: zhi, chi, shi, ri, zi, ci, si</li>
+              <li>Can't start with i, u, ü: yi, wu, yu, ye, yue, yuan, yin, yun, ying</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="container examples invisible">
+      <h1>Random examples</h1>
+      <div>yunjie li, ran wei, menghan, yang yang, xiaoming zhang</div>
+    </section>
+    <section class="container notes mt-5">
+      <div><strong>Notes</strong></div>
+      <ul>
+        <li>See all combinations</li>
+        <li>Other phonetic systems for Chinese</li>
+      </ul>
+    </section>
+</body>
+
+</html>
