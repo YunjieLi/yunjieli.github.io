@@ -7,21 +7,13 @@
     <link href='https://bootswatch.com/4/yeti/bootstrap.min.css' rel='stylesheet' />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
-    <script src="index.js"></script>
-    <script src="data.js"></script>
-    <style>
-
-      body {
-        color: #4D4D4D;
-      }
-
-    </style>
-
+    <script src="less.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="style.css" />
 
 <body>
-  <div class="jumbotron">
+  <div class="jumbotron hero">
     <h1 class="display-4">Read Chinese Names</h1>
-    <p class="lead">Understand Pinyin, the standard phonetic system for Mandarin Chinese: rules and exceptions</p>
+    <p class="lead">Do you know "Zhang" is actually pronounced as "John"? <br> If you understand how <a href="#">pinyin</a>, the standard phonetic system for Mandarin Chinese, was created, things will start to make sense.</p>
     </p>
   </div>
     <section class="container general">
@@ -35,57 +27,234 @@
           <li>In names, the tones are usually dropped</li>
         </ul>
     </section>
-    <section class="container chart mt-5">
-      <div class="row">
-        <div class="col">
-          <h1>Vowels</h1>
-          <div class="set basic-vowels">
-            <div>a, o, e, i, u, ü</div>
+    <section class="container chart vowels">
+        <h1>Vowels 韵母</h1>
+        <h3 class="mt-4">Basic Vowels 单韵母</h3>
+        <div class="set">
+          <div class="letter-card">
+            <div class="letter">a</div>
+            <div class="helper">m<u>a</u>m<u>a</u></div>
           </div>
-          <div class="set compound-vowels">
-            <div>ai, ei, ui, ao, ou, iu, ie, üe</div>
-            <div>an, en, in, un</div>
-            <div>ang, eng, ing, ong</div>
-            <div>er</div>
+          <div class="letter-card">
+            <div class="letter">o</div>
+            <div class="helper">wh<u>a</u>t(?)</div>
           </div>
-          <div class="set exceptions">
-            <div>Special rules</div>
-            <ul>
-              <li>Xüe → Xue, this applies to j,q,x</li>
-              <li>Lü → Lv? Lu? Lyu?</li>
-            </ul>
+          <div class="letter-card">
+            <div class="letter">e</div>
+            <div class="helper">British h<u>er</u></div>
+          </div>
+          <div class="letter-card">
+            <div class="letter">i</div>
+            <div class="helper">m<u>ee</u>t, not <i>M<u>i</u>ke!</i></div>
+          </div>
+          <div class="letter-card">
+            <div class="letter">u</div>
+            <div class="helper">sh<u>ou</u></div>
+          </div>
+          <div class="letter-card">
+            <div class="letter">ü</div>
+            <div class="helper">German ü, French t<u>u</u></div>
           </div>
         </div>
-        <div class="col">
-          <h1>Consonants</h1>
-          <div class="set consonants-easy">
-            <div>b, p, m, f, d, t, n, l, g (always gh), k, h</div>
+        <h3 class="mt-4">Compound Vowels 复韵母</h3>
+        <div class="set">
+          <div class="letter-card">
+            <div class="letter">ai</div>
+            <div class="helper">s<u>ai</u>d</div>
           </div>
-          <div class="set consonants-zcsr">
-            <div>z, c, s, r</div>
-            <div>zh, ch, sh</div>
+          <div class="letter-card">
+            <div class="letter">ei</div>
+            <div class="helper">s<u>ay</u></div>
           </div>
-          <div class="set consonants-jqx">
-            <div>j, q, x</div>
+          <div class="letter-card">
+            <div class="letter">ui</div>
+            <div class="helper"><u>way</u></div>
           </div>
-          <div class="set consonants-yw">
-            <div>y, w</div>
+          <div class="letter-card">
+            <div class="letter">ao</div>
+            <div class="helper">c<u>au</u>ght</div>
           </div>
-          <div class="set exceptions">
-            <div>Special rules</div>
-            <ul>
-              <li>i as a placeholder vowel: zhi, chi, shi, ri, zi, ci, si</li>
-              <li>Can't start with i, u, ü: yi, wu, yu, ye, yue, yuan, yin, yun, ying</li>
-            </ul>
+          <div class="letter-card">
+            <div class="letter">ou</div>
+            <div class="helper">h<u>o</u>pe</div>
           </div>
+          <div class="letter-card">
+            <div class="letter">iu</div>
+            <div class="helper">h<u>u</u>ge</div>
+          </div>
+          <div class="letter-card">
+            <div class="letter">ie</div>
+            <div class="helper"><u>ye</u>t</div>
+          </div>
+          <div class="letter-card">
+            <div class="letter">üe</div>
+            <div class="helper"><u>ü</u> + <u>ye</u>t</div>
+          </div>
+        </div>
+        <div class="set">
+          <div class="letter-card">
+            <div class="letter">an</div>
+            <div class="helper">m<u>an</u></div>
+          </div>
+          <div class="letter-card">
+            <div class="letter">en</div>
+            <div class="helper">ag<u>en</u>t</div>
+          </div>
+          <div class="letter-card">
+            <div class="letter">in</div>
+            <div class="helper">p<u>in</u></div>
+          </div>
+          <div class="letter-card">
+            <div class="letter">un</div>
+            <div class="helper"><u>u</u> + <u>en</u></div>
+          </div>
+        </div>
+        <div class="set mt-0">
+          <div class="letter-card">
+            <div class="letter">ang</div>
+            <div class="helper">w<u>an</u>t</div>
+          </div>
+          <div class="letter-card">
+            <div class="letter">eng</div>
+            <div class="helper"><u>hmm</u> but with n, and harder??</div>
+          </div>
+          <div class="letter-card">
+            <div class="letter">ing</div>
+            <div class="helper">p<u>in</u> (harder but don't worry about it)</div>
+          </div>
+          <div class="letter-card">
+            <div class="letter">ong</div>
+            <div class="helper"><u>own</u></div>
+          </div>
+          <div class="letter-card">
+            <div class="letter">er</div>
+            <div class="helper">h<u>er</u> (yes with tongue rolling)</div>
+          </div>
+        </div>
+        <div class="set exceptions">
+          <div>Special rules</div>
+          <ul>
+            <li>Xüe → Xue, this applies to j,q,x</li>
+            <li>Lü → Lv? Lu? Lyu?</li>
+          </ul>
+        </div>
+      </section>
+    <section class="container chart consonants">
+      <h1>Consonants 声母</h1>
+      <h3 class="mt-4">No brainers</h3>
+      <div class="set">
+        <div class="letter-card">
+          <div class="letter">b</div>
+          <div class="helper"></div>
+        </div>
+        <div class="letter-card">
+          <div class="letter">p</div>
+          <div class="helper"></div>
+        </div>
+        <div class="letter-card">
+          <div class="letter">m</div>
+          <div class="helper"></div>
+        </div>
+        <div class="letter-card">
+          <div class="letter">f</div>
+          <div class="helper"></div>
+        </div>
+        <div class="letter-card">
+          <div class="letter">d</div>
+          <div class="helper"></div>
+        </div>
+        <div class="letter-card">
+          <div class="letter">t</div>
+          <div class="helper"></div>
+        </div>
+        <div class="letter-card">
+          <div class="letter">n</div>
+          <div class="helper"></div>
+        </div>
+        <div class="letter-card">
+          <div class="letter">l</div>
+          <div class="helper"></div>
+        </div>
+        <div class="letter-card">
+          <div class="letter">g<span style="color: #6EBCBE">h</span></div>
+          <div class="helper"></div>
+          <div class="helper"></div>
+        </div>
+        <div class="letter-card">
+          <div class="letter">k</div>
+          <div class="helper"></div>
+        </div>
+        <div class="letter-card">
+          <div class="letter">h</div>
+          <div class="helper"></div>
         </div>
       </div>
+      <h3 class="mt-4">A lil tricky</h3>
+      <div class="set">
+        <div class="letter-card">
+          <div class="letter">z</div>
+          <div class="helper">ki<u>ds</u></div>
+        </div>
+        <div class="letter-card">
+          <div class="letter">c</div>
+          <div class="helper">bi<u>ts</u></div>
+        </div>
+        <div class="letter-card">
+          <div class="letter">s</div>
+          <div class="helper"></div>
+        </div>
+        <div class="letter-card">
+          <div class="letter">zh</div>
+          <div class="helper"><u>j</u>ar</div>
+        </div>
+        <div class="letter-card">
+          <div class="letter">ch</div>
+          <div class="helper"></div>
+        </div>
+        <div class="letter-card">
+          <div class="letter">sh</div>
+          <div class="helper"></div>
+        </div>
+        <div class="letter-card">
+          <div class="letter">r</div>
+          <div class="helper">plea<u>su</u>re</div>
+        </div>
+      </div>
+      <h3 class="mt-4">The real challenge</h3>
+      <div class="set">
+        <div class="letter-card">
+          <div class="letter">j</div>
+          <div class="helper"><u>jeeee</u>p?</div>
+        </div>
+        <div class="letter-card">
+          <div class="letter">q</div>
+          <div class="helper"><u>cheeee</u>se?</div>
+        </div>
+        <div class="letter-card">
+          <div class="letter">x</div>
+          <div class="helper"><u>sheeee</u>p?</div>
+        </div>
+      </div>
+      <h3 class="mt-4">"Fake" consonants</h3>
+      <div class="set">
+        <div class="letter-card">
+          <div class="letter">y</div>
+          <div class="helper"> i → yi, üe → yue </div>
+        </div>
+        <div class="letter-card">
+          <div class="letter">w</div>
+          <div class="helper"> u → wu, uei → wei </div>
+        </div>
+      </div>
+      <div class="set exceptions">
+        <div>Special rules</div>
+        <ul>
+          <li>i as a placeholder vowel: zhi, chi, shi, ri, zi, ci, si</li>
+          <li>Can't start with i, u, ü: yi, wu, yu, ye, yue, yuan, yin, yun, ying</li>
+        </ul>
+      </div>
     </section>
-    <section class="container examples invisible">
-      <h1>Random examples</h1>
-      <div>yunjie li, ran wei, menghan, yang yang, xiaoming zhang</div>
-    </section>
-    <section class="container notes mt-5">
+    <section class="container notes">
       <div><strong>Notes</strong></div>
       <ul>
         <li>See all combinations</li>
