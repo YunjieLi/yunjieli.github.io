@@ -1,0 +1,40 @@
+<head lang="zh">
+    <title>Press Here in HTML</title>
+    <meta http-equiv="Content-Type" name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' charset=utf-8 />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<style>
+    #canvas {
+        width: 100%;
+        height: 100%;
+        display: flex;
+  align-items: center;
+  justify-content: center;
+    }
+
+    .dot {
+        height: 64px;
+        width: 64px;
+        border-radius: 999%;
+        margin: 24px;
+    }
+    .yellow {
+        background-color: #FDD302;
+    }
+    .red {
+        background-color: #F63664;
+    }
+    .blue {
+        background-color: #5CCBF8;
+    }
+
+</style>
+
+<body>
+    <div id="canvas">
+        <div class="dot red"></div>
+        <div class="dot yellow"></div>
+        <div class="dot blue"></div> 
+    </div>
+</body>
