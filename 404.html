@@ -4,12 +4,9 @@
 <html lang="zh">
 	<header>
 		<style>
-      body {
-        background: radial-gradient(circle at 18% 14%, rgba(225, 100, 126, 0.12), transparent 32%),
-                    radial-gradient(circle at 82% 20%, rgba(29, 31, 62, 0.08), transparent 35%),
-                    var(--bg);
-      }
-      
+            body {
+                background-color: #0b0c10;
+            }
 			.container {
 				position: absolute;
 				width: 100%;
@@ -38,6 +35,7 @@ var svg = d3.select("svg"),
     width = +svg.attr("width"),
     height = +svg.attr("height"),
     angles = d3.range(0, 2 * Math.PI, Math.PI / 200);
+    colors = ["#E1647Ecc", "#C859C9cc", "#5863BDcc"];
 
 var path = svg.append("g")
     .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")")
@@ -45,10 +43,10 @@ var path = svg.append("g")
     .attr("stroke-width", 10)
     .attr("stroke-linejoin", "round")
   .selectAll("path")
-  .data(["#EDBA29", "#CA6C2F", "#fff"])
+  .data(colors)
   .enter().append("path")
     .attr("stroke", function(d) { return d; })
-    .style("mix-blend-mode", "darken")
+    .style("mix-blend-mode", "lighten")
     .datum(function(d, i) {
       return d3.radialLine()
           .curve(d3.curveLinearClosed)
@@ -67,3 +65,4 @@ d3.timer(function() {
 
 </script>
 </html>
+
