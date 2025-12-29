@@ -1,63 +1,125 @@
-<!-- Based on: https://bl.ocks.org/mbostock/2d466ec3417722e3568cd83fc35338e3 -->
-
 <!DOCTYPE html>
 <html lang="zh">
-	<header>
-		<style>
-			.container {
-				position: absolute;
-				width: 100%;
-				height: 100%;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-			}
-      a {
-        cursor: inherit;
+	<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    
+    <title>Upstream.land</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --bg: #0b0c10;
+        --panel: rgba(255, 255, 255, 0.04);
+        --border: rgba(255, 255, 255, 0.08);
+        --accent: #DE55A6;
+        --accentHover: #6448B9;
+        --text: #f5f7fb;
+        --muted: #b1b8c7;
       }
+  
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        background: radial-gradient(circle at 18% 14%, rgba(225, 100, 126, 0.12), transparent 32%),
+                    radial-gradient(circle at 82% 20%, rgba(29, 31, 62, 0.08), transparent 35%),
+                    var(--bg);
+        color: var(--text);
+        display: flex;
+        justify-content: center;
+        padding: 40px 18px 64px;
+      }
+  
+      .page { width: min(980px, 100%); display: grid; gap: 32px; }
+  
+      .panel {
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: clamp(22px, 5vw, 30px);
+        background: rgba(255,255,255,0.03);
+      }
+  
+      h1 {
+        margin: 0 0 12px 0;
+        font-family: 'Space Grotesk', 'Inter', sans-serif;
+        font-size: clamp(34px, 5vw, 56px);
+        line-height: 1.04;
+      }
+  
+      h2 { margin: 0 0 10px 0; font-size: 24px; font-family: 'Space Grotesk', sans-serif; }
+      p { margin: 0; color: var(--muted); font-size: 18px; line-height: 1.6; }
+      .columns p { font-size: 14px; opacity: 0.8; }
+  
+      .hero { display: grid; gap: 16px; }
+      .hero .tagline { letter-spacing: 0.16em; text-transform: uppercase; font-size: 13px; color: var(--muted); }
+  
+      .grid { display: grid; gap: 18px; }
+      .columns { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+  
+      .pill { display: inline-flex; align-items: center; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--accent); color: var(--text); font-weight: 600; font-size: 15px; text-decoration: none; }
+  
+      .pill:hover { background: var(--accentHover); transition: background 3200ms;}
 
-			/* ["#EDBA29", "#CA6C2F", "#6EBCBE", "#EEE8DC"] */
-
-		</style>
-	</header>
-	<body>
-		<div class="container">
-			<svg width="500" height="500"></svg>
-			<script src="https://d3js.org/d3.v4.min.js"></script>
-		</div>
-	</body>
-<script>
-
-var svg = d3.select("svg"),
-    width = +svg.attr("width"),
-    height = +svg.attr("height"),
-    angles = d3.range(0, 2 * Math.PI, Math.PI / 200);
-
-var path = svg.append("g")
-    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")")
-    .attr("fill", "none")
-    .attr("stroke-width", 10)
-    .attr("stroke-linejoin", "round")
-  .selectAll("path")
-  .data(["#EDBA29", "#CA6C2F", "#fff"])
-  .enter().append("path")
-    .attr("stroke", function(d) { return d; })
-    .style("mix-blend-mode", "darken")
-    .datum(function(d, i) {
-      return d3.radialLine()
-          .curve(d3.curveLinearClosed)
-          .angle(function(a) { return a; })
-          .radius(function(a) {
-            var t = d3.now() / 1000;
-            return 200 + Math.cos(a * 8 - i * 2 * Math.PI / 3 + t) * Math.pow((1 + Math.cos(a - t)) / 2, 3) * 32;
-          });
-    });
-
-d3.timer(function() {
-  path.attr("d", function(d) {
-    return d(angles);
-  });
-});
-
-</script>
+      .list { display: grid; gap: 10px; padding: 0; margin: 0; list-style: none; }
+      .list li { padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.02); color: var(--text); font-size: 15px; }
+      .list li span { display: block; color: var(--muted); font-size: 14px; margin-top: 4px; }
+  
+      .contact-box { display: grid; gap: 12px; align-content: start; }
+      .contact-box .cta { width: fit-content; }
+  
+      .logo {
+        height: 80px; width: 80px;
+        border-radius: 8px;
+      }
+      
+      footer { color: var(--muted); text-align: center; font-size: 13px; margin-top: 10px; }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+     
+      <section class="panel hero">
+        <img class="logo" src="https://media.licdn.com/dms/image/v2/C560BAQHHlYdhglWW7g/company-logo_100_100/company-logo_100_100/0/1630662566070/upstream_land_logo?e=1768435200&v=beta&t=aDx4Ea8F5keUw1e86FNgxrtq7jnUmshpmDNbmrfPriQ
+                              ">
+        
+        <h1>Upstream.land</h1>
+        <p>Hi there, I'm Yunjie, an independent designer based in San Francisco Bay Area.</p>
+        <br>
+        <div class="columns">
+          <div>
+            <h2>🏠</h2>
+            <h3 style="margin:0 0 6px 0; font-size:18px;">Interior Design</h3>
+            <p>Spatial concepts, materials, lighting, and bespoke details that feel intentional.</p>
+          </div>
+          <div>
+            <h2>🌎</h2>
+            <h3 style="margin:0 0 6px 0; font-size:18px;">Web Design</h3>
+            <p>Responsive, conversion-focused sites with clear hierarchy and calm typography.</p>
+          </div>
+          <div>
+            <h2>🎁</h2>
+            <h3 style="margin:0 0 6px 0; font-size:18px;">Brand Design</h3>
+            <p>Identity systems, type, and visual language that scale from packaging to digital.</p>
+          </div>
+        </div>
+        
+      </section>
+  
+      <section class="panel contact-box">
+        <h2>Ready to talk?</h2>
+        <p>Tell me about your timeline, scope, and goals. I respond within one business day.</p>
+        <a class="pill cta" href="mailto:myemail@gmail.com" style="margin-top: 16px">Contact me</a>
+        
+      </section>
+  
+      <footer>
+       Upstream.land © 2024
+      </footer>
+    </div>
+  </body>
+  <script>
+  </script>
 </html>
