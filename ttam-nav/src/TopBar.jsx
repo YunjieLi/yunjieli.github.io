@@ -1,3 +1,5 @@
+import GlobalNav from "./GlobalNav";
+
 const iconProps = {
   width: 20,
   height: 20,
@@ -8,22 +10,6 @@ const iconProps = {
   strokeLinecap: "round",
   strokeLinejoin: "round",
 };
-
-function AppLauncherIcon() {
-  return (
-    <svg {...iconProps}>
-      <rect x="3" y="3" width="6" height="6" rx="1" />
-      <rect x="9" y="3" width="6" height="6" rx="1" />
-      <rect x="15" y="3" width="6" height="6" rx="1" />
-      <rect x="3" y="9" width="6" height="6" rx="1" />
-      <rect x="9" y="9" width="6" height="6" rx="1" />
-      <rect x="15" y="9" width="6" height="6" rx="1" />
-      <rect x="3" y="15" width="6" height="6" rx="1" />
-      <rect x="9" y="15" width="6" height="6" rx="1" />
-      <rect x="15" y="15" width="6" height="6" rx="1" />
-    </svg>
-  );
-}
 
 function SearchIcon() {
   return (
@@ -90,51 +76,14 @@ export default function TopBar() {
         padding: "0 20px",
         background: "#1c1c1e",
         color: "#fff",
-        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        fontFamily: '"TikTok Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
         flexShrink: 0,
-        overflow: "hidden",
+        overflow: "visible",
       }}
     >
       {/* Left group */}
-      <div style={{ display: "flex", alignItems: "center", gap: 0, minWidth: 0, flex: "1 1 auto", overflow: "hidden" }}>
-        <button
-          type="button"
-          aria-label="App launcher"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: 40,
-            height: 36,
-            marginRight: -8,
-            padding: 0,
-            border: "none",
-            borderRadius: 8,
-            background: "#2c2c2e",
-            color: "#fff",
-            cursor: "pointer",
-          }}
-        >
-          <AppLauncherIcon />
-        </button>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: 36,
-            height: 36,
-            borderRadius: "50%",
-            background: "#00d4aa",
-            color: "#fff",
-            fontSize: 16,
-            fontWeight: 700,
-            marginRight: 12,
-            flexShrink: 0,
-          }}
-        >
-          Y
-        </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 0, minWidth: 0, flex: "1 1 auto", overflow: "visible" }}>
+        <GlobalNav />
         <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
           <span style={{ fontSize: 18, fontWeight: 700, letterSpacing: "-0.02em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
             TikTok
