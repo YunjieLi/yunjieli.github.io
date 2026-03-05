@@ -55,7 +55,7 @@ const DROPDOWN_ITEMS = [
 
 function DropdownItemIcon({ type, active }) {
   const p = iconProps;
-  const color = active ? "#00d4aa" : "currentColor";
+  const color = active ? "#009995" : "currentColor";
   if (type === "briefcase")
     return <svg {...p} style={{ color }}><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/></svg>;
   if (type === "ads")
@@ -82,10 +82,13 @@ function DropdownItemIcon({ type, active }) {
 
 const HOVER_CLOSE_DELAY_MS = 150;
 
-export default function GlobalNav() {
+export default function GlobalNav({ navMode = "onClick" }) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const triggerRef = useRef(null);
   const closeTimeoutRef = useRef(null);
+
+  const openOnHover = navMode === "onClick";
+  const openOnClick = navMode === "onHover";
 
   const clearCloseTimeout = () => {
     if (closeTimeoutRef.current) {
@@ -97,6 +100,10 @@ export default function GlobalNav() {
   const scheduleClose = () => {
     clearCloseTimeout();
     closeTimeoutRef.current = setTimeout(() => setDropdownOpen(false), HOVER_CLOSE_DELAY_MS);
+  };
+
+  const handleButtonClick = () => {
+    if (openOnClick) setDropdownOpen((o) => !o);
   };
 
   useEffect(() => {
@@ -121,11 +128,9 @@ export default function GlobalNav() {
         aria-label="Switch apps"
         title="Switch apps"
         aria-expanded={dropdownOpen}
-        onMouseEnter={() => {
-          clearCloseTimeout();
-          setDropdownOpen(true);
-        }}
-        onMouseLeave={scheduleClose}
+        onClick={handleButtonClick}
+        onMouseEnter={openOnHover ? () => { clearCloseTimeout(); setDropdownOpen(true); } : undefined}
+        onMouseLeave={openOnHover ? scheduleClose : undefined}
         style={{
           display: "flex",
           alignItems: "center",
@@ -159,7 +164,7 @@ export default function GlobalNav() {
             width: 32,
             height: 32,
             borderRadius: "50%",
-            background: "#00d4aa",
+            background: "#009995",
             color: "#fff",
             fontSize: 14,
             fontWeight: 700,
@@ -172,8 +177,8 @@ export default function GlobalNav() {
 
       {dropdownOpen && (
         <div
-          onMouseEnter={clearCloseTimeout}
-          onMouseLeave={scheduleClose}
+          onMouseEnter={openOnHover ? clearCloseTimeout : undefined}
+          onMouseLeave={openOnHover ? scheduleClose : undefined}
           style={{
             position: "absolute",
             left: 0,
@@ -215,7 +220,7 @@ export default function GlobalNav() {
                 width: 36,
                 height: 36,
                 borderRadius: "50%",
-                background: "#00d4aa",
+                background: "#009995",
                 color: "#fff",
                 fontSize: 16,
                 fontWeight: 700,
@@ -246,7 +251,7 @@ export default function GlobalNav() {
                   gap: 12,
                   padding: "10px 16px",
                   border: "none",
-                  background: item.active ? "#E8FBF9" : "transparent",
+                  background: item.active ? "#e6f7f7" : "transparent",
                   color: "#111",
                   fontSize: 14,
                   fontWeight: item.active ? 600 : 400,

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 
 const TOP_BAR_HEIGHT = 52;
@@ -6,8 +6,9 @@ const RAIL_WIDTH = 60;
 const OVERLAY_WIDTH = 220;
 const OVERLAY_TRANSITION = "transform 0.26s cubic-bezier(0.32, 0.72, 0, 1)";
 const MORE_TOOLS_PANEL_WIDTH = 560;
-const MORE_TOOLS_PANEL_TRANSITION = "opacity 0.22s ease, transform 0.22s cubic-bezier(0.32, 0.72, 0, 1)";
+const MORE_TOOLS_PANEL_TRANSITION = "width 0.26s cubic-bezier(0.32, 0.72, 0, 1)";
 const OVERLAY_OPEN_DURATION_MS = 280;
+const LEFT_NAV_HOVER_CLOSE_DELAY_MS = 180;
 
 const sp = {
   width: 20,
@@ -106,7 +107,7 @@ const navItemStyle = (open, isActive, isHovered) => ({
   borderRadius: 6,
   cursor: "pointer",
   fontSize: 14,
-  background: isActive ? "#E8FBF9" : isHovered ? "#F2F3F3" : "transparent",
+  background: isActive ? "#e6f7f7" : isHovered ? "#F2F3F3" : "transparent",
   fontWeight: isActive ? 600 : 400,
 });
 
@@ -180,7 +181,6 @@ function RailIcon({ icon, isActive, onClick, label, children: childItems, onChil
         fontFamily: '"TikTok Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
         borderRadius: 6,
         whiteSpace: "nowrap",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
         border: "1px solid #e5e5e7",
         zIndex: 10000,
         pointerEvents: "none",
@@ -203,7 +203,6 @@ function RailIcon({ icon, isActive, onClick, label, children: childItems, onChil
         fontSize: 14,
         fontFamily: '"TikTok Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
         borderRadius: 10,
-        boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
         border: "1px solid #e5e5e7",
         zIndex: 10000,
         padding: "10px 0",
@@ -221,7 +220,6 @@ function RailIcon({ icon, isActive, onClick, label, children: childItems, onChil
           borderTop: "6px solid transparent",
           borderBottom: "6px solid transparent",
           borderRight: "6px solid #fff",
-          filter: "drop-shadow(-1px 0 0 #e5e5e7)",
         }}
       />
       <div
@@ -294,7 +292,7 @@ function RailIcon({ icon, isActive, onClick, label, children: childItems, onChil
         margin: "1px 8px",
         borderRadius: 6,
         cursor: "pointer",
-        background: isActive ? "#E8FBF9" : hover ? "#F2F3F3" : "transparent",
+        background: isActive ? "#e6f7f7" : hover ? "#F2F3F3" : "transparent",
       }}
     >
       <span style={{ flexShrink: 0 }}>{icon}</span>
@@ -303,7 +301,27 @@ function RailIcon({ icon, isActive, onClick, label, children: childItems, onChil
   );
 }
 
-export default function LeftNav({ open, onToggleOpen, active, onActiveChange, assetsOpen, onAssetsOpenChange }) {
+export default function LeftNav({ open, onToggleOpen, active, onActiveChange, assetsOpen, onAssetsOpenChange, navMode = "onClick" }) {
+  const leftNavCloseTimeoutRef = useRef(null);
+  const hoverToOpen = navMode === "onHover";
+
+  const clearLeftNavCloseTimeout = useCallback(() => {
+    if (leftNavCloseTimeoutRef.current) {
+      clearTimeout(leftNavCloseTimeoutRef.current);
+      leftNavCloseTimeoutRef.current = null;
+    }
+  }, []);
+
+  const scheduleLeftNavClose = useCallback(() => {
+    clearLeftNavCloseTimeout();
+    leftNavCloseTimeoutRef.current = setTimeout(() => {
+      onToggleOpen(false);
+      leftNavCloseTimeoutRef.current = null;
+    }, LEFT_NAV_HOVER_CLOSE_DELAY_MS);
+  }, [onToggleOpen, clearLeftNavCloseTimeout]);
+
+  useEffect(() => () => clearLeftNavCloseTimeout(), [clearLeftNavCloseTimeout]);
+
   const railStyle = {
     width: RAIL_WIDTH,
     minWidth: RAIL_WIDTH,
@@ -335,7 +353,6 @@ export default function LeftNav({ open, onToggleOpen, active, onActiveChange, as
     display: "flex",
     flexDirection: "column",
     overflow: "hidden",
-    boxShadow: "4px 0 24px rgba(0,0,0,0.08)",
     transform: open ? "translateX(0)" : "translateX(-100%)",
     transition: OVERLAY_TRANSITION,
   };
@@ -428,7 +445,7 @@ export default function LeftNav({ open, onToggleOpen, active, onActiveChange, as
                   margin: "1px 8px",
                   color: active === c ? "#111" : "#666",
                   fontWeight: active === c ? 500 : 400,
-                  background: active === c ? "#E8FBF9" : hoveredId === c ? "#F2F3F3" : "transparent",
+                  background: active === c ? "#e6f7f7" : hoveredId === c ? "#F2F3F3" : "transparent",
                 }}
               >
                 {c}
@@ -458,6 +475,10 @@ export default function LeftNav({ open, onToggleOpen, active, onActiveChange, as
   };
 
   const openMoreTools = (overlayAlreadyOpen) => {
+    if (moreToolsOpen) {
+      setMoreToolsOpen(false);
+      return;
+    }
     if (overlayAlreadyOpen) {
       setMoreToolsOpen(true);
     } else {
@@ -478,9 +499,13 @@ export default function LeftNav({ open, onToggleOpen, active, onActiveChange, as
       )}
 
       {/* Always-visible 60px rail */}
-      <nav style={railStyle}>
+      <nav
+        style={railStyle}
+        onMouseEnter={hoverToOpen ? () => { clearLeftNavCloseTimeout(); onToggleOpen(true); } : undefined}
+        onMouseLeave={hoverToOpen ? scheduleLeftNavClose : undefined}
+      >
         <div
-          style={{ ...scrollAreaStyle, cursor: open ? undefined : "pointer" }}
+          style={{ ...scrollAreaStyle, cursor: open || hoverToOpen ? undefined : "pointer" }}
           onClick={() => !open && onToggleOpen(true)}
           role="presentation"
         >
@@ -508,30 +533,32 @@ export default function LeftNav({ open, onToggleOpen, active, onActiveChange, as
             />
           ))}
         </div>
-        <div
-          ref={toggleRef}
-          onClick={() => onToggleOpen((x) => !x)}
-          style={{ ...toggleButtonStyle(false), cursor: "pointer" }}
-          title={open ? "Collapse menu" : "Expand menu"}
-          onMouseEnter={() => {
-            setToggleTooltip(true);
-            if (toggleRef.current) {
-              const rect = toggleRef.current.getBoundingClientRect();
-              setToggleTooltipCoords({ left: rect.right + 8, top: rect.top + rect.height / 2 });
-            }
-          }}
-          onMouseLeave={() => {
-            setToggleTooltip(false);
-            setToggleTooltipCoords(null);
-          }}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2">
-            <rect x="3" y="3" width="18" height="18" rx="2"/>
-            <line x1={open ? 9 : 15} y1="3" x2={open ? 9 : 15} y2="21"/>
-          </svg>
-        </div>
+        {!hoverToOpen && (
+          <div
+            ref={toggleRef}
+            onClick={() => onToggleOpen((x) => !x)}
+            style={{ ...toggleButtonStyle(false), borderTop: "none", cursor: "pointer" }}
+            title={open ? "Collapse menu" : "Expand menu"}
+            onMouseEnter={() => {
+              setToggleTooltip(true);
+              if (toggleRef.current) {
+                const rect = toggleRef.current.getBoundingClientRect();
+                setToggleTooltipCoords({ left: rect.right + 8, top: rect.top + rect.height / 2 });
+              }
+            }}
+            onMouseLeave={() => {
+              setToggleTooltip(false);
+              setToggleTooltipCoords(null);
+            }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <line x1={open ? 9 : 15} y1="3" x2={open ? 9 : 15} y2="21"/>
+            </svg>
+          </div>
+        )}
       </nav>
-      {toggleTooltip && toggleTooltipCoords && createPortal(
+      {!hoverToOpen && toggleTooltip && toggleTooltipCoords && createPortal(
         <div
           style={{
             position: "fixed",
@@ -546,7 +573,6 @@ export default function LeftNav({ open, onToggleOpen, active, onActiveChange, as
             fontFamily: '"TikTok Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
             borderRadius: 6,
             whiteSpace: "nowrap",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
             border: "1px solid #e5e5e7",
             zIndex: 10000,
             pointerEvents: "none",
@@ -558,7 +584,12 @@ export default function LeftNav({ open, onToggleOpen, active, onActiveChange, as
       )}
 
       {/* Expanded overlay (always in DOM for exit transition) */}
-      <div style={overlayWrapperStyle} aria-hidden={!open}>
+      <div
+        style={overlayWrapperStyle}
+        aria-hidden={!open}
+        onMouseEnter={hoverToOpen ? clearLeftNavCloseTimeout : undefined}
+        onMouseLeave={hoverToOpen ? scheduleLeftNavClose : undefined}
+      >
         <div style={overlayPanelStyle}>
           <div style={scrollAreaStyle}>
             {renderNavItems(true)}
@@ -569,7 +600,7 @@ export default function LeftNav({ open, onToggleOpen, active, onActiveChange, as
               onToggleOpen((x) => !x);
               setMoreToolsOpen(false);
             }}
-            style={toggleButtonStyle(true)}
+            style={{ ...toggleButtonStyle(true), borderTop: "none" }}
             title="Collapse menu"
             onMouseEnter={() => {
               setOverlayToggleTooltip(true);
@@ -605,7 +636,6 @@ export default function LeftNav({ open, onToggleOpen, active, onActiveChange, as
             fontFamily: '"TikTok Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
             borderRadius: 6,
             whiteSpace: "nowrap",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
             border: "1px solid #e5e5e7",
             zIndex: 10000,
             pointerEvents: "none",
@@ -623,22 +653,27 @@ export default function LeftNav({ open, onToggleOpen, active, onActiveChange, as
             position: "fixed",
             left: OVERLAY_WIDTH,
             top: TOP_BAR_HEIGHT,
-            width: MORE_TOOLS_PANEL_WIDTH,
+            width: moreToolsOpen ? MORE_TOOLS_PANEL_WIDTH : 0,
             bottom: 0,
             zIndex: 100,
             background: "#fff",
-            boxShadow: "4px 0 24px rgba(0,0,0,0.08)",
-            overflowY: "auto",
-            padding: "24px 20px",
-            fontFamily: '"TikTok Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-            opacity: moreToolsOpen ? 1 : 0,
-            transform: moreToolsOpen ? "translateX(0)" : "translateX(-12px)",
+            borderRight: "1px solid #ebebeb",
+            overflow: "hidden",
             transition: MORE_TOOLS_PANEL_TRANSITION,
             pointerEvents: moreToolsOpen ? "auto" : "none",
           }}
           aria-label="More tools"
           aria-hidden={!moreToolsOpen}
         >
+          <div
+            style={{
+              width: MORE_TOOLS_PANEL_WIDTH,
+              minHeight: "100%",
+              overflowY: "auto",
+              padding: "24px 20px",
+              fontFamily: '"TikTok Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+            }}
+          >
           <h2 style={{ margin: "0 0 20px", fontSize: 16, fontWeight: 600, color: "#111" }}>
             More tools
           </h2>
@@ -722,6 +757,7 @@ export default function LeftNav({ open, onToggleOpen, active, onActiveChange, as
                 </div>
               </div>
             ))}
+          </div>
           </div>
         </div>
       )}

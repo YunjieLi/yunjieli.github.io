@@ -56,7 +56,7 @@ function EnvelopeIcon() {
   );
 }
 
-export default function TopBar() {
+export default function TopBar({ navMode = "onClick" }) {
   return (
     <header
       className="top-bar"
@@ -83,7 +83,7 @@ export default function TopBar() {
     >
       {/* Left group */}
       <div style={{ display: "flex", alignItems: "center", gap: 0, minWidth: 0, flex: "1 1 auto", overflow: "visible" }}>
-        <GlobalNav />
+        <GlobalNav navMode={navMode} />
         <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
           <span style={{ fontSize: 18, fontWeight: 700, letterSpacing: "-0.02em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
             TikTok
@@ -156,7 +156,7 @@ export default function TopBar() {
         <button
           type="button"
           aria-label="Messages"
-          style={{ ...iconButtonStyle, color: "#00d4aa" }}
+          style={{ ...iconButtonStyle, color: "#009995" }}
         >
           <EnvelopeIcon />
         </button>

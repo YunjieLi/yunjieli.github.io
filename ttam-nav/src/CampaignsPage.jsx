@@ -81,7 +81,7 @@ export default function CampaignsPage() {
                 gap: 8,
                 padding: "8px 12px",
                 borderRadius: 8,
-                background: "#E8FBF9",
+                background: "#e6f7f7",
                 fontWeight: 500,
               }}
             >
@@ -124,7 +124,7 @@ export default function CampaignsPage() {
           <div style={{ padding: "8px 16px 8px 12px", marginTop: 8 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#111", cursor: "pointer" }}>
               <span>View report</span>
-              <span style={{ fontSize: 10, fontWeight: 600, background: "#00d4aa", color: "#fff", padding: "2px 6px", borderRadius: 4 }}>New</span>
+              <span style={{ fontSize: 10, fontWeight: 600, background: "#009995", color: "#fff", padding: "2px 6px", borderRadius: 4 }}>New</span>
             </div>
           </div>
         </nav>
@@ -158,7 +158,7 @@ export default function CampaignsPage() {
               padding: "10px 16px",
               borderRadius: 8,
               border: "none",
-              background: "#00d4aa",
+              background: "#009995",
               color: "#fff",
               fontWeight: 600,
               fontSize: 14,
@@ -269,7 +269,7 @@ export default function CampaignsPage() {
                         height: 20,
                         borderRadius: 10,
                         border: "none",
-                        background: toggles[row.id] ? "#00d4aa" : "#ccc",
+                        background: toggles[row.id] ? "#009995" : "#ccc",
                         cursor: "pointer",
                         position: "relative",
                       }}
@@ -293,7 +293,7 @@ export default function CampaignsPage() {
                     <div>
                       {row.status === "Active" ? (
                         <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-                          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#00d4aa" }} />
+                          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#009995" }} />
                           Active
                         </span>
                       ) : (
@@ -354,7 +354,7 @@ export default function CampaignsPage() {
                     padding: "6px 10px",
                     border: "1px solid #e5e6e6",
                     borderRadius: 6,
-                    background: p === 1 ? "#00d4aa" : "#fff",
+                    background: p === 1 ? "#009995" : "#fff",
                     color: p === 1 ? "#fff" : "#111",
                     cursor: "pointer",
                     fontWeight: p === 1 ? 600 : 400,
