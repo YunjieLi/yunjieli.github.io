@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect, useLayoutEffect, createContext, useContext } from 'react'
 import '@fontsource-variable/nunito'
-import { ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react'
+import { RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination'
 import { cn } from '@/lib/utils'
 
 const YELLOW = '#FDD302'
@@ -455,22 +456,6 @@ function IntroText({ children }: { children: React.ReactNode }) {
   return null
 }
 
-function DotPagination({ total, current }: { total: number; current: number }) {
-  return (
-    <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-      {Array.from({ length: total }, (_, i) => (
-        <div key={i} style={{
-          width: i === current ? 8 : 6,
-          height: i === current ? 8 : 6,
-          borderRadius: '50%',
-          background: i === current ? '#666' : '#ccc',
-          transition: 'all 0.25s ease',
-          flexShrink: 0,
-        }} />
-      ))}
-    </div>
-  )
-}
 
 // ─── Shell ─────────────────────────────────────────────────────────────────
 const PAGES = [Page1, Page2, Page3, Page4, Page5, Page6, Page7, Page8]
@@ -501,7 +486,7 @@ export default function PressHere() {
       }}>
         <PageComponent key={key} />
 
-        {/* Caption + pagination in one row */}
+        {/* Caption left · Pagination right — one row */}
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           minWidth: 960, marginTop: 14, gap: 16,
@@ -512,19 +497,45 @@ export default function PressHere() {
           }}>
             {caption}
           </div>
-          <DotPagination total={TOTAL} current={page} />
-        </div>
 
-        <div className={cn('flex gap-3 mt-3 justify-center')} style={{ minWidth: 960 }}>
-          <Button variant="outline" size="icon-lg" onClick={() => nav(page - 1)} disabled={isFirst}>
-            <ChevronLeft />
-          </Button>
-          <Button variant="outline" size="icon-lg" onClick={() => nav(0)}>
-            <RotateCcw />
-          </Button>
-          <Button variant="outline" size="icon-lg" onClick={() => nav(page + 1)} disabled={isLast}>
-            <ChevronRight />
-          </Button>
+          <Pagination className="w-auto mx-0 shrink-0">
+            <PaginationContent className="gap-1">
+              <PaginationItem>
+                <PaginationPrevious
+                  text=""
+                  onClick={() => !isFirst && nav(page - 1)}
+                  className={cn('pl-2!', isFirst && 'opacity-30 pointer-events-none')}
+                />
+              </PaginationItem>
+
+              {Array.from({ length: TOTAL }, (_, i) => (
+                <PaginationItem key={i}>
+                  <div style={{
+                    width: i === page ? 8 : 6,
+                    height: i === page ? 8 : 6,
+                    borderRadius: '50%',
+                    background: i === page ? '#555' : '#ccc',
+                    transition: 'all 0.25s ease',
+                    cursor: 'pointer',
+                  }} onClick={() => nav(i)} />
+                </PaginationItem>
+              ))}
+
+              <PaginationItem>
+                <Button variant="ghost" size="icon-sm" onClick={() => nav(0)} className="text-muted-foreground">
+                  <RotateCcw />
+                </Button>
+              </PaginationItem>
+
+              <PaginationItem>
+                <PaginationNext
+                  text=""
+                  onClick={() => !isLast && nav(page + 1)}
+                  className={cn('pr-2!', isLast && 'opacity-30 pointer-events-none')}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
         </div>
       </div>
     </CaptionCtx.Provider>
