@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom'
+import { buttonVariants } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 const featured = [
   {
-    bg: 'bg-nyc',
+    bg: '/toc/img/jumbotron-nyc.png',
     title: 'Restaurants Noise of NYC',
     blogHref: 'https://blog.mapbox.com/exploring-nyc-open-data-with-3d-hexbins-5af2b7d8bc46',
     blogLabel: 'Mapbox Blog',
@@ -10,7 +12,7 @@ const featured = [
     href: 'https://www.mapbox.com/bites/00304/',
   },
   {
-    bg: 'bg-boston',
+    bg: '/toc/img/jumbotron-boston.png',
     title: 'Historical Boston',
     blogHref: 'https://blog.mapbox.com/mapping-historic-boston-in-the-mapbox-studio-dataset-editor-838c49209bd1',
     blogLabel: 'Mapbox Blog',
@@ -18,7 +20,7 @@ const featured = [
     href: 'https://www.mapbox.com/bites/00287/',
   },
   {
-    bg: 'bg-lush',
+    bg: '/toc/img/jumbotron-lush.png',
     title: 'Mono <> Colors',
     blogHref: 'https://blog.mapbox.com/mobile-runtime-styling-get-active-553b0c9aaa16',
     blogLabel: 'Mapbox Blog',
@@ -26,7 +28,7 @@ const featured = [
     href: 'https://www.mapbox.com/bites/00299/compare.html',
   },
   {
-    bg: 'bg-heroes',
+    bg: '/toc/img/jumbotron-heroes.png',
     title: 'Glorious Kings',
     blogHref: null,
     blogLabel: null,
@@ -35,7 +37,7 @@ const featured = [
     internal: true,
   },
   {
-    bg: 'bg-swordsmen',
+    bg: '/toc/img/jumbotron-swordsmen.png',
     title: 'Smiling Swordsmen',
     blogHref: null,
     blogLabel: null,
@@ -58,76 +60,68 @@ const morePages = [
 
 export default function Toc() {
   return (
-    <>
-      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
-      <style>{`
-        body { margin: 0; }
-        .container { padding-top: 48px; padding-bottom: 60px; }
-        .page-header img { height:54px; width:54px; }
-        .page-header img, .page-header h1 { display: inline-block; vertical-align: bottom; }
-        .page-header h1 { margin-left: 1rem; }
-        .page-header p { margin-top: 1em; color:#666; }
-        #footer { width:100%; background-color:#D1D9E0; color:#666; text-align:center; padding:20px; }
-        .btn-primary { background-color:#333; border-color:rgba(0,0,0,.3); }
-        .btn-primary:hover { background-color:#223; }
-        .section-label { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:#999; margin:0 0 14px 0; }
-        .jumbotron { background-size:cover; background-image:linear-gradient(rgba(0,0,0,.65),rgba(0,0,0,.65)); color:white; border-radius:4px; margin-bottom:10px; padding:18px 24px; }
-        .jumbotron h1 { font-size:22px; margin:0 0 6px 0; line-height:1.2; }
-        .jumbotron p { font-size:13px; margin-bottom:10px; }
-        .jumbotron a { color:white; opacity:.75; }
-        .jumbotron .btn { padding:5px 14px; font-size:13px; }
-        .bg-nyc     { background-image:url(/toc/img/jumbotron-nyc.png); }
-        .bg-boston  { background-image:url(/toc/img/jumbotron-boston.png); }
-        .bg-lush    { background-image:url(/toc/img/jumbotron-lush.png); }
-        .bg-heroes  { background-image:url(/toc/img/jumbotron-heroes.png); }
-        .bg-swordsmen { background-image:url(/toc/img/jumbotron-swordsmen.png); }
-        .more-pages { margin-top:56px; margin-bottom:40px; }
-        .more-pages-list { list-style:none; padding:0; margin:0; display:grid; gap:8px; }
-        .more-pages-list li a { display:block; padding:12px 16px; border:1px solid #e0e0e0; border-radius:6px; color:#333; text-decoration:none; font-size:15px; transition:background 0.15s; }
-        .more-pages-list li a:hover { background:#f5f5f5; }
-      `}</style>
-
-      <div className="container">
-        <div className="page-header">
-          <img src="/toc/img/icon_full.png" alt="logo" />
-          <h1>顺流而上</h1>
-          <p>用设计，用代码，用地图装故事。用故事装X。</p>
+    <div className="min-h-screen flex flex-col">
+      <div className="max-w-2xl mx-auto w-full px-6 pt-12 pb-16 flex-1">
+        <div className="mb-10 flex items-end gap-4">
+          <img src="/toc/img/icon_full.png" alt="logo" className="h-14 w-14" />
+          <div>
+            <h1 className="text-3xl font-bold leading-tight">顺流而上</h1>
+            <p className="mt-1 text-sm text-muted-foreground">用设计，用代码，用地图装故事。用故事装X。</p>
+          </div>
         </div>
 
-        <p className="section-label">Featured</p>
+        <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3.5">Featured</p>
 
-        {featured.map(item => (
-          <div key={item.title} className={`jumbotron ${item.bg}`}>
-            <h1>{item.title}</h1>
-            <p>
-              {item.blogHref && (
-                <><a href={item.blogHref} target="_blank" rel="noreferrer">{item.blogLabel}</a> · </>
-              )}
-              {item.sub}
-            </p>
-            <p>
-              {item.internal ? (
-                <Link className="btn btn-primary" to={item.href}>Check it out</Link>
-              ) : (
-                <a className="btn btn-primary" href={item.href} target="_blank" rel="noreferrer">Check it out</a>
-              )}
-            </p>
-          </div>
-        ))}
+        <div className="flex flex-col gap-2.5">
+          {featured.map(item => (
+            <div
+              key={item.title}
+              className="relative rounded-md overflow-hidden bg-cover bg-center text-white"
+              style={{ backgroundImage: `url(${item.bg})` }}
+            >
+              <div className="absolute inset-0 bg-black/65" />
+              <div className="relative z-10 px-6 py-4">
+                <h2 className="text-xl font-semibold mb-1 leading-snug">{item.title}</h2>
+                <p className="text-[13px] mb-2.5 opacity-80">
+                  {item.blogHref && (
+                    <><a href={item.blogHref} target="_blank" rel="noreferrer" className="underline underline-offset-2">{item.blogLabel}</a> · </>
+                  )}
+                  {item.sub}
+                </p>
+                {item.internal ? (
+                  <Link to={item.href} className={cn(buttonVariants({ variant: 'secondary', size: 'sm' }), 'bg-white/20 hover:bg-white/30 text-white border-0')}>
+                    Check it out
+                  </Link>
+                ) : (
+                  <a href={item.href} target="_blank" rel="noreferrer" className={cn(buttonVariants({ variant: 'secondary', size: 'sm' }), 'bg-white/20 hover:bg-white/30 text-white border-0')}>
+                    Check it out
+                  </a>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
 
-        <div className="more-pages">
-          <p className="section-label">More pages</p>
-          <ul className="more-pages-list">
+        <div className="mt-14 mb-10">
+          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3.5">More pages</p>
+          <ul className="grid gap-2">
             {morePages.map(p => (
               <li key={p.href}>
-                <Link to={p.href}>{p.label}</Link>
+                <Link
+                  to={p.href}
+                  className="block px-4 py-3 rounded-md border border-border text-foreground text-[15px] no-underline hover:bg-muted transition-colors"
+                >
+                  {p.label}
+                </Link>
               </li>
             ))}
           </ul>
         </div>
       </div>
 
-      <div id="footer">萧远珊，2016</div>
-    </>
+      <footer className="w-full bg-muted text-muted-foreground text-center py-5 text-sm">
+        萧远珊，2016
+      </footer>
+    </div>
   )
 }

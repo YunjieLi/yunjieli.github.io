@@ -1,13 +1,12 @@
 export default function ChineseNames() {
   return (
     <>
-      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" />
       <link rel="stylesheet" href="/chinese-names/style.css" />
       <style>{`body{margin:0}`}</style>
 
       <div className="content">
         <section className="hero">
-          <h1 className="display-4 mb-4">A #WIP Guide to Chinese Names</h1>
+          <h1 className="text-4xl font-bold mb-4">A #WIP Guide to Chinese Names</h1>
           <p>
             Do you know <span className="pinyin">Zhang</span> is actually pronounced as "John"?{' '}
             <br />
