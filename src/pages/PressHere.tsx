@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useLayoutEffect, createContext, useContext } from 'react'
 import '@fontsource-variable/nunito'
 import { ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -446,18 +446,28 @@ const dotStyle = (color: string): React.CSSProperties => ({
   WebkitTapHighlightColor: 'transparent',
 })
 
+// ─── Caption context — lets page components report their caption to the shell ─
+const CaptionCtx = createContext<(n: React.ReactNode) => void>(() => {})
+
 function IntroText({ children }: { children: React.ReactNode }) {
+  const setCaption = useContext(CaptionCtx)
+  useLayoutEffect(() => { setCaption(children) })
+  return null
+}
+
+function DotPagination({ total, current }: { total: number; current: number }) {
   return (
-    <div style={{
-      marginTop: 16,
-      fontSize: 'clamp(15px, 3.5vw, 20px)',
-      color: '#444', textAlign: 'center',
-      lineHeight: 1.4, minHeight: '2.4em',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontFamily: '"Nunito Variable", Nunito, sans-serif',
-      fontWeight: 600,
-    }}>
-      {children}
+    <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+      {Array.from({ length: total }, (_, i) => (
+        <div key={i} style={{
+          width: i === current ? 8 : 6,
+          height: i === current ? 8 : 6,
+          borderRadius: '50%',
+          background: i === current ? '#666' : '#ccc',
+          transition: 'all 0.25s ease',
+          flexShrink: 0,
+        }} />
+      ))}
     </div>
   )
 }
@@ -468,8 +478,9 @@ const PAGES = [Page1, Page2, Page3, Page4, Page5, Page6, Page7, Page8]
 const TOTAL = PAGES.length
 
 export default function PressHere() {
-  const [page, setPage] = useState(0)
-  const [key,  setKey]  = useState(0)
+  const [page,    setPage]    = useState(0)
+  const [key,     setKey]     = useState(0)
+  const [caption, setCaption] = useState<React.ReactNode>('')
 
   const isFirst = page === 0
   const isLast  = page === TOTAL - 1
@@ -481,32 +492,41 @@ export default function PressHere() {
   }
 
   return (
-    <div style={{
-      height: '100dvh', display: 'flex', flexDirection: 'column',
-      background: '#fef9f0', padding: '12px 32px 20px', boxSizing: 'border-box',
-      fontFamily: '"Nunito Variable", Nunito, sans-serif',
-      overflowX: 'auto',
-    }}>
-      <PageComponent key={key} />
-
+    <CaptionCtx.Provider value={setCaption}>
       <div style={{
-        fontSize: 13, color: '#aaa', marginTop: 8, textAlign: 'center',
-        fontWeight: 600, letterSpacing: '0.06em', minWidth: 960,
+        height: '100dvh', display: 'flex', flexDirection: 'column',
+        background: '#fef9f0', padding: '12px 32px 20px', boxSizing: 'border-box',
+        fontFamily: '"Nunito Variable", Nunito, sans-serif',
+        overflowX: 'auto',
       }}>
-        {page + 1} / {TOTAL}
-      </div>
+        <PageComponent key={key} />
 
-      <div className={cn('flex gap-3 mt-3 justify-center')} style={{ minWidth: 960 }}>
-        <Button variant="outline" size="icon-lg" onClick={() => nav(page - 1)} disabled={isFirst}>
-          <ChevronLeft />
-        </Button>
-        <Button variant="outline" size="icon-lg" onClick={() => nav(0)}>
-          <RotateCcw />
-        </Button>
-        <Button variant="outline" size="icon-lg" onClick={() => nav(page + 1)} disabled={isLast}>
-          <ChevronRight />
-        </Button>
+        {/* Caption + pagination in one row */}
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          minWidth: 960, marginTop: 14, gap: 16,
+        }}>
+          <div style={{
+            fontSize: 'clamp(14px, 2vw, 18px)', fontWeight: 600,
+            color: '#444', lineHeight: 1.4,
+          }}>
+            {caption}
+          </div>
+          <DotPagination total={TOTAL} current={page} />
+        </div>
+
+        <div className={cn('flex gap-3 mt-3 justify-center')} style={{ minWidth: 960 }}>
+          <Button variant="outline" size="icon-lg" onClick={() => nav(page - 1)} disabled={isFirst}>
+            <ChevronLeft />
+          </Button>
+          <Button variant="outline" size="icon-lg" onClick={() => nav(0)}>
+            <RotateCcw />
+          </Button>
+          <Button variant="outline" size="icon-lg" onClick={() => nav(page + 1)} disabled={isLast}>
+            <ChevronRight />
+          </Button>
+        </div>
       </div>
-    </div>
+    </CaptionCtx.Provider>
   )
 }
