@@ -1,4 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
+import '@fontsource-variable/nunito'
+import { ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 const YELLOW = '#FDD302'
 const RED    = '#F63664'
@@ -237,29 +241,33 @@ function Page4() {
 // ─── Pages 5 & 6 — tilt ────────────────────────────────────────────────────
 // Scattered starting positions that mimic end state of Page 4
 const SCATTERED: { x: number; y: number }[] = [
-  // red
   { x: 72, y: 12 }, { x: 18, y: 45 }, { x: 55, y: 72 }, { x: 82, y: 52 }, { x: 35, y: 85 },
-  // yellow
   { x: 48, y: 22 }, { x: 85, y: 35 }, { x: 22, y: 65 }, { x: 65, y: 80 }, { x: 12, y: 28 },
-  // blue
   { x: 62, y: 10 }, { x: 28, y: 50 }, { x: 78, y: 30 }, { x: 42, y: 90 }, { x: 90, y: 68 },
 ]
 
-function initTiltDots(): PhysDot[] {
+// End state of Page 5: all dots piled against the left wall, y unchanged
+const PILED_LEFT: { x: number; y: number }[] = [
+  { x: 8.3, y: 12 }, { x: 8.3, y: 45 }, { x: 8.3, y: 72 }, { x: 8.3, y: 52 }, { x: 8.3, y: 85 },
+  { x: 8.3, y: 22 }, { x: 8.3, y: 35 }, { x: 8.3, y: 65 }, { x: 8.3, y: 80 }, { x: 8.3, y: 28 },
+  { x: 8.3, y: 10 }, { x: 8.3, y: 50 }, { x: 8.3, y: 30 }, { x: 8.3, y: 90 }, { x: 8.3, y: 68 },
+]
+
+function initTiltDots(positions: { x: number; y: number }[] = SCATTERED): PhysDot[] {
   return [RED, YELLOW, BLUE].flatMap((color, ci) =>
     Array.from({ length: 5 }, (_, i) => ({
       id: `tilt-${ci}-${i}`,
       color,
-      x: SCATTERED[ci * 5 + i].x,
-      y: SCATTERED[ci * 5 + i].y,
+      x: positions[ci * 5 + i].x,
+      y: positions[ci * 5 + i].y,
       vx: 0,
       vy: 0,
     }))
   )
 }
 
-function TiltPage({ direction }: { direction: 'left' | 'right' }) {
-  const dotsRef  = useRef<PhysDot[]>(initTiltDots())
+function TiltPage({ direction, initPositions }: { direction: 'left' | 'right'; initPositions?: { x: number; y: number }[] }) {
+  const dotsRef  = useRef<PhysDot[]>(initTiltDots(initPositions))
   const rafRef   = useRef<number | null>(null)
   const running  = useRef(false)
   const gravRef  = useRef(0)   // sideways gravity strength, grows with taps
@@ -336,14 +344,17 @@ function TiltPage({ direction }: { direction: 'left' | 'right' }) {
 }
 
 function Page5() { return <TiltPage direction="left" /> }
-function Page6() { return <TiltPage direction="right" /> }
+function Page6() { return <TiltPage direction="right" initPositions={PILED_LEFT} /> }
 
 // ─── Page 7 — lineup ───────────────────────────────────────────────────────
 // 15 dots in r,y,b pattern, scattered → animate to a horizontal row
 const COLOR_ROW = Array.from({ length: 15 }, (_, i) => [RED, YELLOW, BLUE][i % 3])
-const DOT_SM    = 42   // smaller dot for the wide row
 const ROW_CENTER_Y = 50   // vertical center (%)
-const ROW_X     = Array.from({ length: 15 }, (_, i) => (i + 0.5) / 15 * 100)
+// Keep first/last dots inside canvas at min-width 960px (radius = DOT_SIZE/2)
+const ROW_MARGIN = (DOT_SIZE / 2 / 960) * 100   // ≈ 4.17 %
+const ROW_X = Array.from({ length: 15 }, (_, i) =>
+  ROW_MARGIN + i * ((100 - 2 * ROW_MARGIN) / 14)
+)
 
 const SCATTERED_6 = [
   {x:72,y:25},{x:45,y:15},{x:20,y:42},
@@ -353,36 +364,27 @@ const SCATTERED_6 = [
   {x:25,y:10},{x:60,y:62},{x:80,y:50},
 ]
 
-const wideCanvas: React.CSSProperties = {
-  width: '100%', height: 200,
-  background: '#fff', borderRadius: 24,
-  border: '3px solid #f0e8d8',
-  position: 'relative', overflow: 'hidden', flexShrink: 0,
-}
-
 function Page7() {
   const [lined, setLined] = useState(false)
   return (
     <>
-      <div style={{ flex: 1, width: '100%', maxWidth: 680, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div onClick={() => setLined(true)} style={{ ...wideCanvas, cursor: lined ? 'default' : 'pointer' }}>
-          {COLOR_ROW.map((color, i) => {
-            const pos = lined ? { x: ROW_X[i], y: ROW_CENTER_Y } : SCATTERED_6[i]
-            return (
-              <div key={i} style={{
-                position: 'absolute',
-                left: `${pos.x}%`, top: `${pos.y}%`,
-                transform: 'translate(-50%, -50%)',
-                width: DOT_SM, height: DOT_SM, borderRadius: '50%',
-                background: color,
-                transition: lined
-                  ? `left ${0.45 + i * 0.035}s cubic-bezier(0.34,1.1,0.64,1), top ${0.45 + i * 0.035}s cubic-bezier(0.34,1.1,0.64,1)`
-                  : 'none',
-                pointerEvents: 'none',
-              }} />
-            )
-          })}
-        </div>
+      <div onClick={() => setLined(true)} style={{ ...canvasStyle, cursor: lined ? 'default' : 'pointer' }}>
+        {COLOR_ROW.map((color, i) => {
+          const pos = lined ? { x: ROW_X[i], y: ROW_CENTER_Y } : SCATTERED_6[i]
+          return (
+            <div key={i} style={{
+              position: 'absolute',
+              left: `${pos.x}%`, top: `${pos.y}%`,
+              transform: 'translate(-50%, -50%)',
+              width: DOT_SIZE, height: DOT_SIZE, borderRadius: '50%',
+              background: color,
+              transition: lined
+                ? `left ${0.45 + i * 0.035}s cubic-bezier(0.34,1.1,0.64,1), top ${0.45 + i * 0.035}s cubic-bezier(0.34,1.1,0.64,1)`
+                : 'none',
+              pointerEvents: 'none',
+            }} />
+          )
+        })}
       </div>
       <IntroText>{lined ? 'All lined up! 🎉' : 'Tap anywhere to line them up!'}</IntroText>
     </>
@@ -394,34 +396,32 @@ function Page8() {
   const [dark, setDark] = useState(false)
   return (
     <>
-      <div style={{ flex: 1, width: '100%', maxWidth: 680, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{
-          ...wideCanvas,
-          background: dark ? '#111' : '#fff',
-          border: `3px solid ${dark ? '#333' : '#f0e8d8'}`,
-          transition: 'background 1.3s ease, border-color 1.3s ease',
-        }}>
-          {COLOR_ROW.map((color, i) => {
-            const isYellow = color === YELLOW
-            const dimmed = dark && !isYellow
-            return (
-              <div
-                key={i}
-                onClick={isYellow && !dark ? () => setDark(true) : undefined}
-                style={{
-                  position: 'absolute',
-                  left: `${ROW_X[i]}%`, top: `${ROW_CENTER_Y}%`,
-                  transform: 'translate(-50%, -50%)',
-                  width: DOT_SM, height: DOT_SM, borderRadius: '50%',
-                  background: color,
-                  cursor: isYellow && !dark ? 'pointer' : 'default',
-                  opacity: dimmed ? 0.05 : 1,
-                  transition: 'opacity 1.3s ease',
-                }}
-              />
-            )
-          })}
-        </div>
+      <div style={{
+        ...canvasStyle,
+        background: dark ? '#111' : '#fff',
+        border: `3px solid ${dark ? '#333' : '#f0e8d8'}`,
+        transition: 'background 1.3s ease, border-color 1.3s ease',
+      }}>
+        {COLOR_ROW.map((color, i) => {
+          const isYellow = color === YELLOW
+          const dimmed = dark && !isYellow
+          return (
+            <div
+              key={i}
+              onClick={isYellow && !dark ? () => setDark(true) : undefined}
+              style={{
+                position: 'absolute',
+                left: `${ROW_X[i]}%`, top: `${ROW_CENTER_Y}%`,
+                transform: 'translate(-50%, -50%)',
+                width: DOT_SIZE, height: DOT_SIZE, borderRadius: '50%',
+                background: color,
+                cursor: isYellow && !dark ? 'pointer' : 'default',
+                opacity: dimmed ? 0.15 : 1,
+                transition: 'opacity 1.3s ease',
+              }}
+            />
+          )
+        })}
       </div>
       <IntroText>{dark ? 'You turned off the lights! 🌙' : 'Press a yellow dot to turn off the light!'}</IntroText>
     </>
@@ -430,9 +430,10 @@ function Page8() {
 
 // ─── Shared style helpers ───────────────────────────────────────────────────
 const canvasStyle: React.CSSProperties = {
-  flex: 1, width: '100%', maxWidth: 480, maxHeight: 520,
-  background: '#fff', borderRadius: 24,
-  border: '3px solid #f0e8d8',
+  flex: 1, minHeight: 0,
+  width: '100%', minWidth: 960,
+  background: '#fff', borderRadius: 18,
+  border: '2px solid #ede8df',
   position: 'relative', overflow: 'hidden',
 }
 
@@ -448,12 +449,13 @@ const dotStyle = (color: string): React.CSSProperties => ({
 function IntroText({ children }: { children: React.ReactNode }) {
   return (
     <div style={{
-      marginTop: 20, marginBottom: 20,
-      fontSize: 'clamp(16px, 4vw, 22px)',
-      color: '#444', textAlign: 'center', maxWidth: 480,
-      lineHeight: 1.4, minHeight: '2.8em',
+      marginTop: 16,
+      fontSize: 'clamp(15px, 3.5vw, 20px)',
+      color: '#444', textAlign: 'center',
+      lineHeight: 1.4, minHeight: '2.4em',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontFamily: 'inherit',
+      fontFamily: '"Nunito Variable", Nunito, sans-serif',
+      fontWeight: 600,
     }}>
       {children}
     </div>
@@ -478,44 +480,32 @@ export default function PressHere() {
     setKey(k => k + 1)
   }
 
-  const btnBase: React.CSSProperties = {
-    flex: 1, height: 60, borderRadius: 16, border: 'none',
-    fontSize: 24, fontFamily: 'inherit', cursor: 'pointer',
-    transition: 'transform 0.1s',
-  }
-
   return (
     <div style={{
       height: '100dvh', display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center',
-      background: '#fef9f0', padding: '16px', boxSizing: 'border-box',
-      fontFamily: "'Comic Sans MS', 'Chalkboard SE', cursive",
+      background: '#fef9f0', padding: '12px 32px 20px', boxSizing: 'border-box',
+      fontFamily: '"Nunito Variable", Nunito, sans-serif',
+      overflowX: 'auto',
     }}>
-      <div style={{ fontSize: 14, color: '#bbb', marginBottom: 10, letterSpacing: '0.05em' }}>
+      <PageComponent key={key} />
+
+      <div style={{
+        fontSize: 13, color: '#aaa', marginTop: 8, textAlign: 'center',
+        fontWeight: 600, letterSpacing: '0.06em', minWidth: 960,
+      }}>
         {page + 1} / {TOTAL}
       </div>
 
-      <PageComponent key={key} />
-
-      <div style={{ display: 'flex', gap: 12, maxWidth: 480, width: '100%' }}>
-        <button
-          onClick={() => nav(page - 1)} disabled={isFirst}
-          style={{ ...btnBase, background: isFirst ? '#e8e8e8' : YELLOW, color: isFirst ? '#aaa' : '#333', cursor: isFirst ? 'default' : 'pointer' }}
-          onPointerDown={e => { if (!isFirst) e.currentTarget.style.transform = 'scale(0.95)' }}
-          onPointerUp={e => { e.currentTarget.style.transform = 'scale(1)' }}
-        >←</button>
-        <button
-          onClick={() => nav(0)}
-          style={{ ...btnBase, background: BLUE, color: '#fff' }}
-          onPointerDown={e => { e.currentTarget.style.transform = 'scale(0.95)' }}
-          onPointerUp={e => { e.currentTarget.style.transform = 'scale(1)' }}
-        >↺</button>
-        <button
-          onClick={() => nav(page + 1)} disabled={isLast}
-          style={{ ...btnBase, background: isLast ? '#e8e8e8' : RED, color: isLast ? '#aaa' : '#fff', cursor: isLast ? 'default' : 'pointer' }}
-          onPointerDown={e => { if (!isLast) e.currentTarget.style.transform = 'scale(0.95)' }}
-          onPointerUp={e => { e.currentTarget.style.transform = 'scale(1)' }}
-        >→</button>
+      <div className={cn('flex gap-3 mt-3 justify-center')} style={{ minWidth: 960 }}>
+        <Button variant="outline" size="icon-lg" onClick={() => nav(page - 1)} disabled={isFirst}>
+          <ChevronLeft />
+        </Button>
+        <Button variant="outline" size="icon-lg" onClick={() => nav(0)}>
+          <RotateCcw />
+        </Button>
+        <Button variant="outline" size="icon-lg" onClick={() => nav(page + 1)} disabled={isLast}>
+          <ChevronRight />
+        </Button>
       </div>
     </div>
   )
