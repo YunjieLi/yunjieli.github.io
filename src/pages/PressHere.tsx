@@ -1,93 +1,52 @@
 import { useState } from 'react'
 
 const YELLOW = '#FDD302'
-const RED = '#F63664'
-const BLUE = '#5CCBF8'
-const DOT_SIZE = 88
+const RED    = '#F63664'
+const BLUE   = '#5CCBF8'
+const DOT_SIZE = 80
 
-// The 3 fixed horizontal positions, vertically centered
-const POSITIONS = [
-  { x: 25, y: 50 },
-  { x: 50, y: 50 },
-  { x: 75, y: 50 },
-]
+// Fixed column x-positions (%)
+const COL_X = [25, 50, 75]
+// Fixed row y-positions, bottom → top (%)
+const ROW_Y = [84, 67, 50, 33, 16]
 
-type DotSpec = { pos: number; color: string; onClick: () => void }
-
-// ─── Page 1 ────────────────────────────────────────────────────────────────
-function Page1() {
-  const [count, setCount] = useState(1)
-
-  const bump = () => setCount(c => Math.min(c + 1, 3))
-  const dots: DotSpec[] = Array.from({ length: count }, (_, i) => ({
-    pos: i,
-    color: YELLOW,
-    onClick: bump,
-  }))
-
-  const intro =
-    count === 1 ? 'Press the dot!'
-    : count === 2 ? 'Now press one of them!'
-    : 'Three yellow dots! 🌟'
-
-  return <PageCanvas dots={dots} intro={intro} />
-}
-
-// ─── Page 2 ────────────────────────────────────────────────────────────────
-function Page2() {
-  const [leftColor, setLeft] = useState(YELLOW)
-  const [rightColor, setRight] = useState(YELLOW)
-
-  const dots: DotSpec[] = [
-    { pos: 0, color: leftColor,  onClick: () => setLeft(RED) },
-    { pos: 1, color: YELLOW,     onClick: () => {} },
-    { pos: 2, color: rightColor, onClick: () => setRight(BLUE) },
-  ]
-
-  const leftDone = leftColor === RED
-  const rightDone = rightColor === BLUE
-  const intro =
-    leftDone && rightDone ? 'Red, yellow, blue! 🎨'
-    : leftDone            ? 'Now try the right dot!'
-    : rightDone           ? 'Now try the left dot!'
-    :                       'Press the left dot, then the right!'
-
-  return <PageCanvas dots={dots} intro={intro} />
+type DotSpec = {
+  id: string
+  color: string
+  x: number  // % from left
+  y: number  // % from top
+  onClick: () => void
 }
 
 // ─── Shared canvas ─────────────────────────────────────────────────────────
 function PageCanvas({ dots, intro }: { dots: DotSpec[]; intro: string }) {
-  const [popped, setPopped] = useState<number | null>(null)
+  const [popped, setPopped] = useState<string | null>(null)
 
   function handleClick(spec: DotSpec) {
     spec.onClick()
-    setPopped(spec.pos)
+    setPopped(spec.id)
     setTimeout(() => setPopped(null), 200)
   }
 
   return (
     <>
-      {/* dot canvas */}
       <div style={{
         flex: 1, width: '100%', maxWidth: 480, maxHeight: 520,
-        background: '#fff',
-        borderRadius: 24,
+        background: '#fff', borderRadius: 24,
         boxShadow: '0 8px 40px rgba(0,0,0,0.13), 0 2px 8px rgba(0,0,0,0.08)',
         border: '3px solid #f0e8d8',
-        position: 'relative',
-        overflow: 'hidden',
+        position: 'relative', overflow: 'hidden',
       }}>
         {dots.map(spec => {
-          const { x, y } = POSITIONS[spec.pos]
-          const isPopped = popped === spec.pos
+          const isPopped = popped === spec.id
           return (
             <div
-              key={spec.pos}
+              key={spec.id}
               onClick={() => handleClick(spec)}
               style={{
                 position: 'absolute',
-                left: `${x}%`, top: `${y}%`,
-                transform: `translate(-50%, -50%) scale(${isPopped ? 1.3 : 1})`,
+                left: `${spec.x}%`, top: `${spec.y}%`,
+                transform: `translate(-50%, -50%) scale(${isPopped ? 1.28 : 1})`,
                 width: DOT_SIZE, height: DOT_SIZE,
                 borderRadius: '50%',
                 background: spec.color,
@@ -101,14 +60,11 @@ function PageCanvas({ dots, intro }: { dots: DotSpec[]; intro: string }) {
         })}
       </div>
 
-      {/* intro text */}
       <div style={{
         marginTop: 20, marginBottom: 20,
         fontSize: 'clamp(16px, 4vw, 22px)',
-        color: '#444', textAlign: 'center',
-        maxWidth: 480,
-        lineHeight: 1.4,
-        minHeight: '2.8em',
+        color: '#444', textAlign: 'center', maxWidth: 480,
+        lineHeight: 1.4, minHeight: '2.8em',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontFamily: 'inherit',
       }}>
@@ -118,17 +74,101 @@ function PageCanvas({ dots, intro }: { dots: DotSpec[]; intro: string }) {
   )
 }
 
+// ─── Page 1 ────────────────────────────────────────────────────────────────
+// Starts: 1 yellow dot. Press → 2. Press → 3. All at fixed row y=ROW_Y[0].
+function Page1() {
+  const [count, setCount] = useState(1)
+  const bump = () => setCount(c => Math.min(c + 1, 3))
+
+  const dots: DotSpec[] = Array.from({ length: count }, (_, i) => ({
+    id: `p1-${i}`,
+    color: YELLOW,
+    x: COL_X[i],
+    y: ROW_Y[0],
+    onClick: bump,
+  }))
+
+  const intro =
+    count === 1 ? 'Press the dot!'
+    : count === 2 ? 'Now press one of them!'
+    : 'Three yellow dots! 🌟'
+
+  return <PageCanvas dots={dots} intro={intro} />
+}
+
+// ─── Page 2 ────────────────────────────────────────────────────────────────
+// Starts: 3 yellow dots. Left → red, right → blue.
+function Page2() {
+  const [leftColor,  setLeft]  = useState(YELLOW)
+  const [rightColor, setRight] = useState(YELLOW)
+
+  const dots: DotSpec[] = [
+    { id: 'p2-0', color: leftColor,  x: COL_X[0], y: ROW_Y[0], onClick: () => setLeft(RED)  },
+    { id: 'p2-1', color: YELLOW,     x: COL_X[1], y: ROW_Y[0], onClick: () => {}             },
+    { id: 'p2-2', color: rightColor, x: COL_X[2], y: ROW_Y[0], onClick: () => setRight(BLUE) },
+  ]
+
+  const leftDone  = leftColor  === RED
+  const rightDone = rightColor === BLUE
+  const intro =
+    leftDone && rightDone ? 'Red, yellow, blue! 🎨'
+    : leftDone            ? 'Now try the right dot!'
+    : rightDone           ? 'Now try the left dot!'
+    :                       'Press the left dot, then the right!'
+
+  return <PageCanvas dots={dots} intro={intro} />
+}
+
+// ─── Page 3 ────────────────────────────────────────────────────────────────
+// Starts: end-state of Page 2 (red, yellow, blue, 1 dot each).
+// Press any dot → adds a dot above that column (up to 5 per column → 5×3 grid).
+function Page3() {
+  const [counts, setCounts] = useState([1, 1, 1])
+
+  const COL_COLORS = [RED, YELLOW, BLUE]
+
+  function pressCol(col: number) {
+    setCounts(prev => {
+      if (prev[col] >= 5) return prev
+      const next = [...prev]
+      next[col]++
+      return next
+    })
+  }
+
+  const dots: DotSpec[] = []
+  COL_COLORS.forEach((color, ci) => {
+    for (let row = 0; row < counts[ci]; row++) {
+      dots.push({
+        id: `p3-${ci}-${row}`,
+        color,
+        x: COL_X[ci],
+        y: ROW_Y[row],
+        onClick: () => pressCol(ci),
+      })
+    }
+  })
+
+  const total = counts.reduce((a, b) => a + b, 0)
+  const allDone = counts.every(c => c === 5)
+  const intro =
+    allDone        ? 'A 5×3 rainbow matrix! 🌈'
+    : total > 6    ? 'Almost there — keep pressing!'
+    :                'Press any dot to grow its column!'
+
+  return <PageCanvas dots={dots} intro={intro} />
+}
+
 // ─── Shell ─────────────────────────────────────────────────────────────────
-const PAGES = [Page1, Page2]
+const PAGES = [Page1, Page2, Page3]
 const TOTAL = PAGES.length
 
 export default function PressHere() {
   const [page, setPage] = useState(0)
-  // key forces page component to remount (resetting its state) on navigation
-  const [key, setKey] = useState(0)
+  const [key,  setKey]  = useState(0)
 
   const isFirst = page === 0
-  const isLast = page === TOTAL - 1
+  const isLast  = page === TOTAL - 1
   const PageComponent = PAGES[page]
 
   function nav(next: number) {
@@ -155,43 +195,24 @@ export default function PressHere() {
 
       <PageComponent key={key} />
 
-      {/* nav buttons */}
       <div style={{ display: 'flex', gap: 12, maxWidth: 480, width: '100%' }}>
         <button
-          onClick={() => nav(page - 1)}
-          disabled={isFirst}
-          style={{
-            ...btnBase,
-            background: isFirst ? '#e8e8e8' : '#FDD302',
-            color: isFirst ? '#aaa' : '#333',
-            cursor: isFirst ? 'default' : 'pointer',
-            boxShadow: isFirst ? 'none' : '0 4px 12px #FDD30255',
-          }}
-          onPointerDown={e => { if (!isFirst) (e.currentTarget.style.transform = 'scale(0.95)') }}
-          onPointerUp={e => { (e.currentTarget.style.transform = 'scale(1)') }}
+          onClick={() => nav(page - 1)} disabled={isFirst}
+          style={{ ...btnBase, background: isFirst ? '#e8e8e8' : YELLOW, color: isFirst ? '#aaa' : '#333', cursor: isFirst ? 'default' : 'pointer', boxShadow: isFirst ? 'none' : `0 4px 12px ${YELLOW}55` }}
+          onPointerDown={e => { if (!isFirst) e.currentTarget.style.transform = 'scale(0.95)' }}
+          onPointerUp={e => { e.currentTarget.style.transform = 'scale(1)' }}
         >←</button>
         <button
           onClick={() => nav(0)}
-          style={{
-            ...btnBase,
-            background: '#5CCBF8', color: '#fff',
-            boxShadow: '0 4px 12px #5CCBF855',
-          }}
-          onPointerDown={e => { (e.currentTarget.style.transform = 'scale(0.95)') }}
-          onPointerUp={e => { (e.currentTarget.style.transform = 'scale(1)') }}
+          style={{ ...btnBase, background: BLUE, color: '#fff', boxShadow: `0 4px 12px ${BLUE}55` }}
+          onPointerDown={e => { e.currentTarget.style.transform = 'scale(0.95)' }}
+          onPointerUp={e => { e.currentTarget.style.transform = 'scale(1)' }}
         >↺</button>
         <button
-          onClick={() => nav(page + 1)}
-          disabled={isLast}
-          style={{
-            ...btnBase,
-            background: isLast ? '#e8e8e8' : '#F63664',
-            color: isLast ? '#aaa' : '#fff',
-            cursor: isLast ? 'default' : 'pointer',
-            boxShadow: isLast ? 'none' : '0 4px 12px #F6366455',
-          }}
-          onPointerDown={e => { if (!isLast) (e.currentTarget.style.transform = 'scale(0.95)') }}
-          onPointerUp={e => { (e.currentTarget.style.transform = 'scale(1)') }}
+          onClick={() => nav(page + 1)} disabled={isLast}
+          style={{ ...btnBase, background: isLast ? '#e8e8e8' : RED, color: isLast ? '#aaa' : '#fff', cursor: isLast ? 'default' : 'pointer', boxShadow: isLast ? 'none' : `0 4px 12px ${RED}55` }}
+          onPointerDown={e => { if (!isLast) e.currentTarget.style.transform = 'scale(0.95)' }}
+          onPointerUp={e => { e.currentTarget.style.transform = 'scale(1)' }}
         >→</button>
       </div>
     </div>
