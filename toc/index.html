@@ -24,10 +24,13 @@
 	<style>
 		body { margin: 0; }
 
+		.container { padding-top: 48px; padding-bottom: 60px; }
+
+		.page-header { margin-bottom: 48px; padding-bottom: 24px; }
 		.page-header img { height:54px; width:54px; }
-		.page-header img,h1 {display: inline-block; vertical-align: bottom}
+		.page-header img,h1 { display: inline-block; vertical-align: bottom; }
+		.page-header h1 { margin-left: 1rem; }
 		.page-header p { margin-top: 1em; color:#666; }
-		.page-header h1 {margin-left: 1rem;}
 
 		#footer { width:100%; background-color:#D1D9E0; color:#666; text-align:center; padding:20px; }
 
@@ -49,26 +52,34 @@
 			margin: 0 0 14px 0;
 		}
 
+		/* compact jumbotrons */
 		.jumbotron {
 			background-size: cover;
-			background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7));
+			background-image: linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65));
 			color: white;
-			border-radius: 3px;
-			margin-bottom: 20px;
+			border-radius: 4px;
+			margin-bottom: 10px;
+			padding: 18px 24px;
 		}
-
-		.jumbotron a {
-			color: white;
-			opacity: .7;
+		.jumbotron h1 {
+			font-size: 22px;
+			margin: 0 0 6px 0;
+			line-height: 1.2;
 		}
+		.jumbotron p {
+			font-size: 13px;
+			margin-bottom: 10px;
+		}
+		.jumbotron a { color: white; opacity: .75; }
+		.jumbotron .btn { padding: 5px 14px; font-size: 13px; }
 
-		.jumbotron.bg-nyc     { background-image: url(./img/jumbotron-nyc.png); }
-		.jumbotron.bg-boston  { background-image: url(./img/jumbotron-boston.png); }
-		.jumbotron.bg-lush    { background-image: url(./img/jumbotron-lush.png); }
-		.jumbotron.bg-heroes  { background-image: url(./img/jumbotron-heroes.png); }
+		.jumbotron.bg-nyc       { background-image: url(./img/jumbotron-nyc.png); }
+		.jumbotron.bg-boston    { background-image: url(./img/jumbotron-boston.png); }
+		.jumbotron.bg-lush      { background-image: url(./img/jumbotron-lush.png); }
+		.jumbotron.bg-heroes    { background-image: url(./img/jumbotron-heroes.png); }
 		.jumbotron.bg-swordsmen { background-image: url(./img/jumbotron-swordsmen.png); }
 
-		.more-pages { margin-top: 40px; margin-bottom: 40px; }
+		.more-pages { margin-top: 56px; margin-bottom: 40px; }
 
 		.more-pages-list {
 			list-style: none;
@@ -89,9 +100,7 @@
 			transition: background 0.15s;
 		}
 
-		.more-pages-list li a:hover {
-			background: #f5f5f5;
-		}
+		.more-pages-list li a:hover { background: #f5f5f5; }
 	</style>
 </head>
 <body>
