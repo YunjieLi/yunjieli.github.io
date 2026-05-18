@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 const YELLOW = '#FDD302'
 const RED    = '#F63664'
@@ -13,8 +13,8 @@ const ROW_Y = [84, 67, 50, 33, 16]
 type DotSpec = {
   id: string
   color: string
-  x: number  // % from left
-  y: number  // % from top
+  x: number
+  y: number
   onClick: () => void
 }
 
@@ -30,13 +30,7 @@ function PageCanvas({ dots, intro }: { dots: DotSpec[]; intro: string }) {
 
   return (
     <>
-      <div style={{
-        flex: 1, width: '100%', maxWidth: 480, maxHeight: 520,
-        background: '#fff', borderRadius: 24,
-        boxShadow: '0 8px 40px rgba(0,0,0,0.13), 0 2px 8px rgba(0,0,0,0.08)',
-        border: '3px solid #f0e8d8',
-        position: 'relative', overflow: 'hidden',
-      }}>
+      <div style={canvasStyle}>
         {dots.map(spec => {
           const isPopped = popped === spec.id
           return (
@@ -44,38 +38,21 @@ function PageCanvas({ dots, intro }: { dots: DotSpec[]; intro: string }) {
               key={spec.id}
               onClick={() => handleClick(spec)}
               style={{
-                position: 'absolute',
+                ...dotStyle(spec.color),
                 left: `${spec.x}%`, top: `${spec.y}%`,
                 transform: `translate(-50%, -50%) scale(${isPopped ? 1.28 : 1})`,
-                width: DOT_SIZE, height: DOT_SIZE,
-                borderRadius: '50%',
-                background: spec.color,
-                cursor: 'pointer',
                 transition: 'transform 0.18s cubic-bezier(0.34,1.56,0.64,1), background 0.25s ease',
-                boxShadow: `0 4px 16px ${spec.color}88`,
-                WebkitTapHighlightColor: 'transparent',
               }}
             />
           )
         })}
       </div>
-
-      <div style={{
-        marginTop: 20, marginBottom: 20,
-        fontSize: 'clamp(16px, 4vw, 22px)',
-        color: '#444', textAlign: 'center', maxWidth: 480,
-        lineHeight: 1.4, minHeight: '2.8em',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontFamily: 'inherit',
-      }}>
-        {intro}
-      </div>
+      <IntroText>{intro}</IntroText>
     </>
   )
 }
 
 // ─── Page 1 ────────────────────────────────────────────────────────────────
-// Starts: 1 yellow dot. Press → 2. Press → 3. All at fixed row y=ROW_Y[0].
 function Page1() {
   const [count, setCount] = useState(1)
   const bump = () => setCount(c => Math.min(c + 1, 3))
@@ -97,7 +74,6 @@ function Page1() {
 }
 
 // ─── Page 2 ────────────────────────────────────────────────────────────────
-// Starts: 3 yellow dots. Left → red, right → blue.
 function Page2() {
   const [leftColor,  setLeft]  = useState(YELLOW)
   const [rightColor, setRight] = useState(YELLOW)
@@ -120,11 +96,8 @@ function Page2() {
 }
 
 // ─── Page 3 ────────────────────────────────────────────────────────────────
-// Starts: end-state of Page 2 (red, yellow, blue, 1 dot each).
-// Press any dot → adds a dot above that column (up to 5 per column → 5×3 grid).
 function Page3() {
   const [counts, setCounts] = useState([1, 1, 1])
-
   const COL_COLORS = [RED, YELLOW, BLUE]
 
   function pressCol(col: number) {
@@ -136,31 +109,164 @@ function Page3() {
     })
   }
 
-  const dots: DotSpec[] = []
-  COL_COLORS.forEach((color, ci) => {
-    for (let row = 0; row < counts[ci]; row++) {
-      dots.push({
-        id: `p3-${ci}-${row}`,
-        color,
-        x: COL_X[ci],
-        y: ROW_Y[row],
-        onClick: () => pressCol(ci),
-      })
-    }
-  })
+  const dots: DotSpec[] = COL_COLORS.flatMap((color, ci) =>
+    Array.from({ length: counts[ci] }, (_, row) => ({
+      id: `p3-${ci}-${row}`,
+      color,
+      x: COL_X[ci],
+      y: ROW_Y[row],
+      onClick: () => pressCol(ci),
+    }))
+  )
 
   const total = counts.reduce((a, b) => a + b, 0)
-  const allDone = counts.every(c => c === 5)
   const intro =
-    allDone        ? 'A 5×3 rainbow matrix! 🌈'
-    : total > 6    ? 'Almost there — keep pressing!'
-    :                'Press any dot to grow its column!'
+    counts.every(c => c === 5) ? 'A 5×3 rainbow matrix! 🌈'
+    : total > 6                ? 'Almost there — keep pressing!'
+    :                            'Press any dot to grow its column!'
 
   return <PageCanvas dots={dots} intro={intro} />
 }
 
+// ─── Page 4 ────────────────────────────────────────────────────────────────
+type PhysDot = { id: string; color: string; x: number; y: number; vx: number; vy: number }
+
+const RX = (DOT_SIZE / 2 / 480) * 100  // dot radius as % of canvas width
+const RY = (DOT_SIZE / 2 / 520) * 100  // dot radius as % of canvas height
+const GRAVITY  = 0       // no gravity — dots scatter and rest at all heights
+const DAMPING  = 0.96    // friction brings them to rest
+const BOUNCE   = 0.82
+
+function initPhysDots(): PhysDot[] {
+  return [RED, YELLOW, BLUE].flatMap((color, ci) =>
+    Array.from({ length: 5 }, (_, row) => ({
+      id: `p4-${ci}-${row}`,
+      color,
+      x: COL_X[ci],
+      y: ROW_Y[row],
+      vx: 0,
+      vy: 0,
+    }))
+  )
+}
+
+function Page4() {
+  const dotsRef  = useRef<PhysDot[]>(initPhysDots())
+  const rafRef   = useRef<number | null>(null)
+  const running  = useRef(false)
+  const [, tick] = useState(0)
+  const [clicks, setClicks] = useState(0)
+
+  function applyShake(strength: number) {
+    dotsRef.current = dotsRef.current.map(dot => ({
+      ...dot,
+      vx: dot.vx + (Math.random() - 0.5) * strength,
+      vy: dot.vy + (Math.random() - 0.5) * strength,
+    }))
+  }
+
+  function startLoop() {
+    if (running.current) return
+    running.current = true
+
+    const step = () => {
+      let anyMoving = false
+      dotsRef.current = dotsRef.current.map(({ x, y, vx, vy, ...rest }) => {
+        vy += GRAVITY
+        x += vx; y += vy
+        if (x < RX)        { x = RX;        vx =  Math.abs(vx) * BOUNCE }
+        if (x > 100 - RX)  { x = 100 - RX;  vx = -Math.abs(vx) * BOUNCE }
+        if (y < RY)        { y = RY;        vy =  Math.abs(vy) * BOUNCE }
+        if (y > 100 - RY)  { y = 100 - RY;  vy = -Math.abs(vy) * BOUNCE }
+        vx *= DAMPING; vy *= DAMPING
+        if (Math.abs(vx) > 0.05 || Math.abs(vy) > 0.05) anyMoving = true
+        return { ...rest, x, y, vx, vy }
+      })
+      tick(n => n + 1)
+      if (anyMoving) {
+        rafRef.current = requestAnimationFrame(step)
+      } else {
+        running.current = false
+      }
+    }
+    rafRef.current = requestAnimationFrame(step)
+  }
+
+  function handleClick() {
+    setClicks(c => c + 1)
+    const strength = Math.min(8 + clicks * 2.5, 28)
+    applyShake(strength)
+    startLoop()
+  }
+
+  useEffect(() => () => { if (rafRef.current) cancelAnimationFrame(rafRef.current) }, [])
+
+  const intro =
+    clicks === 0 ? 'Tap anywhere to shake!'
+    : clicks < 3 ? 'Again! Shake harder! 💥'
+    : clicks < 6 ? 'Keep going! 🌀'
+    :              'What a mess! 🎉'
+
+  return (
+    <>
+      <div
+        onClick={handleClick}
+        style={{ ...canvasStyle, cursor: 'pointer', userSelect: 'none' }}
+      >
+        {dotsRef.current.map(dot => (
+          <div
+            key={dot.id}
+            style={{
+              ...dotStyle(dot.color),
+              left: `${dot.x}%`, top: `${dot.y}%`,
+              transform: 'translate(-50%, -50%)',
+              transition: 'none',
+              pointerEvents: 'none',
+            }}
+          />
+        ))}
+      </div>
+      <IntroText>{intro}</IntroText>
+    </>
+  )
+}
+
+// ─── Shared style helpers ───────────────────────────────────────────────────
+const canvasStyle: React.CSSProperties = {
+  flex: 1, width: '100%', maxWidth: 480, maxHeight: 520,
+  background: '#fff', borderRadius: 24,
+  boxShadow: '0 8px 40px rgba(0,0,0,0.13), 0 2px 8px rgba(0,0,0,0.08)',
+  border: '3px solid #f0e8d8',
+  position: 'relative', overflow: 'hidden',
+}
+
+const dotStyle = (color: string): React.CSSProperties => ({
+  position: 'absolute',
+  width: DOT_SIZE, height: DOT_SIZE,
+  borderRadius: '50%',
+  background: color,
+  cursor: 'pointer',
+  boxShadow: `0 4px 16px ${color}88`,
+  WebkitTapHighlightColor: 'transparent',
+})
+
+function IntroText({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{
+      marginTop: 20, marginBottom: 20,
+      fontSize: 'clamp(16px, 4vw, 22px)',
+      color: '#444', textAlign: 'center', maxWidth: 480,
+      lineHeight: 1.4, minHeight: '2.8em',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontFamily: 'inherit',
+    }}>
+      {children}
+    </div>
+  )
+}
+
 // ─── Shell ─────────────────────────────────────────────────────────────────
-const PAGES = [Page1, Page2, Page3]
+const PAGES = [Page1, Page2, Page3, Page4]
 const TOTAL = PAGES.length
 
 export default function PressHere() {
