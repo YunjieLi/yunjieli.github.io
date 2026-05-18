@@ -27,7 +27,8 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         # Fall back to default error handling
         super().send_error(code, message)
 
-PORT = 8000
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+PORT = int(os.environ.get("PORT", 8000))
 
 with socketserver.TCPServer(("", PORT), CustomHTTPRequestHandler) as httpd:
     print(f"Server running at http://localhost:{PORT}/")
