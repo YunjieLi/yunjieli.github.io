@@ -231,6 +231,128 @@ function Page4() {
   )
 }
 
+// ─── Pages 5 & 6 — tilt ────────────────────────────────────────────────────
+// Scattered starting positions that mimic end state of Page 4
+const SCATTERED: { x: number; y: number }[] = [
+  // red
+  { x: 72, y: 12 }, { x: 18, y: 45 }, { x: 55, y: 72 }, { x: 82, y: 52 }, { x: 35, y: 85 },
+  // yellow
+  { x: 48, y: 22 }, { x: 85, y: 35 }, { x: 22, y: 65 }, { x: 65, y: 80 }, { x: 12, y: 28 },
+  // blue
+  { x: 62, y: 10 }, { x: 28, y: 50 }, { x: 78, y: 30 }, { x: 42, y: 90 }, { x: 90, y: 68 },
+]
+
+function initTiltDots(): PhysDot[] {
+  return [RED, YELLOW, BLUE].flatMap((color, ci) =>
+    Array.from({ length: 5 }, (_, i) => ({
+      id: `tilt-${ci}-${i}`,
+      color,
+      x: SCATTERED[ci * 5 + i].x,
+      y: SCATTERED[ci * 5 + i].y,
+      vx: 0,
+      vy: 0,
+    }))
+  )
+}
+
+function TiltPage({ direction }: { direction: 'left' | 'right' }) {
+  const dotsRef  = useRef<PhysDot[]>(initTiltDots())
+  const rafRef   = useRef<number | null>(null)
+  const running  = useRef(false)
+  const [, tick] = useState(0)
+  const [taps,   setTaps] = useState(0)
+
+  function handleEdgeTap() {
+    setTaps(t => t + 1)
+    const sign    = direction === 'left' ? -1 : 1
+    const impulse = Math.min(4 + taps * 1.5, 14)
+    dotsRef.current = dotsRef.current.map(dot => ({
+      ...dot,
+      vx: dot.vx + sign * impulse * (0.7 + Math.random() * 0.6),
+      vy: dot.vy + (Math.random() - 0.5) * impulse * 0.4,
+    }))
+    if (!running.current) startLoop()
+  }
+
+  function startLoop() {
+    running.current = true
+    const step = () => {
+      let anyMoving = false
+      dotsRef.current = dotsRef.current.map(({ x, y, vx, vy, ...rest }) => {
+        x += vx; y += vy
+        if (x < RX)       { x = RX;       vx =  Math.abs(vx) * BOUNCE }
+        if (x > 100 - RX) { x = 100 - RX; vx = -Math.abs(vx) * BOUNCE }
+        if (y < RY)       { y = RY;       vy =  Math.abs(vy) * BOUNCE }
+        if (y > 100 - RY) { y = 100 - RY; vy = -Math.abs(vy) * BOUNCE }
+        vx *= DAMPING; vy *= DAMPING
+        if (Math.abs(vx) > 0.05 || Math.abs(vy) > 0.05) anyMoving = true
+        return { ...rest, x, y, vx, vy }
+      })
+      tick(n => n + 1)
+      if (anyMoving) { rafRef.current = requestAnimationFrame(step) }
+      else { running.current = false }
+    }
+    rafRef.current = requestAnimationFrame(step)
+  }
+
+  useEffect(() => () => { if (rafRef.current) cancelAnimationFrame(rafRef.current) }, [])
+
+  const tiltDeg  = Math.min(taps * 4, 20) * (direction === 'left' ? -1 : 1)
+  const side     = direction === 'left' ? 'left' : 'right'
+  const arrow    = direction === 'left' ? '←' : '→'
+  const intro    =
+    taps === 0 ? `Tap the ${side} edge to tilt!`
+    : taps < 3 ? 'Again! Tilt more! 📐'
+    :            'Wheee, they\'re sliding! 🎪'
+
+  const edgeZone: React.CSSProperties = {
+    position: 'absolute', top: 0, bottom: 0, [side]: 0, width: '28%',
+    cursor: 'pointer', zIndex: 10,
+    display: 'flex', alignItems: 'center',
+    justifyContent: direction === 'left' ? 'flex-start' : 'flex-end',
+    padding: '0 14px',
+    background: direction === 'left'
+      ? 'linear-gradient(to right, rgba(0,0,0,0.05), transparent)'
+      : 'linear-gradient(to left,  rgba(0,0,0,0.05), transparent)',
+  }
+
+  return (
+    <>
+      {/* outer wrapper holds space without clipping */}
+      <div style={{ flex: 1, width: '100%', maxWidth: 480, maxHeight: 520, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{
+          ...canvasStyle,
+          flex: 'none',
+          width: '88%', height: '88%',
+          transform: `rotate(${tiltDeg}deg)`,
+          transition: 'transform 0.45s cubic-bezier(0.34,1.2,0.64,1)',
+        }}>
+          {/* tap zone */}
+          <div onClick={handleEdgeTap} style={edgeZone}>
+            <span style={{ fontSize: 30, opacity: Math.min(0.18 + taps * 0.08, 0.55), userSelect: 'none' }}>
+              {arrow}
+            </span>
+          </div>
+          {/* dots */}
+          {dotsRef.current.map(dot => (
+            <div key={dot.id} style={{
+              ...dotStyle(dot.color),
+              left: `${dot.x}%`, top: `${dot.y}%`,
+              transform: 'translate(-50%, -50%)',
+              transition: 'none',
+              pointerEvents: 'none',
+            }} />
+          ))}
+        </div>
+      </div>
+      <IntroText>{intro}</IntroText>
+    </>
+  )
+}
+
+function Page5() { return <TiltPage direction="left"  /> }
+function Page6() { return <TiltPage direction="right" /> }
+
 // ─── Shared style helpers ───────────────────────────────────────────────────
 const canvasStyle: React.CSSProperties = {
   flex: 1, width: '100%', maxWidth: 480, maxHeight: 520,
@@ -266,7 +388,7 @@ function IntroText({ children }: { children: React.ReactNode }) {
 }
 
 // ─── Shell ─────────────────────────────────────────────────────────────────
-const PAGES = [Page1, Page2, Page3, Page4]
+const PAGES = [Page1, Page2, Page3, Page4, Page5, Page6]
 const TOTAL = PAGES.length
 
 export default function PressHere() {
