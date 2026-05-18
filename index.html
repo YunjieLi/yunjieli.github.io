@@ -15,12 +15,22 @@
       a {
         cursor: inherit;
       }
+      .toc-link {
+        position: fixed;
+        top: 16px;
+        right: 20px;
+        font-size: 24px;
+        text-decoration: none;
+        cursor: pointer;
+        z-index: 10;
+      }
 
 			/* ["#EDBA29", "#CA6C2F", "#6EBCBE", "#EEE8DC"] */
 
 		</style>
 	</header>
 	<body>
+		<a class="toc-link" href="/toc">📖</a>
 		<div class="container">
 			<svg width="500" height="500"></svg>
 			<script src="https://d3js.org/d3.v4.min.js"></script>
