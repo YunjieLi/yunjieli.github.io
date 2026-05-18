@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useLayoutEffect, createContext, useContext
 import '@fontsource-variable/nunito'
 import { RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination'
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination'
 import { cn } from '@/lib/utils'
 
 const YELLOW = '#FDD302'
@@ -498,44 +498,34 @@ export default function PressHere() {
             {caption}
           </div>
 
-          <Pagination className="w-auto mx-0 shrink-0">
-            <PaginationContent className="gap-1">
-              <PaginationItem>
-                <PaginationPrevious
-                  text=""
-                  onClick={() => !isFirst && nav(page - 1)}
-                  className={cn('pl-2!', isFirst && 'opacity-30 pointer-events-none')}
-                />
-              </PaginationItem>
-
-              {Array.from({ length: TOTAL }, (_, i) => (
-                <PaginationItem key={i}>
-                  <div style={{
-                    width: i === page ? 8 : 6,
-                    height: i === page ? 8 : 6,
-                    borderRadius: '50%',
-                    background: i === page ? '#555' : '#ccc',
-                    transition: 'all 0.25s ease',
-                    cursor: 'pointer',
-                  }} onClick={() => nav(i)} />
+          <div className="flex items-center gap-2 shrink-0">
+            <Pagination className="w-auto mx-0">
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    onClick={() => !isFirst && nav(page - 1)}
+                    className={cn(isFirst && 'opacity-30 pointer-events-none')}
+                  />
                 </PaginationItem>
-              ))}
-
-              <PaginationItem>
-                <Button variant="ghost" size="icon-sm" onClick={() => nav(0)} className="text-muted-foreground">
-                  <RotateCcw />
-                </Button>
-              </PaginationItem>
-
-              <PaginationItem>
-                <PaginationNext
-                  text=""
-                  onClick={() => !isLast && nav(page + 1)}
-                  className={cn('pr-2!', isLast && 'opacity-30 pointer-events-none')}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
+                {Array.from({ length: TOTAL }, (_, i) => (
+                  <PaginationItem key={i}>
+                    <PaginationLink isActive={i === page} onClick={() => nav(i)}>
+                      {i + 1}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+                <PaginationItem>
+                  <PaginationNext
+                    onClick={() => !isLast && nav(page + 1)}
+                    className={cn(isLast && 'opacity-30 pointer-events-none')}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+            <Button variant="ghost" size="icon-sm" onClick={() => nav(0)} className="text-muted-foreground shrink-0">
+              <RotateCcw />
+            </Button>
+          </div>
         </div>
       </div>
     </CaptionCtx.Provider>
