@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect, useLayoutEffect, createContext, useContext } from 'react'
 import '@fontsource-variable/nunito'
-import { RotateCcw } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { ChevronRight } from 'lucide-react'
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination'
 import { cn } from '@/lib/utils'
 
@@ -10,9 +9,7 @@ const RED    = '#F63664'
 const BLUE   = '#5CCBF8'
 const DOT_SIZE = 80
 
-// Fixed column x-positions (%)
 const COL_X = [25, 50, 75]
-// Fixed row y-positions, bottom → top (%)
 const ROW_Y = [84, 67, 50, 33, 16]
 
 type DotSpec = {
@@ -21,10 +18,13 @@ type DotSpec = {
   x: number
   y: number
   onClick: () => void
+  interactive?: boolean   // false → default cursor, no pointer
 }
 
 // ─── Dot entrance animation ────────────────────────────────────────────────
-function DotMount({ color, x, y, onClick }: { color: string; x: number; y: number; onClick: () => void }) {
+function DotMount({ color, x, y, onClick, interactive = true }: {
+  color: string; x: number; y: number; onClick: () => void; interactive?: boolean
+}) {
   const [active, setActive] = useState(false)
   useEffect(() => {
     const id = requestAnimationFrame(() => setActive(true))
@@ -34,7 +34,7 @@ function DotMount({ color, x, y, onClick }: { color: string; x: number; y: numbe
     <div
       onClick={onClick}
       style={{
-        ...dotStyle(color),
+        ...dotStyle(color, interactive),
         left: `${x}%`, top: `${y}%`,
         transform: `translate(-50%, -50%) scale(${active ? 1 : 0.1})`,
         opacity: active ? 1 : 0,
@@ -47,15 +47,23 @@ function DotMount({ color, x, y, onClick }: { color: string; x: number; y: numbe
 }
 
 // ─── Shared canvas ─────────────────────────────────────────────────────────
-function PageCanvas({ dots, intro }: { dots: DotSpec[]; intro: string }) {
+function PageCanvas({ dots, intro, done }: { dots: DotSpec[]; intro: string; done: boolean }) {
   return (
     <>
       <div style={canvasStyle}>
         {dots.map(spec => (
-          <DotMount key={spec.id} color={spec.color} x={spec.x} y={spec.y} onClick={spec.onClick} />
+          <DotMount
+            key={spec.id}
+            color={spec.color}
+            x={spec.x}
+            y={spec.y}
+            onClick={spec.onClick}
+            interactive={spec.interactive ?? true}
+          />
         ))}
       </div>
       <IntroText>{intro}</IntroText>
+      <SetDone done={done} />
     </>
   )
 }
@@ -63,6 +71,7 @@ function PageCanvas({ dots, intro }: { dots: DotSpec[]; intro: string }) {
 // ─── Page 1 ────────────────────────────────────────────────────────────────
 function Page1() {
   const [count, setCount] = useState(1)
+  const done = count === 3
   const bump = () => setCount(c => Math.min(c + 1, 3))
 
   const dots: DotSpec[] = Array.from({ length: count }, (_, i) => ({
@@ -71,6 +80,7 @@ function Page1() {
     x: COL_X[i],
     y: ROW_Y[0],
     onClick: bump,
+    interactive: !done,
   }))
 
   const intro =
@@ -78,7 +88,7 @@ function Page1() {
     : count === 2 ? 'Now press one of them!'
     : 'Three yellow dots! 🌟'
 
-  return <PageCanvas dots={dots} intro={intro} />
+  return <PageCanvas dots={dots} intro={intro} done={done} />
 }
 
 // ─── Page 2 ────────────────────────────────────────────────────────────────
@@ -86,27 +96,30 @@ function Page2() {
   const [leftColor,  setLeft]  = useState(YELLOW)
   const [rightColor, setRight] = useState(YELLOW)
 
-  const dots: DotSpec[] = [
-    { id: 'p2-0', color: leftColor,  x: COL_X[0], y: ROW_Y[0], onClick: () => setLeft(RED)  },
-    { id: 'p2-1', color: YELLOW,     x: COL_X[1], y: ROW_Y[0], onClick: () => {}             },
-    { id: 'p2-2', color: rightColor, x: COL_X[2], y: ROW_Y[0], onClick: () => setRight(BLUE) },
-  ]
-
   const leftDone  = leftColor  === RED
   const rightDone = rightColor === BLUE
-  const intro =
-    leftDone && rightDone ? 'Red, yellow, blue! 🎨'
-    : leftDone            ? 'Now try the right dot!'
-    : rightDone           ? 'Now try the left dot!'
-    :                       'Press the left dot, then the right!'
+  const done = leftDone && rightDone
 
-  return <PageCanvas dots={dots} intro={intro} />
+  const dots: DotSpec[] = [
+    { id: 'p2-0', color: leftColor,  x: COL_X[0], y: ROW_Y[0], onClick: () => setLeft(RED),  interactive: !leftDone  },
+    { id: 'p2-1', color: YELLOW,     x: COL_X[1], y: ROW_Y[0], onClick: () => {},              interactive: false      },
+    { id: 'p2-2', color: rightColor, x: COL_X[2], y: ROW_Y[0], onClick: () => setRight(BLUE), interactive: !rightDone },
+  ]
+
+  const intro =
+    done        ? 'Red, yellow, blue! 🎨'
+    : leftDone  ? 'Now try the right dot!'
+    : rightDone ? 'Now try the left dot!'
+    :             'Press the left dot, then the right!'
+
+  return <PageCanvas dots={dots} intro={intro} done={done} />
 }
 
 // ─── Page 3 ────────────────────────────────────────────────────────────────
 function Page3() {
   const [counts, setCounts] = useState([1, 1, 1])
   const COL_COLORS = [RED, YELLOW, BLUE]
+  const done = counts.every(c => c === 5)
 
   function pressCol(col: number) {
     setCounts(prev => {
@@ -124,26 +137,27 @@ function Page3() {
       x: COL_X[ci],
       y: ROW_Y[row],
       onClick: () => pressCol(ci),
+      interactive: counts[ci] < 5,
     }))
   )
 
   const total = counts.reduce((a, b) => a + b, 0)
   const intro =
-    counts.every(c => c === 5) ? 'A 5×3 rainbow matrix! 🌈'
-    : total > 6                ? 'Almost there — keep pressing!'
-    :                            'Press any dot to grow its column!'
+    done        ? 'A 5×3 rainbow matrix! 🌈'
+    : total > 6 ? 'Almost there — keep pressing!'
+    :             'Press any dot to grow its column!'
 
-  return <PageCanvas dots={dots} intro={intro} />
+  return <PageCanvas dots={dots} intro={intro} done={done} />
 }
 
 // ─── Page 4 ────────────────────────────────────────────────────────────────
 type PhysDot = { id: string; color: string; x: number; y: number; vx: number; vy: number }
 
-const RX = (DOT_SIZE / 2 / 480) * 100  // dot radius as % of canvas width
-const RY = (DOT_SIZE / 2 / 520) * 100  // dot radius as % of canvas height
-const GRAVITY  = 0       // no gravity — dots scatter and rest at all heights
-const DAMPING  = 0.96    // friction brings them to rest
-const BOUNCE   = 0.82
+const RX = (DOT_SIZE / 2 / 480) * 100
+const RY = (DOT_SIZE / 2 / 520) * 100
+const GRAVITY = 0
+const DAMPING = 0.96
+const BOUNCE  = 0.82
 
 function initPhysDots(): PhysDot[] {
   return [RED, YELLOW, BLUE].flatMap((color, ci) =>
@@ -164,6 +178,7 @@ function Page4() {
   const running  = useRef(false)
   const [, tick] = useState(0)
   const [clicks, setClicks] = useState(0)
+  const done = clicks >= 6
 
   function applyShake(strength: number) {
     dotsRef.current = dotsRef.current.map(dot => ({
@@ -176,7 +191,6 @@ function Page4() {
   function startLoop() {
     if (running.current) return
     running.current = true
-
     const step = () => {
       let anyMoving = false
       dotsRef.current = dotsRef.current.map(({ x, y, vx, vy, ...rest }) => {
@@ -191,11 +205,8 @@ function Page4() {
         return { ...rest, x, y, vx, vy }
       })
       tick(n => n + 1)
-      if (anyMoving) {
-        rafRef.current = requestAnimationFrame(step)
-      } else {
-        running.current = false
-      }
+      if (anyMoving) { rafRef.current = requestAnimationFrame(step) }
+      else { running.current = false }
     }
     rafRef.current = requestAnimationFrame(step)
   }
@@ -217,37 +228,30 @@ function Page4() {
 
   return (
     <>
-      <div
-        onClick={handleClick}
-        style={{ ...canvasStyle, cursor: 'pointer', userSelect: 'none' }}
-      >
+      <div onClick={handleClick} style={{ ...canvasStyle, cursor: done ? 'default' : 'pointer', userSelect: 'none' }}>
         {dotsRef.current.map(dot => (
-          <div
-            key={dot.id}
-            style={{
-              ...dotStyle(dot.color),
-              left: `${dot.x}%`, top: `${dot.y}%`,
-              transform: 'translate(-50%, -50%)',
-              transition: 'none',
-              pointerEvents: 'none',
-            }}
-          />
+          <div key={dot.id} style={{
+            ...dotStyle(dot.color, false),
+            left: `${dot.x}%`, top: `${dot.y}%`,
+            transform: 'translate(-50%, -50%)',
+            transition: 'none',
+            pointerEvents: 'none',
+          }} />
         ))}
       </div>
       <IntroText>{intro}</IntroText>
+      <SetDone done={done} />
     </>
   )
 }
 
 // ─── Pages 5 & 6 — tilt ────────────────────────────────────────────────────
-// Scattered starting positions that mimic end state of Page 4
 const SCATTERED: { x: number; y: number }[] = [
   { x: 72, y: 12 }, { x: 18, y: 45 }, { x: 55, y: 72 }, { x: 82, y: 52 }, { x: 35, y: 85 },
   { x: 48, y: 22 }, { x: 85, y: 35 }, { x: 22, y: 65 }, { x: 65, y: 80 }, { x: 12, y: 28 },
   { x: 62, y: 10 }, { x: 28, y: 50 }, { x: 78, y: 30 }, { x: 42, y: 90 }, { x: 90, y: 68 },
 ]
 
-// End state of Page 5: all dots piled against the left wall, y unchanged
 const PILED_LEFT: { x: number; y: number }[] = [
   { x: 8.3, y: 12 }, { x: 8.3, y: 45 }, { x: 8.3, y: 72 }, { x: 8.3, y: 52 }, { x: 8.3, y: 85 },
   { x: 8.3, y: 22 }, { x: 8.3, y: 35 }, { x: 8.3, y: 65 }, { x: 8.3, y: 80 }, { x: 8.3, y: 28 },
@@ -271,9 +275,10 @@ function TiltPage({ direction, initPositions }: { direction: 'left' | 'right'; i
   const dotsRef  = useRef<PhysDot[]>(initTiltDots(initPositions))
   const rafRef   = useRef<number | null>(null)
   const running  = useRef(false)
-  const gravRef  = useRef(0)   // sideways gravity strength, grows with taps
+  const gravRef  = useRef(0)
   const [, tick] = useState(0)
   const [taps,   setTaps] = useState(0)
+  const done = taps >= 3
 
   const sign = direction === 'left' ? -1 : 1
 
@@ -320,10 +325,10 @@ function TiltPage({ direction, initPositions }: { direction: 'left' | 'right'; i
 
   return (
     <>
-      <div onClick={handleTap} style={{ ...canvasStyle, cursor: 'pointer', userSelect: 'none' }}>
+      <div onClick={done ? undefined : handleTap} style={{ ...canvasStyle, cursor: done ? 'default' : 'pointer', userSelect: 'none' }}>
         {dotsRef.current.map(dot => (
           <div key={dot.id} style={{
-            ...dotStyle(dot.color),
+            ...dotStyle(dot.color, false),
             left: `${dot.x}%`, top: `${dot.y}%`,
             transform: 'translate(-50%, -50%)',
             transition: 'none',
@@ -340,6 +345,7 @@ function TiltPage({ direction, initPositions }: { direction: 'left' | 'right'; i
         </span>
       </div>
       <IntroText>{intro}</IntroText>
+      <SetDone done={done} />
     </>
   )
 }
@@ -348,11 +354,9 @@ function Page5() { return <TiltPage direction="left" /> }
 function Page6() { return <TiltPage direction="right" initPositions={PILED_LEFT} /> }
 
 // ─── Page 7 — lineup ───────────────────────────────────────────────────────
-// 15 dots in r,y,b pattern, scattered → animate to a horizontal row
 const COLOR_ROW = Array.from({ length: 15 }, (_, i) => [RED, YELLOW, BLUE][i % 3])
-const ROW_CENTER_Y = 50   // vertical center (%)
-// Keep first/last dots inside canvas at min-width 960px (radius = DOT_SIZE/2)
-const ROW_MARGIN = (DOT_SIZE / 2 / 960) * 100   // ≈ 4.17 %
+const ROW_CENTER_Y = 50
+const ROW_MARGIN = (DOT_SIZE / 2 / 960) * 100
 const ROW_X = Array.from({ length: 15 }, (_, i) =>
   ROW_MARGIN + i * ((100 - 2 * ROW_MARGIN) / 14)
 )
@@ -369,7 +373,7 @@ function Page7() {
   const [lined, setLined] = useState(false)
   return (
     <>
-      <div onClick={() => setLined(true)} style={{ ...canvasStyle, cursor: lined ? 'default' : 'pointer' }}>
+      <div onClick={lined ? undefined : () => setLined(true)} style={{ ...canvasStyle, cursor: lined ? 'default' : 'pointer' }}>
         {COLOR_ROW.map((color, i) => {
           const pos = lined ? { x: ROW_X[i], y: ROW_CENTER_Y } : SCATTERED_6[i]
           return (
@@ -388,6 +392,7 @@ function Page7() {
         })}
       </div>
       <IntroText>{lined ? 'All lined up! 🎉' : 'Tap anywhere to line them up!'}</IntroText>
+      <SetDone done={lined} />
     </>
   )
 }
@@ -425,6 +430,7 @@ function Page8() {
         })}
       </div>
       <IntroText>{dark ? 'You turned off the lights! 🌙' : 'Press a yellow dot to turn off the light!'}</IntroText>
+      <SetDone done={dark} />
     </>
   )
 }
@@ -438,16 +444,16 @@ const canvasStyle: React.CSSProperties = {
   position: 'relative', overflow: 'hidden',
 }
 
-const dotStyle = (color: string): React.CSSProperties => ({
+const dotStyle = (color: string, interactive = true): React.CSSProperties => ({
   position: 'absolute',
   width: DOT_SIZE, height: DOT_SIZE,
   borderRadius: '50%',
   background: color,
-  cursor: 'pointer',
+  cursor: interactive ? 'pointer' : 'default',
   WebkitTapHighlightColor: 'transparent',
 })
 
-// ─── Caption context — lets page components report their caption to the shell ─
+// ─── Caption context ────────────────────────────────────────────────────────
 const CaptionCtx = createContext<(n: React.ReactNode) => void>(() => {})
 
 function IntroText({ children }: { children: React.ReactNode }) {
@@ -456,16 +462,24 @@ function IntroText({ children }: { children: React.ReactNode }) {
   return null
 }
 
+// ─── Done context ───────────────────────────────────────────────────────────
+const DoneCtx = createContext<(done: boolean) => void>(() => {})
+
+function SetDone({ done }: { done: boolean }) {
+  const setDone = useContext(DoneCtx)
+  useLayoutEffect(() => { setDone(done) })
+  return null
+}
 
 // ─── Shell ─────────────────────────────────────────────────────────────────
 const PAGES = [Page1, Page2, Page3, Page4, Page5, Page6, Page7, Page8]
-// Page1=1dot→3, Page2=colors, Page3=grow cols, Page4=shake, Page5=tilt left, Page6=tilt right, Page7=lineup, Page8=lights-out
 const TOTAL = PAGES.length
 
 export default function PressHere() {
   const [page,    setPage]    = useState(0)
   const [key,     setKey]     = useState(0)
   const [caption, setCaption] = useState<React.ReactNode>('')
+  const [done,    setDone]    = useState(false)
 
   const isFirst = page === 0
   const isLast  = page === TOTAL - 1
@@ -474,31 +488,59 @@ export default function PressHere() {
   function nav(next: number) {
     setPage(next)
     setKey(k => k + 1)
+    setDone(false)
   }
 
   return (
     <CaptionCtx.Provider value={setCaption}>
-      <div style={{
-        height: '100dvh', display: 'flex', flexDirection: 'column',
-        background: '#fef9f0', padding: '12px 32px 20px', boxSizing: 'border-box',
-        fontFamily: '"Nunito Variable", Nunito, sans-serif',
-        overflowX: 'auto',
-      }}>
-        <PageComponent key={key} />
-
-        {/* Caption left · Pagination right — one row */}
+      <DoneCtx.Provider value={setDone}>
         <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          minWidth: 960, marginTop: 14, gap: 16,
+          height: '100dvh', display: 'flex', flexDirection: 'column',
+          background: '#fef9f0', padding: '12px 32px 16px', boxSizing: 'border-box',
+          fontFamily: '"Nunito Variable", Nunito, sans-serif',
+          overflowX: 'auto',
         }}>
+          <PageComponent key={key} />
+
+          {/* Caption row — left: caption text, right: Next button when done */}
           <div style={{
-            fontSize: 'clamp(14px, 2vw, 18px)', fontWeight: 600,
-            color: '#444', lineHeight: 1.4,
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            minWidth: 960, marginTop: 14, gap: 16,
           }}>
-            {caption}
+            <div style={{
+              fontSize: 'clamp(14px, 2vw, 18px)', fontWeight: 600,
+              color: '#444', lineHeight: 1.4,
+            }}>
+              {caption}
+            </div>
+
+            {done && !isLast && (
+              <button
+                onClick={() => nav(page + 1)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  padding: '10px 28px', borderRadius: 40,
+                  background: '#FDD302', border: 'none',
+                  fontSize: 20, fontWeight: 800, color: '#333',
+                  fontFamily: 'inherit', cursor: 'pointer',
+                  transition: 'background 0.15s ease, transform 0.1s ease',
+                  flexShrink: 0,
+                }}
+                onMouseEnter={e => (e.currentTarget.style.background = '#ffc700')}
+                onMouseLeave={e => (e.currentTarget.style.background = '#FDD302')}
+                onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.96)')}
+                onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}
+              >
+                Next <ChevronRight size={22} strokeWidth={3} />
+              </button>
+            )}
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          {/* Footer — pagination only */}
+          <div style={{
+            display: 'flex', justifyContent: 'center',
+            minWidth: 960, marginTop: 10,
+          }}>
             <Pagination className="w-auto mx-0">
               <PaginationContent>
                 <PaginationItem>
@@ -522,12 +564,9 @@ export default function PressHere() {
                 </PaginationItem>
               </PaginationContent>
             </Pagination>
-            <Button variant="ghost" size="icon-sm" onClick={() => nav(0)} className="text-muted-foreground shrink-0">
-              <RotateCcw />
-            </Button>
           </div>
         </div>
-      </div>
+      </DoneCtx.Provider>
     </CaptionCtx.Provider>
   )
 }
