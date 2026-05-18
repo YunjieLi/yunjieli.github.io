@@ -18,34 +18,37 @@ type DotSpec = {
   onClick: () => void
 }
 
+// ─── Dot entrance animation ────────────────────────────────────────────────
+function DotMount({ color, x, y, onClick }: { color: string; x: number; y: number; onClick: () => void }) {
+  const [active, setActive] = useState(false)
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setActive(true))
+    return () => cancelAnimationFrame(id)
+  }, [])
+  return (
+    <div
+      onClick={onClick}
+      style={{
+        ...dotStyle(color),
+        left: `${x}%`, top: `${y}%`,
+        transform: `translate(-50%, -50%) scale(${active ? 1 : 0.1})`,
+        opacity: active ? 1 : 0,
+        transition: active
+          ? 'opacity 0.22s ease, transform 0.22s cubic-bezier(0.34,1.5,0.64,1), background 0.25s ease'
+          : 'none',
+      }}
+    />
+  )
+}
+
 // ─── Shared canvas ─────────────────────────────────────────────────────────
 function PageCanvas({ dots, intro }: { dots: DotSpec[]; intro: string }) {
-  const [popped, setPopped] = useState<string | null>(null)
-
-  function handleClick(spec: DotSpec) {
-    spec.onClick()
-    setPopped(spec.id)
-    setTimeout(() => setPopped(null), 200)
-  }
-
   return (
     <>
       <div style={canvasStyle}>
-        {dots.map(spec => {
-          const isPopped = popped === spec.id
-          return (
-            <div
-              key={spec.id}
-              onClick={() => handleClick(spec)}
-              style={{
-                ...dotStyle(spec.color),
-                left: `${spec.x}%`, top: `${spec.y}%`,
-                transform: `translate(-50%, -50%) scale(${isPopped ? 1.28 : 1})`,
-                transition: 'transform 0.18s cubic-bezier(0.34,1.56,0.64,1), background 0.25s ease',
-              }}
-            />
-          )
-        })}
+        {dots.map(spec => (
+          <DotMount key={spec.id} color={spec.color} x={spec.x} y={spec.y} onClick={spec.onClick} />
+        ))}
       </div>
       <IntroText>{intro}</IntroText>
     </>
@@ -259,26 +262,28 @@ function TiltPage({ direction }: { direction: 'left' | 'right' }) {
   const dotsRef  = useRef<PhysDot[]>(initTiltDots())
   const rafRef   = useRef<number | null>(null)
   const running  = useRef(false)
+  const gravRef  = useRef(0)   // sideways gravity strength, grows with taps
   const [, tick] = useState(0)
   const [taps,   setTaps] = useState(0)
 
-  function handleEdgeTap() {
-    setTaps(t => t + 1)
-    const sign    = direction === 'left' ? -1 : 1
-    const impulse = Math.min(4 + taps * 1.5, 14)
-    dotsRef.current = dotsRef.current.map(dot => ({
-      ...dot,
-      vx: dot.vx + sign * impulse * (0.7 + Math.random() * 0.6),
-      vy: dot.vy + (Math.random() - 0.5) * impulse * 0.4,
-    }))
+  const sign = direction === 'left' ? -1 : 1
+
+  function handleTap() {
+    setTaps(t => {
+      const next = t + 1
+      gravRef.current = Math.min(0.08 + next * 0.07, 0.45)
+      return next
+    })
     if (!running.current) startLoop()
   }
 
   function startLoop() {
     running.current = true
     const step = () => {
+      const gx = sign * gravRef.current
       let anyMoving = false
       dotsRef.current = dotsRef.current.map(({ x, y, vx, vy, ...rest }) => {
+        vx += gx
         x += vx; y += vy
         if (x < RX)       { x = RX;       vx =  Math.abs(vx) * BOUNCE }
         if (x > 100 - RX) { x = 100 - RX; vx = -Math.abs(vx) * BOUNCE }
@@ -297,67 +302,136 @@ function TiltPage({ direction }: { direction: 'left' | 'right' }) {
 
   useEffect(() => () => { if (rafRef.current) cancelAnimationFrame(rafRef.current) }, [])
 
-  const tiltDeg  = Math.min(taps * 4, 20) * (direction === 'left' ? -1 : 1)
-  const side     = direction === 'left' ? 'left' : 'right'
-  const arrow    = direction === 'left' ? '←' : '→'
-  const intro    =
-    taps === 0 ? `Tap the ${side} edge to tilt!`
+  const side  = direction === 'left' ? 'left' : 'right'
+  const arrow = direction === 'left' ? '←' : '→'
+  const intro =
+    taps === 0 ? `Tap to tilt ${side}!`
     : taps < 3 ? 'Again! Tilt more! 📐'
-    :            'Wheee, they\'re sliding! 🎪'
-
-  const edgeZone: React.CSSProperties = {
-    position: 'absolute', top: 0, bottom: 0, [side]: 0, width: '28%',
-    cursor: 'pointer', zIndex: 10,
-    display: 'flex', alignItems: 'center',
-    justifyContent: direction === 'left' ? 'flex-start' : 'flex-end',
-    padding: '0 14px',
-    background: direction === 'left'
-      ? 'linear-gradient(to right, rgba(0,0,0,0.05), transparent)'
-      : 'linear-gradient(to left,  rgba(0,0,0,0.05), transparent)',
-  }
+    :            `They\'re all sliding! 🎪`
 
   return (
     <>
-      {/* outer wrapper holds space without clipping */}
-      <div style={{ flex: 1, width: '100%', maxWidth: 480, maxHeight: 520, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{
-          ...canvasStyle,
-          flex: 'none',
-          width: '88%', height: '88%',
-          transform: `rotate(${tiltDeg}deg)`,
-          transition: 'transform 0.45s cubic-bezier(0.34,1.2,0.64,1)',
+      <div onClick={handleTap} style={{ ...canvasStyle, cursor: 'pointer', userSelect: 'none' }}>
+        {dotsRef.current.map(dot => (
+          <div key={dot.id} style={{
+            ...dotStyle(dot.color),
+            left: `${dot.x}%`, top: `${dot.y}%`,
+            transform: 'translate(-50%, -50%)',
+            transition: 'none',
+            pointerEvents: 'none',
+          }} />
+        ))}
+        <span style={{
+          position: 'absolute', [side]: 14, top: '50%',
+          transform: 'translateY(-50%)',
+          fontSize: 30, opacity: Math.min(0.15 + taps * 0.08, 0.5),
+          pointerEvents: 'none', userSelect: 'none',
         }}>
-          {/* tap zone */}
-          <div onClick={handleEdgeTap} style={edgeZone}>
-            <span style={{ fontSize: 30, opacity: Math.min(0.18 + taps * 0.08, 0.55), userSelect: 'none' }}>
-              {arrow}
-            </span>
-          </div>
-          {/* dots */}
-          {dotsRef.current.map(dot => (
-            <div key={dot.id} style={{
-              ...dotStyle(dot.color),
-              left: `${dot.x}%`, top: `${dot.y}%`,
-              transform: 'translate(-50%, -50%)',
-              transition: 'none',
-              pointerEvents: 'none',
-            }} />
-          ))}
-        </div>
+          {arrow}
+        </span>
       </div>
       <IntroText>{intro}</IntroText>
     </>
   )
 }
 
-function Page5() { return <TiltPage direction="left"  /> }
+function Page5() { return <TiltPage direction="left" /> }
 function Page6() { return <TiltPage direction="right" /> }
+
+// ─── Page 7 — lineup ───────────────────────────────────────────────────────
+// 15 dots in r,y,b pattern, scattered → animate to a horizontal row
+const COLOR_ROW = Array.from({ length: 15 }, (_, i) => [RED, YELLOW, BLUE][i % 3])
+const DOT_SM    = 42   // smaller dot for the wide row
+const ROW_CENTER_Y = 50   // vertical center (%)
+const ROW_X     = Array.from({ length: 15 }, (_, i) => (i + 0.5) / 15 * 100)
+
+const SCATTERED_6 = [
+  {x:72,y:25},{x:45,y:15},{x:20,y:42},
+  {x:88,y:62},{x:15,y:72},{x:55,y:82},
+  {x:30,y:55},{x:70,y:78},{x:10,y:22},
+  {x:50,y:45},{x:85,y:32},{x:40,y:90},
+  {x:25,y:10},{x:60,y:62},{x:80,y:50},
+]
+
+const wideCanvas: React.CSSProperties = {
+  width: '100%', height: 200,
+  background: '#fff', borderRadius: 24,
+  border: '3px solid #f0e8d8',
+  position: 'relative', overflow: 'hidden', flexShrink: 0,
+}
+
+function Page7() {
+  const [lined, setLined] = useState(false)
+  return (
+    <>
+      <div style={{ flex: 1, width: '100%', maxWidth: 680, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div onClick={() => setLined(true)} style={{ ...wideCanvas, cursor: lined ? 'default' : 'pointer' }}>
+          {COLOR_ROW.map((color, i) => {
+            const pos = lined ? { x: ROW_X[i], y: ROW_CENTER_Y } : SCATTERED_6[i]
+            return (
+              <div key={i} style={{
+                position: 'absolute',
+                left: `${pos.x}%`, top: `${pos.y}%`,
+                transform: 'translate(-50%, -50%)',
+                width: DOT_SM, height: DOT_SM, borderRadius: '50%',
+                background: color,
+                transition: lined
+                  ? `left ${0.45 + i * 0.035}s cubic-bezier(0.34,1.1,0.64,1), top ${0.45 + i * 0.035}s cubic-bezier(0.34,1.1,0.64,1)`
+                  : 'none',
+                pointerEvents: 'none',
+              }} />
+            )
+          })}
+        </div>
+      </div>
+      <IntroText>{lined ? 'All lined up! 🎉' : 'Tap anywhere to line them up!'}</IntroText>
+    </>
+  )
+}
+
+// ─── Page 8 — lights out ───────────────────────────────────────────────────
+function Page8() {
+  const [dark, setDark] = useState(false)
+  return (
+    <>
+      <div style={{ flex: 1, width: '100%', maxWidth: 680, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{
+          ...wideCanvas,
+          background: dark ? '#111' : '#fff',
+          border: `3px solid ${dark ? '#333' : '#f0e8d8'}`,
+          transition: 'background 1.3s ease, border-color 1.3s ease',
+        }}>
+          {COLOR_ROW.map((color, i) => {
+            const isYellow = color === YELLOW
+            const dimmed = dark && !isYellow
+            return (
+              <div
+                key={i}
+                onClick={isYellow && !dark ? () => setDark(true) : undefined}
+                style={{
+                  position: 'absolute',
+                  left: `${ROW_X[i]}%`, top: `${ROW_CENTER_Y}%`,
+                  transform: 'translate(-50%, -50%)',
+                  width: DOT_SM, height: DOT_SM, borderRadius: '50%',
+                  background: color,
+                  cursor: isYellow && !dark ? 'pointer' : 'default',
+                  opacity: dimmed ? 0.05 : 1,
+                  transition: 'opacity 1.3s ease',
+                }}
+              />
+            )
+          })}
+        </div>
+      </div>
+      <IntroText>{dark ? 'You turned off the lights! 🌙' : 'Press a yellow dot to turn off the light!'}</IntroText>
+    </>
+  )
+}
 
 // ─── Shared style helpers ───────────────────────────────────────────────────
 const canvasStyle: React.CSSProperties = {
   flex: 1, width: '100%', maxWidth: 480, maxHeight: 520,
   background: '#fff', borderRadius: 24,
-  boxShadow: '0 8px 40px rgba(0,0,0,0.13), 0 2px 8px rgba(0,0,0,0.08)',
   border: '3px solid #f0e8d8',
   position: 'relative', overflow: 'hidden',
 }
@@ -368,7 +442,6 @@ const dotStyle = (color: string): React.CSSProperties => ({
   borderRadius: '50%',
   background: color,
   cursor: 'pointer',
-  boxShadow: `0 4px 16px ${color}88`,
   WebkitTapHighlightColor: 'transparent',
 })
 
@@ -388,7 +461,8 @@ function IntroText({ children }: { children: React.ReactNode }) {
 }
 
 // ─── Shell ─────────────────────────────────────────────────────────────────
-const PAGES = [Page1, Page2, Page3, Page4, Page5, Page6]
+const PAGES = [Page1, Page2, Page3, Page4, Page5, Page6, Page7, Page8]
+// Page1=1dot→3, Page2=colors, Page3=grow cols, Page4=shake, Page5=tilt left, Page6=tilt right, Page7=lineup, Page8=lights-out
 const TOTAL = PAGES.length
 
 export default function PressHere() {
@@ -426,19 +500,19 @@ export default function PressHere() {
       <div style={{ display: 'flex', gap: 12, maxWidth: 480, width: '100%' }}>
         <button
           onClick={() => nav(page - 1)} disabled={isFirst}
-          style={{ ...btnBase, background: isFirst ? '#e8e8e8' : YELLOW, color: isFirst ? '#aaa' : '#333', cursor: isFirst ? 'default' : 'pointer', boxShadow: isFirst ? 'none' : `0 4px 12px ${YELLOW}55` }}
+          style={{ ...btnBase, background: isFirst ? '#e8e8e8' : YELLOW, color: isFirst ? '#aaa' : '#333', cursor: isFirst ? 'default' : 'pointer' }}
           onPointerDown={e => { if (!isFirst) e.currentTarget.style.transform = 'scale(0.95)' }}
           onPointerUp={e => { e.currentTarget.style.transform = 'scale(1)' }}
         >←</button>
         <button
           onClick={() => nav(0)}
-          style={{ ...btnBase, background: BLUE, color: '#fff', boxShadow: `0 4px 12px ${BLUE}55` }}
+          style={{ ...btnBase, background: BLUE, color: '#fff' }}
           onPointerDown={e => { e.currentTarget.style.transform = 'scale(0.95)' }}
           onPointerUp={e => { e.currentTarget.style.transform = 'scale(1)' }}
         >↺</button>
         <button
           onClick={() => nav(page + 1)} disabled={isLast}
-          style={{ ...btnBase, background: isLast ? '#e8e8e8' : RED, color: isLast ? '#aaa' : '#fff', cursor: isLast ? 'default' : 'pointer', boxShadow: isLast ? 'none' : `0 4px 12px ${RED}55` }}
+          style={{ ...btnBase, background: isLast ? '#e8e8e8' : RED, color: isLast ? '#aaa' : '#fff', cursor: isLast ? 'default' : 'pointer' }}
           onPointerDown={e => { if (!isLast) e.currentTarget.style.transform = 'scale(0.95)' }}
           onPointerUp={e => { e.currentTarget.style.transform = 'scale(1)' }}
         >→</button>
