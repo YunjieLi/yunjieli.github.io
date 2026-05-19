@@ -231,7 +231,7 @@ function TiltPage({ direction, defaultPos }: { direction: 'left' | 'right'; defa
   const initedRef = useRef(false)
   const [, tick] = useState(0)
   const [taps,   setTaps] = useState(0)
-  const done = taps >= 3
+  const done = taps >= 1
   const sign = direction === 'left' ? -1 : 1
 
   // On first activation, inherit previous page's final dot positions
@@ -292,7 +292,7 @@ function TiltPage({ direction, defaultPos }: { direction: 'left' | 'right'; defa
 
   const side  = direction === 'left' ? 'left' : 'right'
   const arrow = direction === 'left' ? '←' : '→'
-  const intro = taps === 0 ? `Tap to tilt ${side}!` : taps < 3 ? 'Again! Tilt more! 📐' : 'They\'re all sliding! 🎪'
+  const intro = taps === 0 ? `Tap to tilt ${side}!` : 'They\'re all sliding! 🎪'
 
   return (
     <>
@@ -315,14 +315,15 @@ function Page6() { return <TiltPage direction="right" defaultPos={PILED_LEFT}   
 
 // ─── Page 7 — lineup ──────────────────────────────────────────────────────────
 const COLOR_ROW  = Array.from({ length: 15 }, (_, i) => [RED, YELLOW, BLUE][i % 3])
-const ROW_MARGIN = (DOT_SIZE / 2 / 960) * 100
+const ROW_MARGIN    = (DOT_SIZE / 2 / 960) * 100
+const LINEUP_MARGIN = 8   // % horizontal padding for pages 7 & 8
 
 // Two-row lineup: 8 dots on top, 7 on bottom
 const LINEUP_TOP_N = 8
 const LINEUP_BOT_N = COLOR_ROW.length - LINEUP_TOP_N  // 7
 const LINEUP_Y     = [37, 63]
-const LINEUP_TOP_X = Array.from({ length: LINEUP_TOP_N }, (_, i) => ROW_MARGIN + i * ((100 - 2 * ROW_MARGIN) / (LINEUP_TOP_N - 1)))
-const LINEUP_BOT_X = Array.from({ length: LINEUP_BOT_N }, (_, i) => ROW_MARGIN + i * ((100 - 2 * ROW_MARGIN) / (LINEUP_BOT_N - 1)))
+const LINEUP_TOP_X = Array.from({ length: LINEUP_TOP_N }, (_, i) => LINEUP_MARGIN + i * ((100 - 2 * LINEUP_MARGIN) / (LINEUP_TOP_N - 1)))
+const LINEUP_BOT_X = Array.from({ length: LINEUP_BOT_N }, (_, i) => LINEUP_MARGIN + i * ((100 - 2 * LINEUP_MARGIN) / (LINEUP_BOT_N - 1)))
 function lineupPos(i: number): { x: number; y: number } {
   return i < LINEUP_TOP_N
     ? { x: LINEUP_TOP_X[i],               y: LINEUP_Y[0] }
