@@ -103,37 +103,99 @@ function Page1() {
   return <PageCanvas dots={dots} intro={intro} done={done} />
 }
 
-// ─── Page 2 ──────────────────────────────────────────────────────────────────
-function Page2() {
-  const [leftColor,  setLeft]  = useState(YELLOW)
-  const [rightColor, setRight] = useState(YELLOW)
-  const leftDone = leftColor === RED, rightDone = rightColor === BLUE
-  const done = leftDone && rightDone
-  const dots: DotSpec[] = [
-    { id: 'p2-0', color: leftColor,  x: COL_X[0], y: ROW_Y[0], onClick: () => setLeft(RED),  interactive: !leftDone  },
-    { id: 'p2-1', color: YELLOW,     x: COL_X[1], y: ROW_Y[0], onClick: () => {},              interactive: false      },
-    { id: 'p2-2', color: rightColor, x: COL_X[2], y: ROW_Y[0], onClick: () => setRight(BLUE), interactive: !rightDone },
-  ]
-  const intro = done ? 'Red, yellow, blue! 🎨' : leftDone ? 'Now try the right dot!' : rightDone ? 'Now try the left dot!' : 'Press the left dot, then the right!'
-  return <PageCanvas dots={dots} intro={intro} done={done} />
+// ─── Page 2+3 (merged) ───────────────────────────────────────────────────────
+function Page23() {
+  const [leftCount,  setLeftCount]  = useState(1)
+  const [leftColor,  setLeftColor]  = useState(YELLOW)
+  const [midCount,   setMidCount]   = useState(1)
+  const [rightCount, setRightCount] = useState(1)
+  const [rightColor, setRightColor] = useState(YELLOW)
+
+  const done = leftCount === 5 && midCount === 5 && rightCount === 5
+
+  function clickLeft() {
+    if (leftColor === YELLOW) { setLeftColor(RED) }
+    else if (leftCount < 5)   { setLeftCount(c => c + 1) }
+  }
+  function clickMid()   { if (midCount   < 5) setMidCount(c => c + 1) }
+  function clickRight() {
+    if (rightColor === YELLOW) { setRightColor(BLUE) }
+    else if (rightCount < 5)   { setRightCount(c => c + 1) }
+  }
+
+  const leftChanged  = leftColor  !== YELLOW
+  const rightChanged = rightColor !== YELLOW
+  const intro = done
+    ? 'Red, yellow, blue — all full! 🌈'
+    : leftChanged && rightChanged
+    ? 'Keep pressing to grow each column!'
+    : leftChanged
+    ? 'Now press the right dot!'
+    : rightChanged
+    ? 'Now press the left dot!'
+    : 'Press the outer dots to change their colors!'
+
+  return (
+    <>
+      <div style={canvasStyle}>
+        {Array.from({ length: leftCount }, (_, row) => (
+          <DotMount key={`l${row}`} color={leftColor}  x={COL_X[0]} y={ROW_Y[row]} onClick={clickLeft}  interactive={leftCount  < 5} />
+        ))}
+        {Array.from({ length: midCount }, (_, row) => (
+          <DotMount key={`m${row}`} color={YELLOW}     x={COL_X[1]} y={ROW_Y[row]} onClick={clickMid}   interactive={midCount   < 5} />
+        ))}
+        {Array.from({ length: rightCount }, (_, row) => (
+          <DotMount key={`r${row}`} color={rightColor} x={COL_X[2]} y={ROW_Y[row]} onClick={clickRight} interactive={rightCount < 5} />
+        ))}
+      </div>
+      <IntroText>{intro}</IntroText>
+      <SetDone done={done} />
+    </>
+  )
 }
 
-// ─── Page 3 ──────────────────────────────────────────────────────────────────
-function Page3() {
-  const [counts, setCounts] = useState([1, 1, 1])
-  const COL_COLORS = [RED, YELLOW, BLUE]
-  const done = counts.every(c => c === 5)
-  function pressCol(col: number) {
-    setCounts(prev => { if (prev[col] >= 5) return prev; const next = [...prev]; next[col]++; return next })
+// ─── Dot-dot collision resolution (elastic, equal mass) ─────────────────────
+function resolveCollisions(dots: PhysDot[], cw: number, ch: number): PhysDot[] {
+  const result = dots.map(d => ({ ...d }))
+  const n = result.length
+  const minDist = DOT_SIZE  // collision when centers are closer than 1 diameter
+
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      const dx = (result[i].x - result[j].x) * cw / 100  // px
+      const dy = (result[i].y - result[j].y) * ch / 100  // px
+      const dist = Math.sqrt(dx * dx + dy * dy)
+      if (dist >= minDist || dist < 0.001) continue
+
+      // Unit normal pointing from j → i
+      const nx = dx / dist
+      const ny = dy / dist
+
+      // Velocities in px/frame
+      const v1x = result[i].vx * cw / 100,  v1y = result[i].vy * ch / 100
+      const v2x = result[j].vx * cw / 100,  v2y = result[j].vy * ch / 100
+
+      // Scalar normal components
+      const v1n = v1x * nx + v1y * ny
+      const v2n = v2x * nx + v2y * ny
+
+      if (v1n - v2n > 0) continue  // already separating
+
+      // Elastic equal-mass collision: swap normal components
+      result[i].vx = (v1x - v1n * nx + v2n * nx) / cw * 100
+      result[i].vy = (v1y - v1n * ny + v2n * ny) / ch * 100
+      result[j].vx = (v2x - v2n * nx + v1n * nx) / cw * 100
+      result[j].vy = (v2y - v2n * ny + v1n * ny) / ch * 100
+
+      // Push apart so they no longer overlap
+      const push = (minDist - dist) / 2
+      result[i].x += nx * push / cw * 100
+      result[i].y += ny * push / ch * 100
+      result[j].x -= nx * push / cw * 100
+      result[j].y -= ny * push / ch * 100
+    }
   }
-  const dots: DotSpec[] = COL_COLORS.flatMap((color, ci) =>
-    Array.from({ length: counts[ci] }, (_, row) => ({
-      id: `p3-${ci}-${row}`, color, x: COL_X[ci], y: ROW_Y[row], onClick: () => pressCol(ci), interactive: counts[ci] < 5,
-    }))
-  )
-  const total = counts.reduce((a, b) => a + b, 0)
-  const intro = done ? 'A 5×3 rainbow matrix! 🌈' : total > 6 ? 'Almost there — keep pressing!' : 'Press any dot to grow its column!'
-  return <PageCanvas dots={dots} intro={intro} done={done} />
+  return result
 }
 
 // ─── Page 4 ──────────────────────────────────────────────────────────────────
@@ -146,10 +208,11 @@ function initPhysDots(): PhysDot[] {
 }
 
 function Page4() {
-  const dotsRef  = useRef<PhysDot[]>(initPhysDots())
-  const rafRef   = useRef<number | null>(null)
-  const running  = useRef(false)
-  const [, tick] = useState(0)
+  const dotsRef    = useRef<PhysDot[]>(initPhysDots())
+  const rafRef     = useRef<number | null>(null)
+  const running    = useRef(false)
+  const canvasRef  = useRef<HTMLDivElement>(null)
+  const [, tick]   = useState(0)
   const [clicks, setClicks] = useState(0)
   const done    = clicks >= 6
   const handoff = useContext(HandoffCtx)
@@ -169,6 +232,9 @@ function Page4() {
         if (Math.abs(vx) > 0.05 || Math.abs(vy) > 0.05) anyMoving = true
         return { ...rest, x, y, vx, vy, friction }
       })
+      const cw = canvasRef.current?.offsetWidth  ?? 960
+      const ch = canvasRef.current?.offsetHeight ?? 520
+      dotsRef.current = resolveCollisions(dotsRef.current, cw, ch)
       handoff.current.page4Dots = dotsRef.current.map(({ x, y }) => ({ x, y }))
       tick(n => n + 1)
       if (anyMoving) { rafRef.current = requestAnimationFrame(step) }
@@ -194,7 +260,7 @@ function Page4() {
 
   return (
     <>
-      <div onClick={done ? undefined : handleClick} style={{ ...canvasStyle, cursor: done ? 'default' : 'pointer', userSelect: 'none' }}>
+      <div ref={canvasRef} onClick={done ? undefined : handleClick} style={{ ...canvasStyle, cursor: done ? 'default' : 'pointer', userSelect: 'none' }}>
         {dotsRef.current.map(dot => (
           <div key={dot.id} style={{ ...dotStyle(dot.color, false), left: `${dot.x}%`, top: `${dot.y}%`, transform: 'translate(-50%,-50%)', transition: 'none', pointerEvents: 'none' }} />
         ))}
@@ -205,7 +271,7 @@ function Page4() {
   )
 }
 
-// ─── Pages 5 & 6 — tilt ──────────────────────────────────────────────────────
+// ─── Pages 5+6 (merged) — 4-direction gravity ────────────────────────────────
 function mkTiltDots(positions: { x: number; y: number }[]): PhysDot[] {
   return [RED, YELLOW, BLUE].flatMap((color, ci) =>
     Array.from({ length: 5 }, (_, i) => ({
@@ -214,28 +280,29 @@ function mkTiltDots(positions: { x: number; y: number }[]): PhysDot[] {
       x: positions[ci * 5 + i].x,
       y: positions[ci * 5 + i].y,
       vx: 0, vy: 0,
-      friction: 0.93 + Math.random() * 0.05,   // 0.93–0.98 per dot
+      friction: 0.93 + Math.random() * 0.05,
     }))
   )
 }
 
-function TiltPage({ direction, defaultPos }: { direction: 'left' | 'right'; defaultPos: { x: number; y: number }[] }) {
-  const active   = useContext(PageActiveCtx)
-  const handoff  = useContext(HandoffCtx)
-  const dotsRef  = useRef<PhysDot[]>(mkTiltDots(defaultPos))
-  const rafRef   = useRef<number | null>(null)
-  const running  = useRef(false)
-  const gravRef  = useRef(0)
-  const initedRef = useRef(false)
-  const [, tick] = useState(0)
-  const [taps,   setTaps] = useState(0)
-  const done = taps >= 1
-  const sign = direction === 'left' ? -1 : 1
+type GravDir = 'left' | 'right' | 'up' | 'down'
 
-  // On first activation, inherit previous page's final dot positions
+function Page56() {
+  const active    = useContext(PageActiveCtx)
+  const handoff   = useContext(HandoffCtx)
+  const dotsRef   = useRef<PhysDot[]>(mkTiltDots(SCATTERED))
+  const rafRef    = useRef<number | null>(null)
+  const running   = useRef(false)
+  const gravRef   = useRef({ gx: 0, gy: 0 })
+  const initedRef = useRef(false)
+  const tapsRef   = useRef(0)
+  const [, tick]  = useState(0)
+  const [taps, setTaps] = useState(0)
+  const done = taps >= 2
+
   useEffect(() => {
-    if (!active || initedRef.current || taps > 0) return
-    const src = direction === 'left' ? handoff.current.page4Dots : handoff.current.page5Dots
+    if (!active || initedRef.current) return
+    const src = handoff.current.page4Dots
     if (src && src.length === 15) {
       initedRef.current = true
       dotsRef.current = mkTiltDots(src)
@@ -243,28 +310,27 @@ function TiltPage({ direction, defaultPos }: { direction: 'left' | 'right'; defa
     }
   }, [active])   // eslint-disable-line react-hooks/exhaustive-deps
 
-  function handleTap() {
-    setTaps(t => {
-      const next = t + 1
-      gravRef.current = Math.min(0.08 + next * 0.07, 0.45)
-      // random impulse per dot so they fall asynchronously
-      dotsRef.current = dotsRef.current.map(dot => ({
-        ...dot,
-        vy: dot.vy + (Math.random() - 0.5) * 3.5,
-        vx: dot.vx + (Math.random() - 0.5) * 1.5,
-      }))
-      return next
-    })
+  function applyDir(dir: GravDir) {
+    const strength = Math.min(0.08 + tapsRef.current * 0.07, 0.45)
+    const g = { left: { gx: -strength, gy: 0 }, right: { gx: strength, gy: 0 }, up: { gx: 0, gy: -strength }, down: { gx: 0, gy: strength } }
+    gravRef.current = g[dir]
+    dotsRef.current = dotsRef.current.map(dot => ({
+      ...dot,
+      vx: dot.vx + (Math.random() - 0.5) * 3.5,
+      vy: dot.vy + (Math.random() - 0.5) * 3.5,
+    }))
+    tapsRef.current += 1
+    setTaps(t => t + 1)
     if (!running.current) startLoop()
   }
 
   function startLoop() {
     running.current = true
     const step = () => {
-      const gx = sign * gravRef.current
+      const { gx, gy } = gravRef.current
       let anyMoving = false
       dotsRef.current = dotsRef.current.map(({ x, y, vx, vy, friction, ...rest }) => {
-        vx += gx
+        vx += gx; vy += gy
         x += vx; y += vy
         if (x < RX)       { x = RX;       vx =  Math.abs(vx) * BOUNCE }
         if (x > 100 - RX) { x = 100 - RX; vx = -Math.abs(vx) * BOUNCE }
@@ -274,9 +340,7 @@ function TiltPage({ direction, defaultPos }: { direction: 'left' | 'right'; defa
         if (Math.abs(vx) > 0.05 || Math.abs(vy) > 0.05) anyMoving = true
         return { ...rest, x, y, vx, vy, friction }
       })
-      const curPos = dotsRef.current.map(({ x, y }) => ({ x, y }))
-      if (direction === 'left') handoff.current.page5Dots = curPos
-      else                      handoff.current.page6Dots = curPos
+      handoff.current.page6Dots = dotsRef.current.map(({ x, y }) => ({ x, y }))
       tick(n => n + 1)
       if (anyMoving) { rafRef.current = requestAnimationFrame(step) }
       else { running.current = false }
@@ -286,28 +350,53 @@ function TiltPage({ direction, defaultPos }: { direction: 'left' | 'right'; defa
 
   useEffect(() => () => { if (rafRef.current) cancelAnimationFrame(rafRef.current) }, [])
 
-  const side  = direction === 'left' ? 'left' : 'right'
-  const arrow = direction === 'left' ? '←' : '→'
-  const intro = taps === 0 ? `Tap to tilt ${side}!` : 'They\'re all sliding! 🎪'
+  useEffect(() => {
+    if (!active) return
+    const onKey = (e: KeyboardEvent) => {
+      const map: Record<string, GravDir> = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down' }
+      const dir = map[e.key]
+      if (!dir) return
+      e.preventDefault()
+      applyDir(dir)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [active])   // eslint-disable-line react-hooks/exhaustive-deps
+
+  const intro = taps === 0 ? 'Click an arrow to apply gravity!' : taps < 2 ? 'Try another direction! 🎯' : 'Gravity explorer! 🧲'
+
+  const arrowBtn = (dir: GravDir, label: string, style: React.CSSProperties) => (
+    <div
+      onClick={() => applyDir(dir)}
+      style={{
+        position: 'absolute', ...style,
+        width: 44, height: 44, borderRadius: '50%',
+        background: 'rgba(0,0,0,0.07)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: 22, cursor: 'pointer', userSelect: 'none',
+        transition: 'background 0.15s',
+      }}
+      onMouseEnter={e => (e.currentTarget.style.background = 'rgba(0,0,0,0.15)')}
+      onMouseLeave={e => (e.currentTarget.style.background = 'rgba(0,0,0,0.07)')}
+    >{label}</div>
+  )
 
   return (
     <>
-      <div onClick={done ? undefined : handleTap} style={{ ...canvasStyle, cursor: done ? 'default' : 'pointer', userSelect: 'none' }}>
+      <div style={{ ...canvasStyle, userSelect: 'none' }}>
         {dotsRef.current.map(dot => (
           <div key={dot.id} style={{ ...dotStyle(dot.color, false), left: `${dot.x}%`, top: `${dot.y}%`, transform: 'translate(-50%,-50%)', transition: 'none', pointerEvents: 'none' }} />
         ))}
-        <span style={{ position: 'absolute', [side]: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 30, opacity: Math.min(0.15 + taps * 0.08, 0.5), pointerEvents: 'none', userSelect: 'none' }}>
-          {arrow}
-        </span>
+        {arrowBtn('left',  '←', { left: 10,       top: '50%',  transform: 'translateY(-50%)' })}
+        {arrowBtn('right', '→', { right: 10,      top: '50%',  transform: 'translateY(-50%)' })}
+        {arrowBtn('up',    '↑', { top: 10,        left: '50%', transform: 'translateX(-50%)' })}
+        {arrowBtn('down',  '↓', { bottom: 10,     left: '50%', transform: 'translateX(-50%)' })}
       </div>
       <IntroText>{intro}</IntroText>
       <SetDone done={done} />
     </>
   )
 }
-
-function Page5() { return <TiltPage direction="left"  defaultPos={SCATTERED}    /> }
-function Page6() { return <TiltPage direction="right" defaultPos={PILED_LEFT}   /> }
 
 // ─── Page 7 — lineup ──────────────────────────────────────────────────────────
 const COLOR_ROW  = Array.from({ length: 15 }, (_, i) => [RED, YELLOW, BLUE][i % 3])
@@ -326,31 +415,86 @@ function lineupPos(i: number): { x: number; y: number } {
     : { x: LINEUP_BOT_X[i - LINEUP_TOP_N], y: LINEUP_Y[1] }
 }
 
-function Page7() {
-  const active   = useContext(PageActiveCtx)
-  const handoff  = useContext(HandoffCtx)
-  const [lined,  setLined] = useState(false)
-  const [, tick] = useState(0)
-  const startRef = useRef<{ x: number; y: number }[]>(PILED_RIGHT)
-  const initedRef = useRef(false)
+// ─── Four lineup shapes for Page 7 ───────────────────────────────────────────
+const SHAPE_NAMES = ['2 lines', '3 lines', 'circle', 'arch'] as const
+const TOTAL_SHAPES = SHAPE_NAMES.length
 
-  // On first activation, use Page6's actual final positions
+function shapePos(shape: number, i: number, cw: number, ch: number): { x: number; y: number } {
+  switch (shape) {
+    case 0:
+      // 2 lines: 8 top, 7 bottom
+      return lineupPos(i)
+    case 1: {
+      // 3 lines: 5+5+5, tight within-line (10% ≈ 96px gap) vs large between-line (32%)
+      const row = Math.floor(i / 5), col = i % 5
+      return { x: 30 + col * 10, y: [18, 50, 82][row] }
+    }
+    case 2: {
+      // Real circle: R=250px, chord≈104px gives ~24px gap between dots
+      const R = 250
+      const θ = (2 * Math.PI * i / 15) - Math.PI / 2
+      return { x: 50 + (R / cw * 100) * Math.cos(θ), y: 50 + (R / ch * 100) * Math.sin(θ) }
+    }
+    case 3: {
+      // Real half-circle arch: R=420px, chord≈94px gives ~14px gap; cy=50+ry/2 centers vertically
+      const R = 420
+      const ry = R / ch * 100
+      const cy = 50 + ry / 2   // midpoint of (cy-ry .. cy) sits at 50%
+      const θ = Math.PI + (i / 14) * Math.PI   // π → 2π sweeps through top
+      return { x: 50 + (R / cw * 100) * Math.cos(θ), y: cy + ry * Math.sin(θ) }
+    }
+    default:
+      return lineupPos(i)
+  }
+}
+
+function Page7() {
+  const active    = useContext(PageActiveCtx)
+  const handoff   = useContext(HandoffCtx)
+  const [shapeIdx, setShapeIdx] = useState(-1)  // -1 = not yet clicked
+  const [, tick]  = useState(0)
+  const [dims, setDims] = useState({ cw: 960, ch: 640 })
+  const startRef  = useRef<{ x: number; y: number }[]>(PILED_RIGHT)
+  const initedRef = useRef(false)
+  const canvasRef = useRef<HTMLDivElement>(null)
+  const done = shapeIdx === TOTAL_SHAPES - 1
+
+  useLayoutEffect(() => {
+    const el = canvasRef.current
+    if (!el) return
+    const obs = new ResizeObserver(entries => {
+      const { width: cw, height: ch } = entries[0].contentRect
+      if (cw > 0 && ch > 0) setDims({ cw, ch })
+    })
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [])
+
   useEffect(() => {
     if (!active || initedRef.current) return
     initedRef.current = true
     const src = handoff.current.page6Dots
-    if (src && src.length === 15) {
-      startRef.current = src
-      if (!lined) tick(n => n + 1)
-    }
+    if (src && src.length === 15) { startRef.current = src; tick(n => n + 1) }
   }, [active])   // eslint-disable-line react-hooks/exhaustive-deps
+
+  function handleClick() {
+    if (done) return
+    setShapeIdx(s => s + 1)
+  }
+
+  const intro = shapeIdx < 0
+    ? 'Tap to line them up!'
+    : shapeIdx < TOTAL_SHAPES - 1
+    ? `${SHAPE_NAMES[shapeIdx]}! Tap for next shape →`
+    : `${SHAPE_NAMES[shapeIdx]}! All shapes done! 🎨`
 
   return (
     <>
-      <div onClick={lined ? undefined : () => setLined(true)} style={{ ...canvasStyle, cursor: lined ? 'default' : 'pointer' }}>
+      <div ref={canvasRef} onClick={handleClick} style={{ ...canvasStyle, cursor: done ? 'default' : 'pointer' }}>
         {COLOR_ROW.map((color, i) => {
-          const start = startRef.current[i] ?? PILED_RIGHT[i]
-          const pos   = lined ? lineupPos(i) : start
+          const pos = shapeIdx < 0
+            ? (startRef.current[i] ?? PILED_RIGHT[i])
+            : shapePos(shapeIdx, i, dims.cw, dims.ch)
           return (
             <div key={i} style={{
               position: 'absolute',
@@ -358,7 +502,7 @@ function Page7() {
               transform: 'translate(-50%,-50%)',
               width: DOT_SIZE, height: DOT_SIZE, borderRadius: '50%',
               background: color,
-              transition: lined
+              transition: shapeIdx >= 0
                 ? `left ${0.45 + i * 0.035}s cubic-bezier(0.34,1.1,0.64,1), top ${0.45 + i * 0.035}s cubic-bezier(0.34,1.1,0.64,1)`
                 : 'none',
               pointerEvents: 'none',
@@ -366,8 +510,8 @@ function Page7() {
           )
         })}
       </div>
-      <IntroText>{lined ? 'All lined up! 🎉' : 'Tap anywhere to line them up!'}</IntroText>
-      <SetDone done={lined} />
+      <IntroText>{intro}</IntroText>
+      <SetDone done={done} />
     </>
   )
 }
@@ -375,50 +519,75 @@ function Page7() {
 // ─── Page 8 — lights out ──────────────────────────────────────────────────────
 function Page8() {
   const [dark, setDark] = useState(false)
+  const canvasRef = useRef<HTMLDivElement>(null)
+  const dimsRef   = useRef({ cw: 960, ch: 640 })
   // Persistent dot positions (% coords); driven by RAF during swap
-  const posRef   = useRef(COLOR_ROW.map((_, i) => lineupPos(i)))
+  const posRef   = useRef(COLOR_ROW.map((_, i) => shapePos(3, i, 960, 640)))
   const animRef  = useRef<number | null>(null)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const swapping = useRef(false)
   const [, tick] = useState(0)
 
+  useLayoutEffect(() => {
+    const el = canvasRef.current
+    if (!el) return
+    const obs = new ResizeObserver(entries => {
+      const { width: cw, height: ch } = entries[0].contentRect
+      if (cw > 0 && ch > 0) {
+        dimsRef.current = { cw, ch }
+        posRef.current = COLOR_ROW.map((_, i) => shapePos(3, i, cw, ch))
+        tick(n => n + 1)
+      }
+    })
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [])
+
   function doSwap() {
     if (swapping.current) return
     swapping.current = true
 
-    // Pick a random red dot and a random blue dot
     const reds  = COLOR_ROW.flatMap((c, i) => c === RED  ? [i] : [])
     const blues = COLOR_ROW.flatMap((c, i) => c === BLUE ? [i] : [])
     const ri = reds[Math.floor(Math.random() * reds.length)]
     const bi = blues[Math.floor(Math.random() * blues.length)]
 
-    const p0 = { ...posRef.current[ri] }   // red start
-    const p1 = { ...posRef.current[bi] }   // blue start
+    const p0 = { ...posRef.current[ri] }   // red start → will move to p1
+    const p1 = { ...posRef.current[bi] }   // blue start → will move to p0
 
-    // Bezier control points: perpendicular offset so they arc past each other
-    const mx = (p0.x + p1.x) / 2, my = (p0.y + p1.y) / 2
-    const dx = p1.x - p0.x,       dy = p1.y - p0.y
-    const len = Math.sqrt(dx * dx + dy * dy) || 1
-    const arc = 18    // % amplitude
-    const nx = -dy / len, ny = dx / len   // perpendicular unit vector
-    const cpR = { x: mx + nx * arc, y: my + ny * arc }
-    const cpB = { x: mx - nx * arc, y: my - ny * arc }
+    // Red travels via high route (above both lineup rows at y≈37% and y≈63%)
+    // Blue travels via low route (below both rows)
+    // This guarantees neither path crosses any static dot
+    const wx = () => (Math.random() - 0.5) * 10   // ±5% organic x wobble
+    const hiY = 3 + Math.random() * 3              // 3–6% (above arch top at ~8%)
+    const loY = 69 + Math.random() * 7             // 69–76% (below arch endpoints at ~65%)
 
-    const DURATION = 900   // ms per swap
+    // Cubic bezier: go up/across/down for red, down/across/up for blue
+    const cpR1 = { x: p0.x + wx(), y: hiY }
+    const cpR2 = { x: p1.x + wx(), y: hiY }
+    const cpB1 = { x: p1.x + wx(), y: loY }
+    const cpB2 = { x: p0.x + wx(), y: loY }
+
+    const DURATION = 1100
     const t0 = performance.now()
+
+    function cubic(t: number, a: number, b: number, c: number, d: number) {
+      const u = 1 - t
+      return u*u*u*a + 3*u*u*t*b + 3*u*t*t*c + t*t*t*d
+    }
 
     function step(now: number) {
       const raw = Math.min((now - t0) / DURATION, 1)
-      const t   = raw < 0.5 ? 2 * raw * raw : -1 + (4 - 2 * raw) * raw   // ease in-out
+      const t   = raw < 0.5 ? 2 * raw * raw : -1 + (4 - 2 * raw) * raw
 
       posRef.current = posRef.current.map((pos, i) => {
         if (i === ri) return {
-          x: (1 - t) * (1 - t) * p0.x + 2 * (1 - t) * t * cpR.x + t * t * p1.x,
-          y: (1 - t) * (1 - t) * p0.y + 2 * (1 - t) * t * cpR.y + t * t * p1.y,
+          x: cubic(t, p0.x, cpR1.x, cpR2.x, p1.x),
+          y: cubic(t, p0.y, cpR1.y, cpR2.y, p1.y),
         }
         if (i === bi) return {
-          x: (1 - t) * (1 - t) * p1.x + 2 * (1 - t) * t * cpB.x + t * t * p0.x,
-          y: (1 - t) * (1 - t) * p1.y + 2 * (1 - t) * t * cpB.y + t * t * p0.y,
+          x: cubic(t, p1.x, cpB1.x, cpB2.x, p0.x),
+          y: cubic(t, p1.y, cpB1.y, cpB2.y, p0.y),
         }
         return pos
       })
@@ -438,7 +607,8 @@ function Page8() {
 
   useEffect(() => {
     if (!dark) return
-    posRef.current = COLOR_ROW.map((_, i) => lineupPos(i))
+    const { cw, ch } = dimsRef.current
+    posRef.current = COLOR_ROW.map((_, i) => shapePos(3, i, cw, ch))
     scheduleSwap()
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current)
@@ -449,7 +619,7 @@ function Page8() {
 
   return (
     <>
-      <div style={{ ...canvasStyle, background: dark ? '#111' : '#fff', border: `3px solid ${dark ? '#333' : '#f0e8d8'}`, transition: 'background 1.3s ease, border-color 1.3s ease' }}>
+      <div ref={canvasRef} style={{ ...canvasStyle, background: dark ? '#111' : '#fff', border: `3px solid ${dark ? '#333' : '#f0e8d8'}`, transition: 'background 1.3s ease, border-color 1.3s ease' }}>
         {COLOR_ROW.map((color, i) => {
           const isYellow = color === YELLOW
           const dimmed   = dark && !isYellow
@@ -496,7 +666,7 @@ const dotStyle = (color: string, interactive = true): React.CSSProperties => ({
 })
 
 // ─── Shell ────────────────────────────────────────────────────────────────────
-const PAGES = [Page1, Page2, Page3, Page4, Page5, Page6, Page7, Page8]
+const PAGES = [Page1, Page23, Page4, Page56, Page7, Page8]
 const TOTAL = PAGES.length
 
 export default function PressHere() {
