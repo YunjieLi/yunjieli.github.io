@@ -379,19 +379,92 @@ function Page7() {
 // ─── Page 8 — lights out ──────────────────────────────────────────────────────
 function Page8() {
   const [dark, setDark] = useState(false)
+  // Persistent dot positions (% coords); driven by RAF during swap
+  const posRef   = useRef(COLOR_ROW.map((_, i) => lineupPos(i)))
+  const animRef  = useRef<number | null>(null)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const swapping = useRef(false)
+  const [, tick] = useState(0)
+
+  function doSwap() {
+    if (swapping.current) return
+    swapping.current = true
+
+    // Pick a random red dot and a random blue dot
+    const reds  = COLOR_ROW.flatMap((c, i) => c === RED  ? [i] : [])
+    const blues = COLOR_ROW.flatMap((c, i) => c === BLUE ? [i] : [])
+    const ri = reds[Math.floor(Math.random() * reds.length)]
+    const bi = blues[Math.floor(Math.random() * blues.length)]
+
+    const p0 = { ...posRef.current[ri] }   // red start
+    const p1 = { ...posRef.current[bi] }   // blue start
+
+    // Bezier control points: perpendicular offset so they arc past each other
+    const mx = (p0.x + p1.x) / 2, my = (p0.y + p1.y) / 2
+    const dx = p1.x - p0.x,       dy = p1.y - p0.y
+    const len = Math.sqrt(dx * dx + dy * dy) || 1
+    const arc = 18    // % amplitude
+    const nx = -dy / len, ny = dx / len   // perpendicular unit vector
+    const cpR = { x: mx + nx * arc, y: my + ny * arc }
+    const cpB = { x: mx - nx * arc, y: my - ny * arc }
+
+    const DURATION = 900   // ms per swap
+    const t0 = performance.now()
+
+    function step(now: number) {
+      const raw = Math.min((now - t0) / DURATION, 1)
+      const t   = raw < 0.5 ? 2 * raw * raw : -1 + (4 - 2 * raw) * raw   // ease in-out
+
+      posRef.current = posRef.current.map((pos, i) => {
+        if (i === ri) return {
+          x: (1 - t) * (1 - t) * p0.x + 2 * (1 - t) * t * cpR.x + t * t * p1.x,
+          y: (1 - t) * (1 - t) * p0.y + 2 * (1 - t) * t * cpR.y + t * t * p1.y,
+        }
+        if (i === bi) return {
+          x: (1 - t) * (1 - t) * p1.x + 2 * (1 - t) * t * cpB.x + t * t * p0.x,
+          y: (1 - t) * (1 - t) * p1.y + 2 * (1 - t) * t * cpB.y + t * t * p0.y,
+        }
+        return pos
+      })
+      tick(n => n + 1)
+
+      if (raw < 1) { animRef.current = requestAnimationFrame(step) }
+      else { swapping.current = false; scheduleSwap() }
+    }
+
+    animRef.current = requestAnimationFrame(step)
+  }
+
+  function scheduleSwap() {
+    const delay = 2000 + Math.random() * 1500   // 2–3.5 s
+    timerRef.current = setTimeout(doSwap, delay)
+  }
+
+  useEffect(() => {
+    if (!dark) return
+    posRef.current = COLOR_ROW.map((_, i) => lineupPos(i))
+    scheduleSwap()
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current)
+      if (animRef.current)  cancelAnimationFrame(animRef.current)
+      swapping.current = false
+    }
+  }, [dark])   // eslint-disable-line react-hooks/exhaustive-deps
+
   return (
     <>
       <div style={{ ...canvasStyle, background: dark ? '#111' : '#fff', border: `3px solid ${dark ? '#333' : '#f0e8d8'}`, transition: 'background 1.3s ease, border-color 1.3s ease' }}>
         {COLOR_ROW.map((color, i) => {
           const isYellow = color === YELLOW
           const dimmed   = dark && !isYellow
+          const pos      = dark ? posRef.current[i] : lineupPos(i)
           return (
             <div
               key={i}
               onClick={isYellow && !dark ? () => setDark(true) : undefined}
               style={{
                 position: 'absolute',
-                left: `${lineupPos(i).x}%`, top: `${lineupPos(i).y}%`,
+                left: `${pos.x}%`, top: `${pos.y}%`,
                 transform: 'translate(-50%,-50%)',
                 width: DOT_SIZE, height: DOT_SIZE, borderRadius: '50%',
                 background: color,
