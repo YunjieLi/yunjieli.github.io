@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useLayoutEffect, createContext, useContext } from 'react'
 import '@fontsource-variable/nunito'
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, RotateCcw } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination'
 import { cn } from '@/lib/utils'
 
@@ -314,9 +315,19 @@ function Page6() { return <TiltPage direction="right" defaultPos={PILED_LEFT}   
 
 // ─── Page 7 — lineup ──────────────────────────────────────────────────────────
 const COLOR_ROW  = Array.from({ length: 15 }, (_, i) => [RED, YELLOW, BLUE][i % 3])
-const ROW_CENTER_Y = 50
 const ROW_MARGIN = (DOT_SIZE / 2 / 960) * 100
-const ROW_X      = Array.from({ length: 15 }, (_, i) => ROW_MARGIN + i * ((100 - 2 * ROW_MARGIN) / 14))
+
+// Two-row lineup: 8 dots on top, 7 on bottom
+const LINEUP_TOP_N = 8
+const LINEUP_BOT_N = COLOR_ROW.length - LINEUP_TOP_N  // 7
+const LINEUP_Y     = [37, 63]
+const LINEUP_TOP_X = Array.from({ length: LINEUP_TOP_N }, (_, i) => ROW_MARGIN + i * ((100 - 2 * ROW_MARGIN) / (LINEUP_TOP_N - 1)))
+const LINEUP_BOT_X = Array.from({ length: LINEUP_BOT_N }, (_, i) => ROW_MARGIN + i * ((100 - 2 * ROW_MARGIN) / (LINEUP_BOT_N - 1)))
+function lineupPos(i: number): { x: number; y: number } {
+  return i < LINEUP_TOP_N
+    ? { x: LINEUP_TOP_X[i],               y: LINEUP_Y[0] }
+    : { x: LINEUP_BOT_X[i - LINEUP_TOP_N], y: LINEUP_Y[1] }
+}
 
 function Page7() {
   const active   = useContext(PageActiveCtx)
@@ -342,7 +353,7 @@ function Page7() {
       <div onClick={lined ? undefined : () => setLined(true)} style={{ ...canvasStyle, cursor: lined ? 'default' : 'pointer' }}>
         {COLOR_ROW.map((color, i) => {
           const start = startRef.current[i] ?? PILED_RIGHT[i]
-          const pos   = lined ? { x: ROW_X[i], y: ROW_CENTER_Y } : start
+          const pos   = lined ? lineupPos(i) : start
           return (
             <div key={i} style={{
               position: 'absolute',
@@ -379,7 +390,7 @@ function Page8() {
               onClick={isYellow && !dark ? () => setDark(true) : undefined}
               style={{
                 position: 'absolute',
-                left: `${ROW_X[i]}%`, top: `${ROW_CENTER_Y}%`,
+                left: `${lineupPos(i).x}%`, top: `${lineupPos(i).y}%`,
                 transform: 'translate(-50%,-50%)',
                 width: DOT_SIZE, height: DOT_SIZE, borderRadius: '50%',
                 background: color,
@@ -419,9 +430,10 @@ const PAGES = [Page1, Page2, Page3, Page4, Page5, Page6, Page7, Page8]
 const TOTAL = PAGES.length
 
 export default function PressHere() {
-  const [page,    setPage]    = useState(0)
-  const [caption, setCaption] = useState<React.ReactNode>('')
-  const [done,    setDone]    = useState(false)
+  const [page,      setPage]      = useState(0)
+  const [caption,   setCaption]   = useState<React.ReactNode>('')
+  const [done,      setDone]      = useState(false)
+  const [globalKey, setGlobalKey] = useState(0)
   const handoffRef = useRef<Handoff>({ page4Dots: null, page5Dots: null, page6Dots: null })
 
   const isFirst = page === 0
@@ -431,6 +443,22 @@ export default function PressHere() {
     setPage(next)
     setDone(false)
   }
+
+  function reset() {
+    setGlobalKey(k => k + 1)
+    setPage(0)
+    setDone(false)
+    handoffRef.current = { page4Dots: null, page5Dots: null, page6Dots: null }
+  }
+
+  // Spacebar → Next when available
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.code === 'Space' && done && !isLast) { e.preventDefault(); nav(page + 1) }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [done, isLast, page])
 
   return (
     <CaptionCtx.Provider value={setCaption}>
@@ -442,11 +470,17 @@ export default function PressHere() {
             fontFamily: '"Nunito Variable", Nunito, sans-serif', overflowX: 'auto',
           }}>
 
-            {/* Canvas area — all pages mounted, only active one shown */}
-            <div style={{ flex: 1, minHeight: 0, position: 'relative', minWidth: 960 }}>
+            {/* Canvas area — all pages mounted; opacity+pointer-events for transition */}
+            <div key={globalKey} style={{ flex: 1, minHeight: 0, position: 'relative', minWidth: 960 }}>
               {PAGES.map((P, i) => (
                 <PageActiveCtx.Provider key={i} value={i === page}>
-                  <div style={{ position: 'absolute', inset: 0, display: i === page ? 'flex' : 'none', flexDirection: 'column' }}>
+                  <div style={{
+                    position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
+                    opacity: i === page ? 1 : 0,
+                    pointerEvents: i === page ? 'auto' : 'none',
+                    transition: 'opacity 0.18s ease',
+                    zIndex: i === page ? 1 : 0,
+                  }}>
                     <P />
                   </div>
                 </PageActiveCtx.Provider>
@@ -478,12 +512,12 @@ export default function PressHere() {
               </button>
             </div>
 
-            {/* Footer pagination */}
-            <div style={{ display: 'flex', justifyContent: 'center', minWidth: 960, marginTop: 10 }}>
+            {/* Footer pagination + reset */}
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minWidth: 960, marginTop: 10, gap: 4 }}>
               <Pagination className="w-auto mx-0">
                 <PaginationContent>
                   <PaginationItem>
-                    <PaginationPrevious onClick={() => !isFirst && nav(page - 1)} className={cn(isFirst && 'opacity-30 pointer-events-none')} />
+                    <PaginationPrevious text="" onClick={() => !isFirst && nav(page - 1)} className={cn(isFirst && 'opacity-30 pointer-events-none')} />
                   </PaginationItem>
                   {Array.from({ length: TOTAL }, (_, i) => (
                     <PaginationItem key={i}>
@@ -491,10 +525,13 @@ export default function PressHere() {
                     </PaginationItem>
                   ))}
                   <PaginationItem>
-                    <PaginationNext onClick={() => !isLast && nav(page + 1)} className={cn(isLast && 'opacity-30 pointer-events-none')} />
+                    <PaginationNext text="" onClick={() => !isLast && nav(page + 1)} className={cn(isLast && 'opacity-30 pointer-events-none')} />
                   </PaginationItem>
                 </PaginationContent>
               </Pagination>
+              <Button variant="ghost" size="icon-sm" onClick={reset} className="text-muted-foreground shrink-0" title="Reset">
+                <RotateCcw />
+              </Button>
             </div>
 
           </div>
