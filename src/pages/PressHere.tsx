@@ -169,12 +169,10 @@ function Page4() {
         if (Math.abs(vx) > 0.05 || Math.abs(vy) > 0.05) anyMoving = true
         return { ...rest, x, y, vx, vy, friction }
       })
+      handoff.current.page4Dots = dotsRef.current.map(({ x, y }) => ({ x, y }))
       tick(n => n + 1)
       if (anyMoving) { rafRef.current = requestAnimationFrame(step) }
-      else {
-        running.current = false
-        handoff.current.page4Dots = dotsRef.current.map(({ x, y }) => ({ x, y }))
-      }
+      else { running.current = false }
     }
     rafRef.current = requestAnimationFrame(step)
   }
@@ -237,9 +235,9 @@ function TiltPage({ direction, defaultPos }: { direction: 'left' | 'right'; defa
   // On first activation, inherit previous page's final dot positions
   useEffect(() => {
     if (!active || initedRef.current || taps > 0) return
-    initedRef.current = true
     const src = direction === 'left' ? handoff.current.page4Dots : handoff.current.page5Dots
     if (src && src.length === 15) {
+      initedRef.current = true
       dotsRef.current = mkTiltDots(src)
       tick(n => n + 1)
     }
@@ -276,14 +274,12 @@ function TiltPage({ direction, defaultPos }: { direction: 'left' | 'right'; defa
         if (Math.abs(vx) > 0.05 || Math.abs(vy) > 0.05) anyMoving = true
         return { ...rest, x, y, vx, vy, friction }
       })
+      const curPos = dotsRef.current.map(({ x, y }) => ({ x, y }))
+      if (direction === 'left') handoff.current.page5Dots = curPos
+      else                      handoff.current.page6Dots = curPos
       tick(n => n + 1)
       if (anyMoving) { rafRef.current = requestAnimationFrame(step) }
-      else {
-        running.current = false
-        const finalPos = dotsRef.current.map(({ x, y }) => ({ x, y }))
-        if (direction === 'left')  handoff.current.page5Dots = finalPos
-        else                       handoff.current.page6Dots = finalPos
-      }
+      else { running.current = false }
     }
     rafRef.current = requestAnimationFrame(step)
   }
@@ -436,7 +432,7 @@ function Page8() {
   }
 
   function scheduleSwap() {
-    const delay = 2000 + Math.random() * 1500   // 2–3.5 s
+    const delay = 4000 + Math.random() * 4000   // 4–8 s
     timerRef.current = setTimeout(doSwap, delay)
   }
 
@@ -457,19 +453,19 @@ function Page8() {
         {COLOR_ROW.map((color, i) => {
           const isYellow = color === YELLOW
           const dimmed   = dark && !isYellow
-          const pos      = dark ? posRef.current[i] : lineupPos(i)
+          const pos      = posRef.current[i]
           return (
             <div
               key={i}
-              onClick={isYellow && !dark ? () => setDark(true) : undefined}
+              onClick={isYellow ? () => setDark(d => !d) : undefined}
               style={{
                 position: 'absolute',
                 left: `${pos.x}%`, top: `${pos.y}%`,
                 transform: 'translate(-50%,-50%)',
                 width: DOT_SIZE, height: DOT_SIZE, borderRadius: '50%',
                 background: color,
-                cursor: isYellow && !dark ? 'pointer' : 'default',
-                opacity: dimmed ? 0.15 : 1,
+                cursor: isYellow ? 'pointer' : 'default',
+                opacity: dimmed ? 0.10 : 1,
                 transition: 'opacity 1.3s ease',
               }}
             />
@@ -508,7 +504,9 @@ export default function PressHere() {
   const [caption,   setCaption]   = useState<React.ReactNode>('')
   const [done,      setDone]      = useState(false)
   const [globalKey, setGlobalKey] = useState(0)
-  const handoffRef = useRef<Handoff>({ page4Dots: null, page5Dots: null, page6Dots: null })
+  const handoffRef     = useRef<Handoff>({ page4Dots: null, page5Dots: null, page6Dots: null })
+  const canvasAreaRef  = useRef<HTMLDivElement>(null)
+  const firstRenderRef = useRef(true)
 
   const isFirst = page === 0
   const isLast  = page === TOTAL - 1
@@ -524,6 +522,17 @@ export default function PressHere() {
     setDone(false)
     handoffRef.current = { page4Dots: null, page5Dots: null, page6Dots: null }
   }
+
+  // Page-change shadow lift animation
+  useLayoutEffect(() => {
+    if (firstRenderRef.current) { firstRenderRef.current = false; return }
+    const el = canvasAreaRef.current
+    if (!el) return
+    el.animate(
+      [{ boxShadow: 'none' }, { boxShadow: '0 20px 56px rgba(0,0,0,0.18)' }, { boxShadow: 'none' }],
+      { duration: 360, easing: 'ease-out' }
+    )
+  }, [page])
 
   // Spacebar → Next when available
   useEffect(() => {
@@ -545,15 +554,11 @@ export default function PressHere() {
           }}>
 
             {/* Canvas area — all pages mounted; opacity+pointer-events for transition */}
-            <div key={globalKey} style={{ flex: 1, minHeight: 0, position: 'relative', minWidth: 960 }}>
+            <div ref={canvasAreaRef} key={globalKey} style={{ flex: 1, minHeight: 0, position: 'relative', minWidth: 960 }}>
               {PAGES.map((P, i) => (
                 <PageActiveCtx.Provider key={i} value={i === page}>
                   <div style={{
-                    position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
-                    opacity: i === page ? 1 : 0,
-                    pointerEvents: i === page ? 'auto' : 'none',
-                    transition: 'opacity 0.18s ease',
-                    zIndex: i === page ? 1 : 0,
+                    position: 'absolute', inset: 0, display: i === page ? 'flex' : 'none', flexDirection: 'column',
                   }}>
                     <P />
                   </div>
