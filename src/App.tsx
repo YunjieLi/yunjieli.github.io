@@ -11,6 +11,7 @@ import ChineseNames from './pages/ChineseNames'
 import VanillaEnglish from './pages/VanillaEnglish'
 import Lily from './pages/Lily'
 import PressHere from './pages/PressHere'
+import Turbines from './pages/Turbines'
 
 export default function App() {
   return (
@@ -28,6 +29,7 @@ export default function App() {
         <Route path="/vanilla-english" element={<VanillaEnglish />} />
         <Route path="/lily" element={<Lily />} />
         <Route path="/press-here" element={<PressHere />} />
+        <Route path="/turbines" element={<Turbines />} />
       </Routes>
     </BrowserRouter>
   )

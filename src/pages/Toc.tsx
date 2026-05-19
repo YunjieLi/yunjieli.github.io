@@ -56,6 +56,7 @@ const morePages = [
   { href: '/quip-insights', label: 'Quip Analytics' },
   { href: '/tuner', label: 'Online Tuner' },
   { href: '/vanilla-english', label: 'Vanilla English' },
+  { href: '/turbines', label: 'Turbines' },
 ]
 
 export default function Toc() {
