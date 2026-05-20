@@ -1008,6 +1008,54 @@ const dotStyle = (color: string, interactive = true): React.CSSProperties => ({
   WebkitTapHighlightColor: 'transparent',
 })
 
+// ─── Well Done screen ─────────────────────────────────────────────────────────
+function WellDone({ onReset }: { onReset: () => void }) {
+  useLayoutEffect(() => {
+    const s = document.createElement('style')
+    s.textContent = '@keyframes shineText{0%{background-position:200% center}100%{background-position:0% center}}'
+    document.head.appendChild(s)
+    return () => { document.head.removeChild(s) }
+  }, [])
+  return (
+    <div style={{
+      height: '100dvh', display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center', gap: 36,
+      background: '#fef9f0',
+      fontFamily: '"Nunito Variable", Nunito, sans-serif',
+    }}>
+      <img
+        src="/press-here/well-done.gif"
+        alt="Well done!"
+        style={{ width: 320, height: 320, borderRadius: 28, objectFit: 'cover', boxShadow: '0 12px 48px rgba(0,0,0,0.12)' }}
+      />
+      <div style={{
+        fontSize: 'clamp(56px,8vw,96px)', fontWeight: 900, letterSpacing: -2,
+        background: 'linear-gradient(90deg, #FDD302 0%, #F63664 30%, #5CCBF8 60%, #FDD302 100%)',
+        backgroundSize: '300% auto',
+        WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+        backgroundClip: 'text',
+        animation: 'shineText 2.8s linear infinite',
+      }}>
+        Well done!
+      </div>
+      <button
+        onClick={onReset}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          padding: '10px 28px', borderRadius: 40,
+          background: 'transparent', border: '2px solid #ccc',
+          fontSize: 16, fontWeight: 700, color: '#888',
+          fontFamily: 'inherit', cursor: 'pointer',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.borderColor = '#aaa'; e.currentTarget.style.color = '#555' }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor = '#ccc'; e.currentTarget.style.color = '#888' }}
+      >
+        <RotateCcw size={16} /> Play again
+      </button>
+    </div>
+  )
+}
+
 // ─── Shell ────────────────────────────────────────────────────────────────────
 const PAGES = [Page1, Page2, Page3, Page4, Page56, Page7, Page8, Page9, Page10, Page11]
 const TOTAL = PAGES.length
@@ -1017,6 +1065,7 @@ export default function PressHere() {
   const [caption,   setCaption]   = useState<React.ReactNode>('')
   const [done,      setDone]      = useState(false)
   const [globalKey, setGlobalKey] = useState(0)
+  const [wellDone,  setWellDone]  = useState(false)
   const handoffRef     = useRef<Handoff>({ page4Dots: null, page5Dots: null, page6Dots: null })
   const canvasAreaRef  = useRef<HTMLDivElement>(null)
   const firstRenderRef = useRef(true)
@@ -1033,6 +1082,7 @@ export default function PressHere() {
     setGlobalKey(k => k + 1)
     setPage(0)
     setDone(false)
+    setWellDone(false)
     handoffRef.current = { page4Dots: null, page5Dots: null, page6Dots: null }
   }
 
@@ -1047,14 +1097,19 @@ export default function PressHere() {
     )
   }, [page])
 
-  // Spacebar → Next when available
+  // Spacebar → Next / Done when available
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.code === 'Space' && done && !isLast) { e.preventDefault(); nav(page + 1) }
+      if (e.code !== 'Space' || !done) return
+      e.preventDefault()
+      if (isLast) setWellDone(true)
+      else nav(page + 1)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [done, isLast, page])
+  }, [done, isLast, page])   // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (wellDone) return <WellDone onReset={reset} />
 
   return (
     <CaptionCtx.Provider value={setCaption}>
@@ -1079,13 +1134,13 @@ export default function PressHere() {
               ))}
             </div>
 
-            {/* Caption row — Next button always reserves space via visibility */}
+            {/* Caption row — button reserves space via visibility */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', minWidth: 960, marginTop: 14, gap: 16 }}>
               <div style={{ fontSize: 'clamp(14px,2vw,18px)', fontWeight: 600, color: '#444', lineHeight: 1.4 }}>
                 {caption}
               </div>
               <button
-                onClick={() => nav(page + 1)}
+                onClick={isLast ? () => setWellDone(true) : () => nav(page + 1)}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 8,
                   padding: '10px 28px', borderRadius: 40,
@@ -1093,14 +1148,14 @@ export default function PressHere() {
                   fontSize: 20, fontWeight: 800, color: '#333',
                   fontFamily: 'inherit', cursor: 'pointer',
                   flexShrink: 0,
-                  visibility: (done && !isLast) ? 'visible' : 'hidden',
+                  visibility: done ? 'visible' : 'hidden',
                 }}
                 onMouseEnter={e => (e.currentTarget.style.background = '#ffc700')}
                 onMouseLeave={e => (e.currentTarget.style.background = '#FDD302')}
                 onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.96)')}
                 onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}
               >
-                Next <ChevronRight size={22} strokeWidth={3} />
+                {isLast ? 'Done' : <>Next <ChevronRight size={22} strokeWidth={3} /></>}
               </button>
             </div>
 
