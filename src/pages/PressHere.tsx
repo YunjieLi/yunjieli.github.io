@@ -11,7 +11,7 @@ const BLUE   = '#5CCBF8'
 const DOT_SIZE = 80
 
 // Fixed horizontal positions for color baskets — same across all collection pages
-const BASKET_LEFT: Record<string, string> = { [YELLOW]: '25%', [BLUE]: '50%', [RED]: '75%' }
+const BASKET_LEFT: Record<string, string> = { [YELLOW]: '50%', [BLUE]: '25%', [RED]: '75%' }
 
 const COL_X = [25, 50, 75]
 const ROW_Y = [84, 67, 50, 33, 16]
@@ -753,8 +753,8 @@ function Page9() {
                 left:  `${atTarget ? target.x : pos.x}%`,
                 top:   `${atTarget ? target.y : pos.y}%`,
                 transform: 'translate(-50%,-50%)',
-                width: DOT_SIZE, height: DOT_SIZE, borderRadius: '50%',
-                background: color,
+                width: DOT_SIZE + 40, height: DOT_SIZE + 40,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
                 opacity: phase === 'gone' ? 0 : 1,
                 cursor: isYellow && phase === 'arch' ? 'pointer' : 'default',
                 transition: phase === 'arch'
@@ -765,7 +765,9 @@ function Page9() {
                 zIndex: phase !== 'arch' ? 10 : 1,
                 pointerEvents: isYellow && phase === 'arch' ? 'auto' : 'none',
               }}
-            />
+            >
+              <div style={{ width: DOT_SIZE, height: DOT_SIZE, borderRadius: '50%', background: color, pointerEvents: 'none' }} />
+            </div>
           )
         })}
 
@@ -935,8 +937,8 @@ function BrownCatch({ targetColor, maxSpd, prevColors }: {
                 left: `${atTarget ? targetPct.x : dot.x}%`,
                 top:  `${atTarget ? targetPct.y : dot.y}%`,
                 transform: 'translate(-50%,-50%)',
-                width: DOT_SIZE, height: DOT_SIZE, borderRadius: '50%',
-                background: targetColor,
+                width: DOT_SIZE + 40, height: DOT_SIZE + 40,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
                 opacity: phase === 'gone' ? 0 : 1,
                 cursor: phase === 'arch' ? 'pointer' : 'default',
                 transition: phase === 'arch'
@@ -947,7 +949,9 @@ function BrownCatch({ targetColor, maxSpd, prevColors }: {
                 zIndex: phase !== 'arch' ? 10 : 1,
                 pointerEvents: phase === 'arch' ? 'auto' : 'none',
               }}
-            />
+            >
+              <div style={{ width: DOT_SIZE, height: DOT_SIZE, borderRadius: '50%', background: targetColor, pointerEvents: 'none' }} />
+            </div>
           )
         })}
 
@@ -1110,6 +1114,15 @@ export default function PressHere() {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [done, isLast, page])   // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Secret shortcut: X finishes the current page
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'x' || e.key === 'X') setDone(true)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])   // eslint-disable-line react-hooks/exhaustive-deps
 
   if (wellDone) return <WellDone onReset={reset} />
 
