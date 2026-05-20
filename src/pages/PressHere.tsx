@@ -95,39 +95,31 @@ function PageCanvas({ dots, intro, done }: { dots: DotSpec[]; intro: string; don
 }
 
 // ─── Page 1 ──────────────────────────────────────────────────────────────────
+const GRAY = '#D3D4D5'
+
 function Page1() {
   const [count, setCount] = useState(1)
   const done = count === 3
   const bump = () => setCount(c => Math.min(c + 1, 3))
   const dots: DotSpec[] = Array.from({ length: count }, (_, i) => ({
-    id: `p1-${i}`, color: YELLOW, x: COL_X[i], y: ROW_Y[0], onClick: bump, interactive: !done,
+    id: `p1-${i}`, color: GRAY, x: COL_X[i], y: ROW_Y[0], onClick: bump, interactive: !done,
   }))
-  const intro = count === 1 ? 'Press the dot!' : count === 2 ? 'Now press one of them!' : 'Three yellow dots! 🌟'
-  return <PageCanvas dots={dots} intro={intro} done={done} />
+  return <PageCanvas dots={dots} intro="Press the dot!" done={done} />
 }
 
-// ─── Page 2 — change colors ───────────────────────────────────────────────────
+// ─── Page 2 — reveal colors ───────────────────────────────────────────────────
 function Page2() {
-  const [leftColor,  setLeftColor]  = useState(YELLOW)
-  const [rightColor, setRightColor] = useState(YELLOW)
-  const leftChanged  = leftColor  !== YELLOW
-  const rightChanged = rightColor !== YELLOW
-  const done = leftChanged && rightChanged
-
-  const intro = done
-    ? 'Red, yellow, blue! 🌈'
-    : leftChanged
-    ? 'Now press the right dot!'
-    : rightChanged
-    ? 'Now press the left dot!'
-    : 'Press the outer dots to change their colors!'
+  const [leftColor,  setLeftColor]  = useState(GRAY)
+  const [midColor,   setMidColor]   = useState(GRAY)
+  const [rightColor, setRightColor] = useState(GRAY)
+  const done = leftColor === RED && midColor === YELLOW && rightColor === BLUE
 
   const dots: DotSpec[] = [
-    { id: 'l', color: leftColor,  x: COL_X[0], y: ROW_Y[0], onClick: () => { if (!leftChanged)  setLeftColor(RED)  }, interactive: !leftChanged },
-    { id: 'm', color: YELLOW,     x: COL_X[1], y: ROW_Y[0], onClick: () => {}, interactive: false },
-    { id: 'r', color: rightColor, x: COL_X[2], y: ROW_Y[0], onClick: () => { if (!rightChanged) setRightColor(BLUE) }, interactive: !rightChanged },
+    { id: 'l', color: leftColor,  x: COL_X[0], y: ROW_Y[0], onClick: () => setLeftColor(RED),   interactive: leftColor  === GRAY },
+    { id: 'm', color: midColor,   x: COL_X[1], y: ROW_Y[0], onClick: () => setMidColor(YELLOW), interactive: midColor   === GRAY },
+    { id: 'r', color: rightColor, x: COL_X[2], y: ROW_Y[0], onClick: () => setRightColor(BLUE), interactive: rightColor === GRAY },
   ]
-  return <PageCanvas dots={dots} intro={intro} done={done} />
+  return <PageCanvas dots={dots} intro="Press each dot to reveal its color!" done={done} />
 }
 
 // ─── Page 3 — grow columns ────────────────────────────────────────────────────
@@ -137,9 +129,7 @@ function Page3() {
   const [rightCount, setRightCount] = useState(1)
   const done = leftCount === 5 && midCount === 5 && rightCount === 5
 
-  const intro = done
-    ? 'Red, yellow, blue — all full! 🌈'
-    : 'Keep pressing each column to grow it!'
+  const intro = 'Press each column to grow it!'
 
   return (
     <>
@@ -220,7 +210,7 @@ function Page4() {
   const canvasRef  = useRef<HTMLDivElement>(null)
   const [, tick]   = useState(0)
   const [clicks, setClicks] = useState(0)
-  const done    = clicks >= 6
+  const done    = clicks >= 5
   const handoff = useContext(HandoffCtx)
 
   function startLoop() {
@@ -262,7 +252,7 @@ function Page4() {
 
   useEffect(() => () => { if (rafRef.current) cancelAnimationFrame(rafRef.current) }, [])
 
-  const intro = clicks === 0 ? 'Tap anywhere to shake!' : clicks < 3 ? 'Again! Shake harder! 💥' : clicks < 6 ? 'Keep going! 🌀' : 'What a mess! 🎉'
+  const intro = 'Tap anywhere to shake!'
 
   return (
     <>
@@ -303,8 +293,8 @@ function Page56() {
   const initedRef = useRef(false)
   const tapsRef   = useRef(0)
   const [, tick]  = useState(0)
-  const [taps, setTaps] = useState(0)
-  const done = taps >= 2
+  const [usedDirs, setUsedDirs] = useState<Set<GravDir>>(new Set())
+  const done = usedDirs.size === 4
 
   useEffect(() => {
     if (!active || initedRef.current) return
@@ -326,7 +316,7 @@ function Page56() {
       vy: dot.vy + (Math.random() - 0.5) * 3.5,
     }))
     tapsRef.current += 1
-    setTaps(t => t + 1)
+    setUsedDirs(prev => { const next = new Set(prev); next.add(dir); return next })
     if (!running.current) startLoop()
   }
 
@@ -369,7 +359,7 @@ function Page56() {
     return () => window.removeEventListener('keydown', onKey)
   }, [active])   // eslint-disable-line react-hooks/exhaustive-deps
 
-  const intro = taps === 0 ? 'Click an arrow to apply gravity!' : taps < 2 ? 'Try another direction! 🎯' : 'Gravity explorer! 🧲'
+  const intro = 'Use the arrows (or keyboard) to tilt in all 4 directions!'
 
   const arrowBtn = (dir: GravDir, label: string, style: React.CSSProperties) => (
     <div
@@ -488,11 +478,7 @@ function Page7() {
     setShapeIdx(s => s + 1)
   }
 
-  const intro = shapeIdx < 0
-    ? 'Tap to line them up!'
-    : shapeIdx < TOTAL_SHAPES - 1
-    ? `${SHAPE_NAMES[shapeIdx]}! Tap for next shape →`
-    : `${SHAPE_NAMES[shapeIdx]}! All shapes done! 🎨`
+  const intro = 'Tap to cycle through different formations!'
 
   return (
     <>
@@ -650,15 +636,7 @@ function Page8() {
           )
         })}
       </div>
-      <IntroText>{
-        dark
-          ? 'Lights out! 🌙 Click a yellow dot to turn them back on!'
-          : toggleCount === 0
-          ? 'Press a yellow dot to turn off the light!'
-          : done8
-          ? 'Lights are back! ✨'
-          : 'Now press a yellow dot to turn the lights back on!'
-      }</IntroText>
+      <IntroText>Press a yellow dot to toggle the lights!</IntroText>
       <SetDone done={done8} />
     </>
   )
@@ -730,11 +708,7 @@ function Page9() {
     setPhases(prev => prev.map((p, idx) => idx === i && p === 'arch' ? 'flying' : p))
   }
 
-  const intro = done
-    ? 'All yellow dots collected! 🎊'
-    : collected > 0
-    ? `${collected} / ${YELLOW_IDXS.length} in the basket — keep going!`
-    : 'Click the yellow dots to collect them into the basket!'
+  const intro = 'Click the yellow dots to collect them into the basket!'
 
   return (
     <>
@@ -832,13 +806,14 @@ function stepBrown(dots: BrownDot[], maxSpd: number, cw: number, ch: number): Br
   })
 }
 
-function BrownCatch({ targetColor, maxSpd, prevColors }: {
-  targetColor: string; maxSpd: number; prevColors: string[]
+function BrownCatch({ targetColor, maxSpd, prevColors, previewColor }: {
+  targetColor: string; maxSpd: number; prevColors: string[]; previewColor?: string
 }) {
   const active        = useContext(PageActiveCtx)
   const canvasRef     = useRef<HTMLDivElement>(null)
   const basketBodyRef = useRef<HTMLDivElement>(null)
   const dotsRef       = useRef<BrownDot[]>([])
+  const previewRef    = useRef<BrownDot[]>([])
   const rafRef        = useRef<number | null>(null)
   const dimsRef       = useRef({ cw: 960, ch: 640 })
   const [, tick]      = useState(0)
@@ -870,6 +845,9 @@ function BrownCatch({ targetColor, maxSpd, prevColors }: {
           dotsRef.current = newDots
           setPhases(newDots.map(() => 'arch'))
         }
+        if (previewColor && previewRef.current.length === 0) {
+          previewRef.current = makeBrownDots(previewColor, cw, ch)
+        }
       }
     }
     const obs = new ResizeObserver(update)
@@ -885,7 +863,8 @@ function BrownCatch({ targetColor, maxSpd, prevColors }: {
     let alive = true
     const step = () => {
       if (!alive) return
-      dotsRef.current = stepBrown(dotsRef.current, maxSpd, dimsRef.current.cw, dimsRef.current.ch)
+      dotsRef.current  = stepBrown(dotsRef.current,  maxSpd,        dimsRef.current.cw, dimsRef.current.ch)
+      previewRef.current = stepBrown(previewRef.current, maxSpd * 2, dimsRef.current.cw, dimsRef.current.ch)
       tick(n => n + 1)
       rafRef.current = requestAnimationFrame(step)
     }
@@ -915,12 +894,9 @@ function BrownCatch({ targetColor, maxSpd, prevColors }: {
     setPhases(prev => prev.map((p, i) => i === dotIdx && p === 'arch' ? 'flying' : p))
   }
 
-  const colorName = targetColor === BLUE ? 'blue' : 'red'
-  const intro = done
-    ? `All ${colorName} dots collected! 🎊`
-    : collected > 0
-    ? `${collected} / ${targetTotal} caught — keep going!`
-    : 'Click the moving dots to collect them!'
+  const intro = targetColor === BLUE
+    ? 'Catch all the moving blue dots!'
+    : 'The red dots are even faster — catch them all!'
 
   return (
     <>
@@ -954,6 +930,18 @@ function BrownCatch({ targetColor, maxSpd, prevColors }: {
             </div>
           )
         })}
+
+        {/* Preview dots — non-interactive, foreshadow next page */}
+        {previewColor && previewRef.current.map(dot => (
+          <div key={dot.id} style={{
+            position: 'absolute',
+            left: `${dot.x}%`, top: `${dot.y}%`,
+            transform: 'translate(-50%,-50%)',
+            width: DOT_SIZE, height: DOT_SIZE, borderRadius: '50%',
+            background: previewColor,
+            pointerEvents: 'none', zIndex: 1,
+          }} />
+        ))}
 
         {/* Baskets — fixed positions by color so they don't shift between pages */}
         {allColors.map((color, bi) => {
@@ -994,7 +982,7 @@ function BrownCatch({ targetColor, maxSpd, prevColors }: {
   )
 }
 
-function Page10() { return <BrownCatch targetColor={BLUE} maxSpd={0.35} prevColors={[YELLOW]} /> }
+function Page10() { return <BrownCatch targetColor={BLUE} maxSpd={0.35} prevColors={[YELLOW]} previewColor={RED} /> }
 function Page11() { return <BrownCatch targetColor={RED}  maxSpd={0.7}  prevColors={[YELLOW, BLUE]} /> }
 
 // ─── Shared styles ────────────────────────────────────────────────────────────
@@ -1028,6 +1016,7 @@ function WellDone({ onReset }: { onReset: () => void }) {
       alignItems: 'center', justifyContent: 'center', gap: 36,
       background: '#fff',
       fontFamily: '"Nunito Variable", Nunito, sans-serif',
+      userSelect: 'none',
     }}>
       <img
         src="/press-here/well-done.gif"
@@ -1124,6 +1113,12 @@ export default function PressHere() {
     return () => window.removeEventListener('keydown', onKey)
   }, [])   // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Prevent page scrolling
+  useLayoutEffect(() => {
+    document.documentElement.style.overflow = 'hidden'
+    document.body.style.overflow = 'hidden'
+  }, [])
+
   if (wellDone) return <WellDone onReset={reset} />
 
   return (
@@ -1133,7 +1128,8 @@ export default function PressHere() {
           <div style={{
             height: '100dvh', display: 'flex', flexDirection: 'column',
             background: '#fef9f0', padding: '12px 32px 16px', boxSizing: 'border-box',
-            fontFamily: '"Nunito Variable", Nunito, sans-serif', overflowX: 'auto',
+            fontFamily: '"Nunito Variable", Nunito, sans-serif', overflow: 'hidden',
+            userSelect: 'none',
           }}>
 
             {/* Canvas area — all pages mounted; opacity+pointer-events for transition */}
