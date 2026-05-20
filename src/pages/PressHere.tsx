@@ -10,6 +10,9 @@ const RED    = '#F63664'
 const BLUE   = '#5CCBF8'
 const DOT_SIZE = 80
 
+// Fixed horizontal positions for color baskets — same across all collection pages
+const BASKET_LEFT: Record<string, string> = { [YELLOW]: '25%', [BLUE]: '50%', [RED]: '75%' }
+
 const COL_X = [25, 50, 75]
 const ROW_Y = [84, 67, 50, 33, 16]
 
@@ -768,7 +771,7 @@ function Page9() {
 
         {/* Basket */}
         <div style={{
-          position: 'absolute', left: '50%', bottom: '5%',
+          position: 'absolute', left: BASKET_LEFT[YELLOW], bottom: '5%',
           transform: 'translateX(-50%)',
           pointerEvents: 'none', zIndex: 0,
         }}>
@@ -948,37 +951,36 @@ function BrownCatch({ targetColor, maxSpd, prevColors }: {
           )
         })}
 
-        {/* Baskets */}
-        <div style={{
-          position: 'absolute', bottom: '5%', left: 0, right: 0,
-          display: 'flex', justifyContent: 'space-evenly',
-          pointerEvents: 'none', zIndex: 0,
-        }}>
-          {allColors.map((color, bi) => {
-            const isTarget = bi === allColors.length - 1
-            const count    = isTarget ? collected : totalPerColor(color)
-            const total    = totalPerColor(color)
-            return (
-              <div key={color} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <div style={{
-                  margin: '0 auto', width: 70, height: 28,
-                  border: `5px solid ${color}`, borderBottom: 'none',
-                  borderRadius: '40px 40px 0 0',
-                }} />
-                <div ref={isTarget ? basketBodyRef : undefined} style={{
-                  width: 110, height: 72,
-                  border: `5px solid ${color}`,
-                  borderRadius: '0 0 18px 18px',
-                  background: color + '20',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 22, fontWeight: 700, color,
-                }}>
-                  {`${count}/${total}`}
-                </div>
+        {/* Baskets — fixed positions by color so they don't shift between pages */}
+        {allColors.map((color, bi) => {
+          const isTarget = bi === allColors.length - 1
+          const count    = isTarget ? collected : totalPerColor(color)
+          const total    = totalPerColor(color)
+          return (
+            <div key={color} style={{
+              position: 'absolute', left: BASKET_LEFT[color], bottom: '5%',
+              transform: 'translateX(-50%)',
+              display: 'flex', flexDirection: 'column', alignItems: 'center',
+              pointerEvents: 'none', zIndex: 0,
+            }}>
+              <div style={{
+                margin: '0 auto', width: 70, height: 28,
+                border: `5px solid ${color}`, borderBottom: 'none',
+                borderRadius: '40px 40px 0 0',
+              }} />
+              <div ref={isTarget ? basketBodyRef : undefined} style={{
+                width: 110, height: 72,
+                border: `5px solid ${color}`,
+                borderRadius: '0 0 18px 18px',
+                background: color + '20',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 22, fontWeight: 700, color,
+              }}>
+                {`${count}/${total}`}
               </div>
-            )
-          })}
-        </div>
+            </div>
+          )
+        })}
 
         {done && <ClapCelebration />}
       </div>
