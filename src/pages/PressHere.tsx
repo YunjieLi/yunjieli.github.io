@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useLayoutEffect, createContext, useContext } from 'react'
+import { useState, useRef, useEffect, useLayoutEffect, useMemo, createContext, useContext } from 'react'
 import '@fontsource-variable/nunito'
 import { ChevronRight, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -518,7 +518,9 @@ function Page7() {
 
 // ─── Page 8 — lights out ──────────────────────────────────────────────────────
 function Page8() {
-  const [dark, setDark] = useState(false)
+  const [dark, setDark]           = useState(false)
+  const [toggleCount, setToggleCount] = useState(0)
+  const done8 = toggleCount >= 2   // off once + back on once
   const canvasRef = useRef<HTMLDivElement>(null)
   const dimsRef   = useRef({ cw: 960, ch: 640 })
   // Persistent dot positions (% coords); driven by RAF during swap
@@ -627,7 +629,7 @@ function Page8() {
           return (
             <div
               key={i}
-              onClick={isYellow ? () => setDark(d => !d) : undefined}
+              onClick={isYellow ? () => { setDark(d => !d); setToggleCount(c => c + 1) } : undefined}
               style={{
                 position: 'absolute',
                 left: `${pos.x}%`, top: `${pos.y}%`,
@@ -642,8 +644,165 @@ function Page8() {
           )
         })}
       </div>
-      <IntroText>{dark ? 'You turned off the lights! 🌙' : 'Press a yellow dot to turn off the light!'}</IntroText>
-      <SetDone done={dark} />
+      <IntroText>{
+        dark
+          ? 'Lights out! 🌙 Click a yellow dot to turn them back on!'
+          : toggleCount === 0
+          ? 'Press a yellow dot to turn off the light!'
+          : done8
+          ? 'Lights are back! ✨'
+          : 'Now press a yellow dot to turn the lights back on!'
+      }</IntroText>
+      <SetDone done={done8} />
+    </>
+  )
+}
+
+// ─── Confetti ─────────────────────────────────────────────────────────────────
+function Confetti() {
+  useEffect(() => {
+    const s = document.createElement('style')
+    s.textContent = '@keyframes cFall{0%{transform:translateY(0) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}'
+    document.head.appendChild(s)
+    return () => { document.head.removeChild(s) }
+  }, [])
+  const pieces = useMemo(() => Array.from({ length: 60 }, (_, i) => ({
+    id: i,
+    x:     Math.random() * 100,
+    size:  6 + Math.random() * 8,
+    color: [YELLOW, RED, BLUE][i % 3],
+    dur:   1.5 + Math.random() * 2,
+    delay: Math.random() * 1.5,
+    round: (i % 3) !== 0,
+  })), [])
+  return (
+    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden', zIndex: 20 }}>
+      {pieces.map(p => (
+        <div key={p.id} style={{
+          position: 'absolute', left: `${p.x}%`, top: 0,
+          width: p.size, height: p.size,
+          background: p.color, borderRadius: p.round ? '50%' : '2px',
+          animation: `cFall ${p.dur}s ${p.delay}s ease-in forwards`,
+        }} />
+      ))}
+    </div>
+  )
+}
+
+// ─── Page 9 — collect yellow dots ────────────────────────────────────────────
+const YELLOW_IDXS = COLOR_ROW.flatMap((c, i) => c === YELLOW ? [i] : [])
+type CollectPhase = 'arch' | 'flying' | 'gone'
+
+function Page9() {
+  const canvasRef     = useRef<HTMLDivElement>(null)
+  const basketBodyRef = useRef<HTMLDivElement>(null)
+  const [dims,   setDims]   = useState({ cw: 960, ch: 640 })
+  const [target, setTarget] = useState({ x: 50, y: 90 })
+  const [phases, setPhases] = useState<CollectPhase[]>(() => COLOR_ROW.map(() => 'arch'))
+
+  const collected = phases.filter((p, i) => COLOR_ROW[i] === YELLOW && p !== 'arch').length
+  const done      = phases.every((p, i) => COLOR_ROW[i] !== YELLOW || p === 'gone')
+
+  useLayoutEffect(() => {
+    const canvasEl = canvasRef.current
+    const bodyEl   = basketBodyRef.current
+    if (!canvasEl || !bodyEl) return
+    const update = () => {
+      const cr = canvasEl.getBoundingClientRect()
+      const br = bodyEl.getBoundingClientRect()
+      if (cr.width > 0 && cr.height > 0) {
+        setDims({ cw: cr.width, ch: cr.height })
+        setTarget({
+          x: ((br.left + br.width  / 2) - cr.left) / cr.width  * 100,
+          y: ((br.top  + br.height / 2) - cr.top)  / cr.height * 100,
+        })
+      }
+    }
+    const obs = new ResizeObserver(update)
+    obs.observe(canvasEl)
+    return () => obs.disconnect()
+  }, [])
+
+  // flying → gone after position animation completes
+  useEffect(() => {
+    const flyingIdxs = phases.flatMap((p, i) => p === 'flying' ? [i] : [])
+    if (flyingIdxs.length === 0) return
+    const t = setTimeout(() => {
+      setPhases(prev => prev.map((p, i) => flyingIdxs.includes(i) && p === 'flying' ? 'gone' : p))
+    }, 550)
+    return () => clearTimeout(t)
+  }, [phases])
+
+  function collect(i: number) {
+    setPhases(prev => prev.map((p, idx) => idx === i && p === 'arch' ? 'flying' : p))
+  }
+
+  const intro = done
+    ? 'All yellow dots collected! 🎊'
+    : collected > 0
+    ? `${collected} / ${YELLOW_IDXS.length} in the basket — keep going!`
+    : 'Click the yellow dots to collect them into the basket!'
+
+  return (
+    <>
+      <div ref={canvasRef} style={{ ...canvasStyle }}>
+        {COLOR_ROW.map((color, i) => {
+          const phase    = phases[i]
+          const isYellow = color === YELLOW
+          const pos      = shapePos(3, i, dims.cw, dims.ch)
+          const atTarget = phase !== 'arch'
+          return (
+            <div
+              key={i}
+              onClick={isYellow && phase === 'arch' ? () => collect(i) : undefined}
+              style={{
+                position: 'absolute',
+                left:  `${atTarget ? target.x : pos.x}%`,
+                top:   `${atTarget ? target.y : pos.y}%`,
+                transform: 'translate(-50%,-50%)',
+                width: DOT_SIZE, height: DOT_SIZE, borderRadius: '50%',
+                background: color,
+                opacity: phase === 'gone' ? 0 : 1,
+                cursor: isYellow && phase === 'arch' ? 'pointer' : 'default',
+                transition: phase === 'arch'
+                  ? 'none'
+                  : phase === 'flying'
+                  ? 'left 0.5s ease-in, top 0.5s ease-in'
+                  : 'opacity 0.2s ease',
+                zIndex: phase !== 'arch' ? 10 : 1,
+                pointerEvents: isYellow && phase === 'arch' ? 'auto' : 'none',
+              }}
+            />
+          )
+        })}
+
+        {/* Basket */}
+        <div style={{
+          position: 'absolute', left: '50%', bottom: '5%',
+          transform: 'translateX(-50%)',
+          pointerEvents: 'none', zIndex: 5,
+        }}>
+          <div style={{
+            margin: '0 auto', width: 70, height: 28,
+            border: '5px solid #8B5E3C', borderBottom: 'none',
+            borderRadius: '40px 40px 0 0',
+          }} />
+          <div ref={basketBodyRef} style={{
+            width: 110, height: 72,
+            border: '5px solid #8B5E3C', borderTop: 'none',
+            borderRadius: '0 0 18px 18px',
+            background: 'rgba(212,149,107,0.2)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 22, fontWeight: 700, color: '#8B5E3C',
+          }}>
+            {collected > 0 ? `${collected}/${YELLOW_IDXS.length}` : '🧺'}
+          </div>
+        </div>
+
+        {done && <Confetti />}
+      </div>
+      <IntroText>{intro}</IntroText>
+      <SetDone done={done} />
     </>
   )
 }
@@ -666,7 +825,7 @@ const dotStyle = (color: string, interactive = true): React.CSSProperties => ({
 })
 
 // ─── Shell ────────────────────────────────────────────────────────────────────
-const PAGES = [Page1, Page23, Page4, Page56, Page7, Page8]
+const PAGES = [Page1, Page23, Page4, Page56, Page7, Page8, Page9]
 const TOTAL = PAGES.length
 
 export default function PressHere() {
