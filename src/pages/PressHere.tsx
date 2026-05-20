@@ -94,32 +94,100 @@ function PageCanvas({ dots, intro, done }: { dots: DotSpec[]; intro: string; don
   )
 }
 
-// ─── Page 1 ──────────────────────────────────────────────────────────────────
+// ─── Page 1 & 2 shared: RYB shimmer animation ────────────────────────────────
 const GRAY = '#87898B'
 
+// Injected once; both pages share the same keyframe name
+function useRYBKeyframe() {
+  useLayoutEffect(() => {
+    const s = document.createElement('style')
+    s.textContent = `@keyframes rybShimmer{
+      0%  {background:${RED}}
+      33% {background:${YELLOW}}
+      67% {background:${BLUE}}
+      100%{background:${RED}}
+    }`
+    document.head.appendChild(s)
+    return () => { document.head.removeChild(s) }
+  }, [])
+}
+
+function RainbowDot({ i, onClick, disabled }: { i: number; onClick: () => void; disabled?: boolean }) {
+  return (
+    <div
+      onClick={disabled ? undefined : onClick}
+      style={{
+        position: 'absolute',
+        left: `${COL_X[i]}%`, top: `${ROW_Y[0]}%`,
+        transform: 'translate(-50%,-50%)',
+        width: DOT_SIZE, height: DOT_SIZE,
+        borderRadius: '50%',
+        cursor: disabled ? 'default' : 'pointer',
+        WebkitTapHighlightColor: 'transparent',
+        animation: 'rybShimmer 3s linear infinite',
+        animationDelay: `${-i * 1}s`,
+      }}
+    />
+  )
+}
+
+// ─── Page 1 ──────────────────────────────────────────────────────────────────
 function Page1() {
   const [count, setCount] = useState(1)
   const done = count === 3
   const bump = () => setCount(c => Math.min(c + 1, 3))
-  const dots: DotSpec[] = Array.from({ length: count }, (_, i) => ({
-    id: `p1-${i}`, color: GRAY, x: COL_X[i], y: ROW_Y[0], onClick: bump, interactive: !done,
-  }))
-  return <PageCanvas dots={dots} intro="Press the dot!" done={done} />
+  useRYBKeyframe()
+
+  return (
+    <>
+      <div style={canvasStyle}>
+        {Array.from({ length: count }, (_, i) => (
+          <RainbowDot key={`p1-${i}`} i={i} onClick={bump} disabled={done} />
+        ))}
+      </div>
+      <IntroText>Press the dot!</IntroText>
+      <SetDone done={done} />
+    </>
+  )
 }
 
 // ─── Page 2 — reveal colors ───────────────────────────────────────────────────
 function Page2() {
-  const [leftColor,  setLeftColor]  = useState(GRAY)
-  const [midColor,   setMidColor]   = useState(GRAY)
-  const [rightColor, setRightColor] = useState(GRAY)
-  const done = leftColor === RED && midColor === YELLOW && rightColor === BLUE
+  const [leftRevealed,  setLeftRevealed]  = useState(false)
+  const [midRevealed,   setMidRevealed]   = useState(false)
+  const [rightRevealed, setRightRevealed] = useState(false)
+  const done = leftRevealed && midRevealed && rightRevealed
+  useRYBKeyframe()
 
-  const dots: DotSpec[] = [
-    { id: 'l', color: leftColor,  x: COL_X[0], y: ROW_Y[0], onClick: () => setLeftColor(RED),   interactive: leftColor  === GRAY },
-    { id: 'm', color: midColor,   x: COL_X[1], y: ROW_Y[0], onClick: () => setMidColor(YELLOW), interactive: midColor   === GRAY },
-    { id: 'r', color: rightColor, x: COL_X[2], y: ROW_Y[0], onClick: () => setRightColor(BLUE), interactive: rightColor === GRAY },
-  ]
-  return <PageCanvas dots={dots} intro="Press each dot to reveal its color!" done={done} />
+  const TARGETS = [RED, YELLOW, BLUE]
+  const revealed = [leftRevealed, midRevealed, rightRevealed]
+  const setters  = [setLeftRevealed, setMidRevealed, setRightRevealed]
+
+  return (
+    <>
+      <div style={canvasStyle}>
+        {TARGETS.map((color, i) =>
+          revealed[i] ? (
+            <div
+              key={`p2-${i}`}
+              style={{
+                position: 'absolute',
+                left: `${COL_X[i]}%`, top: `${ROW_Y[0]}%`,
+                transform: 'translate(-50%,-50%)',
+                width: DOT_SIZE, height: DOT_SIZE,
+                borderRadius: '50%', background: color,
+                cursor: 'default',
+              }}
+            />
+          ) : (
+            <RainbowDot key={`p2-${i}`} i={i} onClick={() => setters[i](true)} />
+          )
+        )}
+      </div>
+      <IntroText>Press each dot to reveal its color!</IntroText>
+      <SetDone done={done} />
+    </>
+  )
 }
 
 // ─── Page 3 — grow columns ────────────────────────────────────────────────────
