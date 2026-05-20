@@ -1020,13 +1020,13 @@ function WellDone({ onReset }: { onReset: () => void }) {
     <div style={{
       height: '100dvh', display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center', gap: 36,
-      background: '#fef9f0',
+      background: '#fff',
       fontFamily: '"Nunito Variable", Nunito, sans-serif',
     }}>
       <img
         src="/press-here/well-done.gif"
         alt="Well done!"
-        style={{ width: 320, height: 320, borderRadius: 28, objectFit: 'cover', boxShadow: '0 12px 48px rgba(0,0,0,0.12)' }}
+        style={{ width: 320, height: 320, borderRadius: 28, objectFit: 'cover' }}
       />
       <div style={{
         fontSize: 'clamp(56px,8vw,96px)', fontWeight: 900, letterSpacing: -2,
