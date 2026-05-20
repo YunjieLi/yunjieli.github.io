@@ -103,49 +103,52 @@ function Page1() {
   return <PageCanvas dots={dots} intro={intro} done={done} />
 }
 
-// ─── Page 2+3 (merged) ───────────────────────────────────────────────────────
-function Page23() {
-  const [leftCount,  setLeftCount]  = useState(1)
+// ─── Page 2 — change colors ───────────────────────────────────────────────────
+function Page2() {
   const [leftColor,  setLeftColor]  = useState(YELLOW)
-  const [midCount,   setMidCount]   = useState(1)
-  const [rightCount, setRightCount] = useState(1)
   const [rightColor, setRightColor] = useState(YELLOW)
-
-  const done = leftCount === 5 && midCount === 5 && rightCount === 5
-
-  function clickLeft() {
-    if (leftColor === YELLOW) { setLeftColor(RED) }
-    else if (leftCount < 5)   { setLeftCount(c => c + 1) }
-  }
-  function clickMid()   { if (midCount   < 5) setMidCount(c => c + 1) }
-  function clickRight() {
-    if (rightColor === YELLOW) { setRightColor(BLUE) }
-    else if (rightCount < 5)   { setRightCount(c => c + 1) }
-  }
-
   const leftChanged  = leftColor  !== YELLOW
   const rightChanged = rightColor !== YELLOW
+  const done = leftChanged && rightChanged
+
   const intro = done
-    ? 'Red, yellow, blue — all full! 🌈'
-    : leftChanged && rightChanged
-    ? 'Keep pressing to grow each column!'
+    ? 'Red, yellow, blue! 🌈'
     : leftChanged
     ? 'Now press the right dot!'
     : rightChanged
     ? 'Now press the left dot!'
     : 'Press the outer dots to change their colors!'
 
+  const dots: DotSpec[] = [
+    { id: 'l', color: leftColor,  x: COL_X[0], y: ROW_Y[0], onClick: () => { if (!leftChanged)  setLeftColor(RED)  }, interactive: !leftChanged },
+    { id: 'm', color: YELLOW,     x: COL_X[1], y: ROW_Y[0], onClick: () => {}, interactive: false },
+    { id: 'r', color: rightColor, x: COL_X[2], y: ROW_Y[0], onClick: () => { if (!rightChanged) setRightColor(BLUE) }, interactive: !rightChanged },
+  ]
+  return <PageCanvas dots={dots} intro={intro} done={done} />
+}
+
+// ─── Page 3 — grow columns ────────────────────────────────────────────────────
+function Page3() {
+  const [leftCount,  setLeftCount]  = useState(1)
+  const [midCount,   setMidCount]   = useState(1)
+  const [rightCount, setRightCount] = useState(1)
+  const done = leftCount === 5 && midCount === 5 && rightCount === 5
+
+  const intro = done
+    ? 'Red, yellow, blue — all full! 🌈'
+    : 'Keep pressing each column to grow it!'
+
   return (
     <>
       <div style={canvasStyle}>
         {Array.from({ length: leftCount }, (_, row) => (
-          <DotMount key={`l${row}`} color={leftColor}  x={COL_X[0]} y={ROW_Y[row]} onClick={clickLeft}  interactive={leftCount  < 5} />
+          <DotMount key={`l${row}`} color={RED}    x={COL_X[0]} y={ROW_Y[row]} onClick={() => setLeftCount(c => Math.min(c + 1, 5))}  interactive={leftCount  < 5} />
         ))}
         {Array.from({ length: midCount }, (_, row) => (
-          <DotMount key={`m${row}`} color={YELLOW}     x={COL_X[1]} y={ROW_Y[row]} onClick={clickMid}   interactive={midCount   < 5} />
+          <DotMount key={`m${row}`} color={YELLOW} x={COL_X[1]} y={ROW_Y[row]} onClick={() => setMidCount(c => Math.min(c + 1, 5))}   interactive={midCount   < 5} />
         ))}
         {Array.from({ length: rightCount }, (_, row) => (
-          <DotMount key={`r${row}`} color={rightColor} x={COL_X[2]} y={ROW_Y[row]} onClick={clickRight} interactive={rightCount < 5} />
+          <DotMount key={`r${row}`} color={BLUE}   x={COL_X[2]} y={ROW_Y[row]} onClick={() => setRightCount(c => Math.min(c + 1, 5))} interactive={rightCount < 5} />
         ))}
       </div>
       <IntroText>{intro}</IntroText>
@@ -767,7 +770,7 @@ function Page9() {
         <div style={{
           position: 'absolute', left: '50%', bottom: '5%',
           transform: 'translateX(-50%)',
-          pointerEvents: 'none', zIndex: 5,
+          pointerEvents: 'none', zIndex: 0,
         }}>
           <div style={{
             margin: '0 auto', width: 70, height: 28,
@@ -782,7 +785,7 @@ function Page9() {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 22, fontWeight: 700, color: YELLOW,
           }}>
-            {collected > 0 ? `${collected}/${YELLOW_IDXS.length}` : '🧺'}
+            {`${collected}/${YELLOW_IDXS.length}`}
           </div>
         </div>
 
@@ -949,7 +952,7 @@ function BrownCatch({ targetColor, maxSpd, prevColors }: {
         <div style={{
           position: 'absolute', bottom: '5%', left: 0, right: 0,
           display: 'flex', justifyContent: 'space-evenly',
-          pointerEvents: 'none', zIndex: 5,
+          pointerEvents: 'none', zIndex: 0,
         }}>
           {allColors.map((color, bi) => {
             const isTarget = bi === allColors.length - 1
@@ -970,7 +973,7 @@ function BrownCatch({ targetColor, maxSpd, prevColors }: {
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: 22, fontWeight: 700, color,
                 }}>
-                  {isTarget ? (count > 0 ? `${count}/${total}` : '🧺') : `${count}/${total}`}
+                  {`${count}/${total}`}
                 </div>
               </div>
             )
@@ -1006,7 +1009,7 @@ const dotStyle = (color: string, interactive = true): React.CSSProperties => ({
 })
 
 // ─── Shell ────────────────────────────────────────────────────────────────────
-const PAGES = [Page1, Page23, Page4, Page56, Page7, Page8, Page9, Page10, Page11]
+const PAGES = [Page1, Page2, Page3, Page4, Page56, Page7, Page8, Page9, Page10, Page11]
 const TOTAL = PAGES.length
 
 export default function PressHere() {
