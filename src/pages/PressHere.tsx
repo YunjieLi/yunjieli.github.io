@@ -95,7 +95,7 @@ function PageCanvas({ dots, intro, done }: { dots: DotSpec[]; intro: string; don
 }
 
 // ─── Page 1 ──────────────────────────────────────────────────────────────────
-const GRAY = '#D3D4D5'
+const GRAY = '#87898B'
 
 function Page1() {
   const [count, setCount] = useState(1)
