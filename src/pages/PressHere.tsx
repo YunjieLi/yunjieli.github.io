@@ -771,16 +771,16 @@ function Page9() {
         }}>
           <div style={{
             margin: '0 auto', width: 70, height: 28,
-            border: '5px solid #8B5E3C', borderBottom: 'none',
+            border: `5px solid ${YELLOW}`, borderBottom: 'none',
             borderRadius: '40px 40px 0 0',
           }} />
           <div ref={basketBodyRef} style={{
             width: 110, height: 72,
-            border: '5px solid #8B5E3C',
+            border: `5px solid ${YELLOW}`,
             borderRadius: '0 0 18px 18px',
-            background: 'rgba(212,149,107,0.2)',
+            background: YELLOW + '20',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 22, fontWeight: 700, color: '#8B5E3C',
+            fontSize: 22, fontWeight: 700, color: YELLOW,
           }}>
             {collected > 0 ? `${collected}/${YELLOW_IDXS.length}` : '🧺'}
           </div>
@@ -793,6 +793,200 @@ function Page9() {
     </>
   )
 }
+
+// ─── Brownian catch pages ─────────────────────────────────────────────────────
+type BrownDot = { id: string; x: number; y: number; vx: number; vy: number; phase: CollectPhase }
+
+function makeBrownDots(targetColor: string, cw: number, ch: number): BrownDot[] {
+  return COLOR_ROW.flatMap((c, i) => {
+    if (c !== targetColor) return []
+    const pos = shapePos(3, i, cw, ch)
+    return [{ id: `brown-${i}`, x: pos.x, y: pos.y, vx: (Math.random() - 0.5) * 0.4, vy: (Math.random() - 0.5) * 0.4, phase: 'arch' as CollectPhase }]
+  })
+}
+
+function stepBrown(dots: BrownDot[], maxSpd: number, cw: number, ch: number): BrownDot[] {
+  const rxPct = DOT_SIZE / 2 / cw * 100
+  const ryPct = DOT_SIZE / 2 / ch * 100
+  return dots.map(dot => {
+    if (dot.phase !== 'arch') return dot
+    let vx = dot.vx + (Math.random() - 0.5) * 0.12
+    let vy = dot.vy + (Math.random() - 0.5) * 0.12
+    const spd = Math.sqrt(vx * vx + vy * vy)
+    if (spd > maxSpd) { vx = vx / spd * maxSpd; vy = vy / spd * maxSpd }
+    let x = dot.x + vx
+    let y = dot.y + vy
+    if (x < rxPct)       { x = rxPct;       vx =  Math.abs(vx) }
+    if (x > 100 - rxPct) { x = 100 - rxPct; vx = -Math.abs(vx) }
+    if (y < ryPct)       { y = ryPct;       vy =  Math.abs(vy) }
+    if (y > 100 - ryPct) { y = 100 - ryPct; vy = -Math.abs(vy) }
+    return { ...dot, x, y, vx, vy }
+  })
+}
+
+function BrownCatch({ targetColor, maxSpd, prevColors }: {
+  targetColor: string; maxSpd: number; prevColors: string[]
+}) {
+  const active        = useContext(PageActiveCtx)
+  const canvasRef     = useRef<HTMLDivElement>(null)
+  const basketBodyRef = useRef<HTMLDivElement>(null)
+  const dotsRef       = useRef<BrownDot[]>([])
+  const rafRef        = useRef<number | null>(null)
+  const dimsRef       = useRef({ cw: 960, ch: 640 })
+  const [, tick]      = useState(0)
+  const [phases, setPhases]       = useState<CollectPhase[]>([])
+  const [targetPct, setTargetPct] = useState({ x: 50, y: 90 })
+
+  const allColors    = [...prevColors, targetColor]
+  const totalPerColor = (c: string) => COLOR_ROW.filter(r => r === c).length
+  const targetTotal  = totalPerColor(targetColor)
+  const collected    = phases.filter(p => p !== 'arch').length
+  const done         = phases.length > 0 && phases.every(p => p === 'gone')
+
+  useLayoutEffect(() => {
+    const canvasEl = canvasRef.current
+    const bodyEl   = basketBodyRef.current
+    if (!canvasEl || !bodyEl) return
+    const update = () => {
+      const cr = canvasEl.getBoundingClientRect()
+      const br = bodyEl.getBoundingClientRect()
+      if (cr.width > 0 && cr.height > 0) {
+        const { width: cw, height: ch } = cr
+        dimsRef.current = { cw, ch }
+        setTargetPct({
+          x: ((br.left + br.width  / 2) - cr.left) / cw * 100,
+          y: ((br.top  + br.height / 2) - cr.top)  / ch * 100,
+        })
+        if (dotsRef.current.length === 0) {
+          const newDots = makeBrownDots(targetColor, cw, ch)
+          dotsRef.current = newDots
+          setPhases(newDots.map(() => 'arch'))
+        }
+      }
+    }
+    const obs = new ResizeObserver(update)
+    obs.observe(canvasEl)
+    return () => obs.disconnect()
+  }, [targetColor])   // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!active) {
+      if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null }
+      return
+    }
+    let alive = true
+    const step = () => {
+      if (!alive) return
+      dotsRef.current = stepBrown(dotsRef.current, maxSpd, dimsRef.current.cw, dimsRef.current.ch)
+      tick(n => n + 1)
+      rafRef.current = requestAnimationFrame(step)
+    }
+    rafRef.current = requestAnimationFrame(step)
+    return () => {
+      alive = false
+      if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null }
+    }
+  }, [active, maxSpd])
+
+  useEffect(() => {
+    const flyingIdxs = phases.flatMap((p, i) => p === 'flying' ? [i] : [])
+    if (flyingIdxs.length === 0) return
+    const t = setTimeout(() => {
+      dotsRef.current = dotsRef.current.map((d, i) =>
+        flyingIdxs.includes(i) ? { ...d, phase: 'gone' } : d
+      )
+      setPhases(prev => prev.map((p, i) => flyingIdxs.includes(i) && p === 'flying' ? 'gone' : p))
+    }, 550)
+    return () => clearTimeout(t)
+  }, [phases])
+
+  function collect(dotIdx: number) {
+    dotsRef.current = dotsRef.current.map((d, i) =>
+      i === dotIdx && d.phase === 'arch' ? { ...d, phase: 'flying' } : d
+    )
+    setPhases(prev => prev.map((p, i) => i === dotIdx && p === 'arch' ? 'flying' : p))
+  }
+
+  const colorName = targetColor === BLUE ? 'blue' : 'red'
+  const intro = done
+    ? `All ${colorName} dots collected! 🎊`
+    : collected > 0
+    ? `${collected} / ${targetTotal} caught — keep going!`
+    : 'Click the moving dots to collect them!'
+
+  return (
+    <>
+      <div ref={canvasRef} style={{ ...canvasStyle }}>
+        {dotsRef.current.map((dot, i) => {
+          const phase    = phases[i] ?? 'arch'
+          const atTarget = phase !== 'arch'
+          return (
+            <div
+              key={dot.id}
+              onClick={phase === 'arch' ? () => collect(i) : undefined}
+              style={{
+                position: 'absolute',
+                left: `${atTarget ? targetPct.x : dot.x}%`,
+                top:  `${atTarget ? targetPct.y : dot.y}%`,
+                transform: 'translate(-50%,-50%)',
+                width: DOT_SIZE, height: DOT_SIZE, borderRadius: '50%',
+                background: targetColor,
+                opacity: phase === 'gone' ? 0 : 1,
+                cursor: phase === 'arch' ? 'pointer' : 'default',
+                transition: phase === 'arch'
+                  ? 'none'
+                  : phase === 'flying'
+                  ? 'left 0.5s ease-in, top 0.5s ease-in'
+                  : 'opacity 0.2s ease',
+                zIndex: phase !== 'arch' ? 10 : 1,
+                pointerEvents: phase === 'arch' ? 'auto' : 'none',
+              }}
+            />
+          )
+        })}
+
+        {/* Baskets */}
+        <div style={{
+          position: 'absolute', bottom: '5%', left: 0, right: 0,
+          display: 'flex', justifyContent: 'space-evenly',
+          pointerEvents: 'none', zIndex: 5,
+        }}>
+          {allColors.map((color, bi) => {
+            const isTarget = bi === allColors.length - 1
+            const count    = isTarget ? collected : totalPerColor(color)
+            const total    = totalPerColor(color)
+            return (
+              <div key={color} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <div style={{
+                  margin: '0 auto', width: 70, height: 28,
+                  border: `5px solid ${color}`, borderBottom: 'none',
+                  borderRadius: '40px 40px 0 0',
+                }} />
+                <div ref={isTarget ? basketBodyRef : undefined} style={{
+                  width: 110, height: 72,
+                  border: `5px solid ${color}`,
+                  borderRadius: '0 0 18px 18px',
+                  background: color + '20',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 22, fontWeight: 700, color,
+                }}>
+                  {isTarget ? (count > 0 ? `${count}/${total}` : '🧺') : `${count}/${total}`}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        {done && <ClapCelebration />}
+      </div>
+      <IntroText>{intro}</IntroText>
+      <SetDone done={done} />
+    </>
+  )
+}
+
+function Page10() { return <BrownCatch targetColor={BLUE} maxSpd={0.35} prevColors={[YELLOW]} /> }
+function Page11() { return <BrownCatch targetColor={RED}  maxSpd={0.7}  prevColors={[YELLOW, BLUE]} /> }
 
 // ─── Shared styles ────────────────────────────────────────────────────────────
 const canvasStyle: React.CSSProperties = {
@@ -812,7 +1006,7 @@ const dotStyle = (color: string, interactive = true): React.CSSProperties => ({
 })
 
 // ─── Shell ────────────────────────────────────────────────────────────────────
-const PAGES = [Page1, Page23, Page4, Page56, Page7, Page8, Page9]
+const PAGES = [Page1, Page23, Page4, Page56, Page7, Page8, Page9, Page10, Page11]
 const TOTAL = PAGES.length
 
 export default function PressHere() {
