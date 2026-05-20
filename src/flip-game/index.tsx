@@ -1,11 +1,11 @@
 import { useState, useCallback } from 'react'
 import '@fontsource-variable/nunito'
-import { RotateCcw, ArrowLeft } from 'lucide-react'
+import { RotateCcw, ChevronRight } from 'lucide-react'
 import { LEVELS, type Level, type Sprite } from './sprites'
 
 // ─── Sprite rendering ─────────────────────────────────────────────────────────
 const CARD_SIZE = 150
-const SPRITE_PX = 110   // target max dimension of sprite inside the card
+const SPRITE_PX = 110
 
 function spriteStyle(s: Sprite, level: Level): React.CSSProperties {
   const scale = SPRITE_PX / Math.max(s.cw, s.ch)
@@ -43,11 +43,10 @@ function makeCards(level: Level): Card[] {
 function FlipCard({ card, level, onClick }: { card: Card; level: Level; onClick: () => void }) {
   const sprite = level.sprites.find(s => s.id === card.spriteId)!
   const revealed = card.flipped || card.matched
-
   return (
     <div
       onClick={revealed ? undefined : onClick}
-      style={{ width: CARD_SIZE, height: CARD_SIZE, perspective: '700px', cursor: revealed ? 'default' : 'pointer', flexShrink: 0 }}
+      style={{ width: CARD_SIZE, height: CARD_SIZE, perspective: '700px', cursor: revealed ? 'default' : 'pointer' }}
     >
       <div style={{
         position: 'relative', width: '100%', height: '100%',
@@ -55,17 +54,14 @@ function FlipCard({ card, level, onClick }: { card: Card; level: Level; onClick:
         transform: revealed ? 'rotateY(180deg)' : 'rotateY(0deg)',
         transition: 'transform 0.4s ease',
       }}>
-        {/* Back */}
         <div style={{
           position: 'absolute', inset: 0, backfaceVisibility: 'hidden',
           borderRadius: 16, background: level.backColor,
           boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
         }} />
-        {/* Front */}
         <div style={{
           position: 'absolute', inset: 0, backfaceVisibility: 'hidden',
-          transform: 'rotateY(180deg)', borderRadius: 16,
-          background: '#fff',
+          transform: 'rotateY(180deg)', borderRadius: 16, background: '#fff',
           boxShadow: card.matched
             ? `0 0 0 3px ${level.backColor}, 0 4px 12px rgba(0,0,0,0.1)`
             : '0 4px 12px rgba(0,0,0,0.1)',
@@ -76,13 +72,39 @@ function FlipCard({ card, level, onClick }: { card: Card; level: Level; onClick:
   )
 }
 
-// ─── Game screen ──────────────────────────────────────────────────────────────
-function Game({ level, onBack }: { level: Level; onBack: () => void }) {
+// ─── Icon button ──────────────────────────────────────────────────────────────
+const iconBtn = (bg: string, side: 'left' | 'right'): React.CSSProperties => ({
+  position: 'absolute', top: 20,
+  [side]: 20,
+  width: 44, height: 44, borderRadius: '50%', border: 'none',
+  background: bg, color: '#fff', cursor: 'pointer',
+  display: 'flex', alignItems: 'center', justifyContent: 'center',
+  boxShadow: '0 3px 10px rgba(0,0,0,0.15)',
+})
+
+// ─── Root ─────────────────────────────────────────────────────────────────────
+export default function FlipGame() {
+  const [levelIdx, setLevelIdx] = useState(0)
+  const level = LEVELS[levelIdx]
+
   const [cards, setCards] = useState<Card[]>(() => makeCards(level))
   const [pending, setPending] = useState<number | null>(null)
   const [locked, setLocked] = useState(false)
+
   const won = cards.every(c => c.matched)
-  const nextLevel = LEVELS.find(l => l.id === level.id + 1) ?? null
+  const hasNext = levelIdx < LEVELS.length - 1
+
+  const reset = useCallback((lvl: Level) => {
+    setCards(makeCards(lvl))
+    setPending(null)
+    setLocked(false)
+  }, [])
+
+  const goNext = () => {
+    const next = LEVELS[levelIdx + 1]
+    setLevelIdx(levelIdx + 1)
+    reset(next)
+  }
 
   const handleFlip = useCallback((uid: number) => {
     if (locked || uid === pending) return
@@ -112,8 +134,6 @@ function Game({ level, onBack }: { level: Level; onBack: () => void }) {
     }, 900)
   }, [locked, pending])
 
-  const reset = () => { setCards(makeCards(level)); setPending(null); setLocked(false) }
-
   const rows = (level.sprites.length * 2) / level.cols
 
   return (
@@ -126,20 +146,21 @@ function Game({ level, onBack }: { level: Level; onBack: () => void }) {
       userSelect: 'none', padding: '60px 16px 32px',
       position: 'relative',
     }}>
-      {/* Back */}
-      <button onClick={onBack} title="Back to levels" style={iconBtnStyle('#888')}>
-        <ArrowLeft size={20} strokeWidth={2.5} />
-      </button>
-      {/* Restart */}
-      <button onClick={reset} title="Restart" style={{ ...iconBtnStyle(level.backColor), right: 20, left: 'auto' }}>
+      {/* Restart — top left */}
+      <button onClick={() => reset(level)} title="Restart" style={iconBtn('#aaa', 'left')}>
         <RotateCcw size={20} strokeWidth={2.5} />
       </button>
 
+      {/* Next — top right, only when won */}
+      {won && hasNext && (
+        <button onClick={goNext} title="Next level" style={iconBtn(LEVELS[levelIdx + 1].backColor, 'right')}>
+          <ChevronRight size={22} strokeWidth={2.5} />
+        </button>
+      )}
+
       {/* Title */}
-      <div style={{ textAlign: 'center' }}>
-        <div style={{ fontSize: 28, fontWeight: 900, letterSpacing: -0.5, color: '#333' }}>
-          {won ? '🎉 All matched!' : `${level.emoji} ${level.title}`}
-        </div>
+      <div style={{ fontSize: 28, fontWeight: 900, letterSpacing: -0.5, color: '#333' }}>
+        {won ? '🎉 All matched!' : `${level.emoji} ${level.title}`}
       </div>
 
       {/* Grid */}
@@ -153,83 +174,6 @@ function Game({ level, onBack }: { level: Level; onBack: () => void }) {
           <FlipCard key={card.uid} card={card} level={level} onClick={() => handleFlip(card.uid)} />
         ))}
       </div>
-
-      {/* Next level (shown when won) */}
-      {won && nextLevel && (
-        <button
-          onClick={onBack}
-          style={{
-            padding: '10px 28px', borderRadius: 999, border: 'none',
-            background: nextLevel.backColor, color: '#fff',
-            fontSize: 15, fontWeight: 700, cursor: 'pointer',
-            boxShadow: '0 3px 10px rgba(0,0,0,0.15)',
-            fontFamily: 'inherit',
-          }}
-        >
-          Next: {nextLevel.emoji} {nextLevel.title} →
-        </button>
-      )}
     </div>
   )
-}
-
-const iconBtnStyle = (bg: string): React.CSSProperties => ({
-  position: 'absolute', top: 20, left: 20,
-  width: 44, height: 44, borderRadius: '50%', border: 'none',
-  background: bg, color: '#fff', cursor: 'pointer',
-  display: 'flex', alignItems: 'center', justifyContent: 'center',
-  boxShadow: '0 3px 10px rgba(0,0,0,0.15)',
-  transition: 'transform 0.1s ease',
-})
-
-// ─── Level select ─────────────────────────────────────────────────────────────
-function LevelSelect({ onSelect }: { onSelect: (l: Level) => void }) {
-  return (
-    <div style={{
-      minHeight: '100dvh',
-      background: 'linear-gradient(160deg, #e0f7ff 0%, #fff9e6 60%, #ffe0f0 100%)',
-      display: 'flex', flexDirection: 'column', alignItems: 'center',
-      justifyContent: 'center', gap: 32,
-      fontFamily: '"Nunito Variable", Nunito, sans-serif',
-      userSelect: 'none', padding: '32px 16px',
-    }}>
-      <div style={{ fontSize: 32, fontWeight: 900, letterSpacing: -1, color: '#333' }}>
-        Memory Match
-      </div>
-
-      <div style={{
-        display: 'grid', gridTemplateColumns: 'repeat(3, 160px)', gap: 14,
-      }}>
-        {LEVELS.map(level => (
-          <button
-            key={level.id}
-            onClick={() => onSelect(level)}
-            style={{
-              height: 120, borderRadius: 20, border: 'none',
-              background: level.backColor, color: '#fff',
-              cursor: 'pointer', display: 'flex',
-              flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-              gap: 6, boxShadow: '0 4px 14px rgba(0,0,0,0.15)',
-              transition: 'transform 0.12s ease, box-shadow 0.12s ease',
-              fontFamily: 'inherit',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.2)' }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(0,0,0,0.15)' }}
-            onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.97)')}
-            onMouseUp={e => (e.currentTarget.style.transform = 'scale(1.05)')}
-          >
-            <span style={{ fontSize: 36 }}>{level.emoji}</span>
-            <span style={{ fontSize: 14, fontWeight: 700, letterSpacing: 0.3 }}>{level.title}</span>
-          </button>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-// ─── Root ─────────────────────────────────────────────────────────────────────
-export default function FlipGame() {
-  const [activeLevel, setActiveLevel] = useState<Level | null>(null)
-  if (activeLevel) return <Game level={activeLevel} onBack={() => setActiveLevel(null)} />
-  return <LevelSelect onSelect={setActiveLevel} />
 }
