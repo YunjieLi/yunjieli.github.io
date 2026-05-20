@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import '@fontsource-variable/nunito'
-import { RotateCcw, ChevronRight } from 'lucide-react'
+import { RotateCcw, ChevronRight, Star } from 'lucide-react'
 import { LEVELS, type Level, type Sprite } from './sprites'
 
 // ─── Card size scales down for larger grids ───────────────────────────────────
@@ -167,7 +167,7 @@ export default function FlipGame() {
 
       {/* Next — top right, next level's color, only when won */}
       {won && hasNext && (
-        <IconBtn onClick={goNext} title="Next level" color={LEVELS[levelIdx + 1].backColor} side="right">
+        <IconBtn onClick={goNext} title="Next level" color={level.backColor} side="right">
           <ChevronRight size={22} strokeWidth={2.5} />
         </IconBtn>
       )}
@@ -178,8 +178,14 @@ export default function FlipGame() {
           {won ? '🎉 All matched!' : `${level.emoji} ${level.title}`}
         </div>
         {!won && (
-          <div style={{ fontSize: 16, marginTop: 2, letterSpacing: 2 }}>
-            {'⭐'.repeat(level.stars)}
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 3,
+            marginTop: 6, padding: '3px 10px', borderRadius: 999,
+            background: level.backColor + '22', border: `1.5px solid ${level.backColor}55`,
+          }}>
+            {Array.from({ length: level.stars }, (_, i) => (
+              <Star key={i} size={13} strokeWidth={2} fill={level.backColor} color={level.backColor} />
+            ))}
           </div>
         )}
       </div>
