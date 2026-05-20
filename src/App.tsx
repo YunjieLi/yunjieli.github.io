@@ -12,6 +12,7 @@ import VanillaEnglish from './pages/VanillaEnglish'
 import Lily from './pages/Lily'
 import PressHere from './pages/PressHere'
 import Turbines from './pages/Turbines'
+import FlipGame from './pages/FlipGame'
 
 export default function App() {
   return (
@@ -30,6 +31,7 @@ export default function App() {
         <Route path="/lily" element={<Lily />} />
         <Route path="/press-here" element={<PressHere />} />
         <Route path="/turbines" element={<Turbines />} />
+        <Route path="/flip-game" element={<FlipGame />} />
       </Routes>
     </BrowserRouter>
   )
