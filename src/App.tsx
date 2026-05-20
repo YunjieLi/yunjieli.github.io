@@ -12,7 +12,7 @@ import VanillaEnglish from './pages/VanillaEnglish'
 import Lily from './pages/Lily'
 import PressHere from './pages/PressHere'
 import Turbines from './pages/Turbines'
-import FlipGame from './pages/FlipGame'
+import FlipGame from './flip-game'
 
 export default function App() {
   return (
