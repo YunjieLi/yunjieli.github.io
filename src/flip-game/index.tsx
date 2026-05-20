@@ -3,13 +3,29 @@ import '@fontsource-variable/nunito'
 import { RotateCcw, ChevronRight, Star } from 'lucide-react'
 import { LEVELS, type Level, type Sprite } from './sprites'
 
-// ─── Card size scales down for larger grids ───────────────────────────────────
-function cardSize(pairCount: number) {
-  if (pairCount <= 6)  return 160
-  if (pairCount <= 8)  return 150
-  if (pairCount <= 10) return 140
-  if (pairCount <= 12) return 128
-  return 110
+// ─── Responsive card size ─────────────────────────────────────────────────────
+const MIN_CARD = 80
+const MAX_CARD = 160
+const GRID_GAP = 10
+const HEADER_H = 180   // title + star tag + top/bottom padding
+
+function calcSize(cols: number, rows: number) {
+  const availW = window.innerWidth - 32
+  const availH = window.innerHeight - HEADER_H
+  const byW = Math.floor((availW - GRID_GAP * (cols - 1)) / cols)
+  const byH = Math.floor((availH - GRID_GAP * (rows - 1)) / rows)
+  return Math.max(MIN_CARD, Math.min(MAX_CARD, byW, byH))
+}
+
+function useCardSize(cols: number, rows: number) {
+  const [size, setSize] = useState(() => calcSize(cols, rows))
+  useEffect(() => {
+    const update = () => setSize(calcSize(cols, rows))
+    update()
+    window.addEventListener('resize', update)
+    return () => window.removeEventListener('resize', update)
+  }, [cols, rows])
+  return size
 }
 
 // ─── Game state ───────────────────────────────────────────────────────────────
@@ -98,7 +114,8 @@ function IconBtn({ onClick, title, color, side, children }: {
 export default function FlipGame() {
   const [levelIdx, setLevelIdx] = useState(0)
   const level = LEVELS[levelIdx]
-  const size = cardSize(level.sprites.length)
+  const rows = (level.sprites.length * 2) / level.cols
+  const size = useCardSize(level.cols, rows)
 
   const [cards, setCards] = useState<Card[]>(() => makeCards(level))
   const [pending, setPending] = useState<number | null>(null)
@@ -155,8 +172,6 @@ export default function FlipGame() {
       setLocked(false)
     }, 900)
   }, [locked, pending])
-
-  const rows = (level.sprites.length * 2) / level.cols
 
   return (
     <div style={{
