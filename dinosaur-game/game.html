@@ -2537,28 +2537,51 @@ html[subframe] body {
   }
 }
 
-/* Custom overrides: full-viewport game */
+/* Custom overrides */
 html, body {
   margin: 0;
   padding: 0;
   height: 100%;
   overflow: hidden;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 #main-frame-error {
-  margin: 0;
-  padding: 0;
-  max-width: none;
+  margin: 0 auto;
+  padding: 40px 0 0;
+  max-width: 680px;
   width: 100%;
   height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  box-sizing: border-box;
+}
+.game-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #111;
+  text-align: center;
+  letter-spacing: -0.02em;
+}
+.game-subtitle {
+  margin-top: 6px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin-bottom: 32px;
+}
+.game-subtitle a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.game-subtitle a:hover {
+  text-decoration: underline;
 }
 </style>
 </head>
 
 <body id="t">
 <div id="main-frame-error" class="interstitial-wrapper" jstcache="0">
+    <div class="game-title">Running dinosaur 🦖</div>
+    <div class="game-subtitle">Inspired by <a href="https://codepen.io/MysticReborn/pen/rygqao" target="_blank" rel="noreferrer">codepen</a> &nbsp;·&nbsp; Press Space to jump</div>
     <div id="offline-resources" jstcache="0">
     <div id="offline-resources-1x" jstcache="0">
       <img id="1x-obstacle-large" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJYAAAAyCAMAAACJUtIoAAAACVBMVEX////39/dTU1OabbyfAAAAAXRSTlMAQObYZgAAAXhJREFUeF7t2NGqAjEMANGM///RlwvaYQndULuFPJgHUYaEI6IPhgNAOA8HZ+3U6384F5y1U6YzAZTWG+dZamnFEstBFtCKJZSHWMADLJ18z+JqpQeLdKoDC8siC5iFCQs4znIxB5B1t6F3lQWkL4N0JsF+u6GXJdbI+FKW+yWr3lhgCZ2VSag3Nlk/FnRkIRbasLCO0oulikMsvmGpeiGLZ1jOMgtIP5bODivYYUXEIVbwFCt4khVssRgsgidZwQaLd2A8m7MYLGTl4KeQQs2y4kMAMGGlmQViDIb5O6xZnnLD485dIBzqDSE1yyFdL4Iqu4XJqUUWl/NVAFSZq1P6a5aqbAUM2epQbBioWflUBABiUyhYyZoCBev8XyMAObDNOhOAfiyxmHU0YNlldGAphGjFCjA3YkUn1o/1Y3EkZFZ5isCC6NUgwDBn1RuXH96doNfAhDXfsIyJ2AnolcCVhay0kcYbW0HvCO8OwIcJ3GzkORpkFuUP/1Ec8FW1qJkAAAAASUVORK5CYII=" jstcache="0">
