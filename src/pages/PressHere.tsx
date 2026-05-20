@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useLayoutEffect, useMemo, createContext, useContext } from 'react'
+import { useState, useRef, useEffect, useLayoutEffect, createContext, useContext } from 'react'
 import '@fontsource-variable/nunito'
 import { ChevronRight, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -658,34 +658,21 @@ function Page8() {
   )
 }
 
-// ─── Confetti ─────────────────────────────────────────────────────────────────
-function Confetti() {
-  useEffect(() => {
+// ─── Clap celebration ─────────────────────────────────────────────────────────
+function ClapCelebration() {
+  useLayoutEffect(() => {
     const s = document.createElement('style')
-    s.textContent = '@keyframes cFall{0%{transform:translateY(0) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}'
+    s.textContent = '@keyframes clapPop{0%{opacity:0;transform:translateX(-50%) scale(0.3)}25%{opacity:1;transform:translateX(-50%) scale(1.4)}65%{opacity:1;transform:translateX(-50%) scale(1)}100%{opacity:0;transform:translateX(-50%) scale(0.8)}}'
     document.head.appendChild(s)
     return () => { document.head.removeChild(s) }
   }, [])
-  const pieces = useMemo(() => Array.from({ length: 60 }, (_, i) => ({
-    id: i,
-    x:     Math.random() * 100,
-    size:  6 + Math.random() * 8,
-    color: [YELLOW, RED, BLUE][i % 3],
-    dur:   1.5 + Math.random() * 2,
-    delay: Math.random() * 1.5,
-    round: (i % 3) !== 0,
-  })), [])
   return (
-    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden', zIndex: 20 }}>
-      {pieces.map(p => (
-        <div key={p.id} style={{
-          position: 'absolute', left: `${p.x}%`, top: 0,
-          width: p.size, height: p.size,
-          background: p.color, borderRadius: p.round ? '50%' : '2px',
-          animation: `cFall ${p.dur}s ${p.delay}s ease-in forwards`,
-        }} />
-      ))}
-    </div>
+    <div style={{
+      position: 'absolute', left: '50%', bottom: 'calc(5% + 140px)',
+      fontSize: 90, lineHeight: 1,
+      animation: 'clapPop 1.4s ease forwards',
+      pointerEvents: 'none', zIndex: 30,
+    }}>👏</div>
   )
 }
 
@@ -789,7 +776,7 @@ function Page9() {
           }} />
           <div ref={basketBodyRef} style={{
             width: 110, height: 72,
-            border: '5px solid #8B5E3C', borderTop: 'none',
+            border: '5px solid #8B5E3C',
             borderRadius: '0 0 18px 18px',
             background: 'rgba(212,149,107,0.2)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -799,7 +786,7 @@ function Page9() {
           </div>
         </div>
 
-        {done && <Confetti />}
+        {done && <ClapCelebration />}
       </div>
       <IntroText>{intro}</IntroText>
       <SetDone done={done} />
