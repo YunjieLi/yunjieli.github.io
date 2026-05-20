@@ -3,29 +3,44 @@ import '@fontsource-variable/nunito'
 import { RotateCcw, ChevronRight, Star } from 'lucide-react'
 import { LEVELS, type Level, type Sprite } from './sprites'
 
-// ─── Responsive card size ─────────────────────────────────────────────────────
+// ─── Responsive layout ────────────────────────────────────────────────────────
 const MIN_CARD = 80
 const MAX_CARD = 160
 const GRID_GAP = 10
-const HEADER_H = 180   // title + star tag + top/bottom padding
+const HEADER_H = 180
 
-function calcSize(cols: number, rows: number) {
-  const availW = window.innerWidth - 32
-  const availH = window.innerHeight - HEADER_H
-  const byW = Math.floor((availW - GRID_GAP * (cols - 1)) / cols)
-  const byH = Math.floor((availH - GRID_GAP * (rows - 1)) / rows)
-  return Math.max(MIN_CARD, Math.min(MAX_CARD, byW, byH))
+function getDivisors(n: number): number[] {
+  const divs: number[] = []
+  for (let i = 2; i <= Math.min(n, 12); i++) {
+    if (n % i === 0) divs.push(i)
+  }
+  return divs
 }
 
-function useCardSize(cols: number, rows: number) {
-  const [size, setSize] = useState(() => calcSize(cols, rows))
+function calcLayout(totalCards: number) {
+  const availW = window.innerWidth - 32
+  const availH = window.innerHeight - HEADER_H
+  let bestCols = Math.min(4, totalCards), bestSize = -Infinity
+  for (const cols of getDivisors(totalCards)) {
+    const rows = totalCards / cols
+    const byW = (availW - GRID_GAP * (cols - 1)) / cols
+    const byH = (availH - GRID_GAP * (rows - 1)) / rows
+    const size = Math.min(byW, byH)
+    if (size > bestSize) { bestCols = cols; bestSize = size }
+  }
+  const rows = totalCards / bestCols
+  return { cols: bestCols, rows, size: Math.max(MIN_CARD, Math.min(MAX_CARD, bestSize)) }
+}
+
+function useLayout(totalCards: number) {
+  const [layout, setLayout] = useState(() => calcLayout(totalCards))
   useEffect(() => {
-    const update = () => setSize(calcSize(cols, rows))
+    const update = () => setLayout(calcLayout(totalCards))
     update()
     window.addEventListener('resize', update)
     return () => window.removeEventListener('resize', update)
-  }, [cols, rows])
-  return size
+  }, [totalCards])
+  return layout
 }
 
 // ─── Game state ───────────────────────────────────────────────────────────────
@@ -114,8 +129,7 @@ function IconBtn({ onClick, title, color, side, children }: {
 export default function FlipGame() {
   const [levelIdx, setLevelIdx] = useState(0)
   const level = LEVELS[levelIdx]
-  const rows = (level.sprites.length * 2) / level.cols
-  const size = useCardSize(level.cols, rows)
+  const { cols, rows, size } = useLayout(level.sprites.length * 2)
 
   const [cards, setCards] = useState<Card[]>(() => makeCards(level))
   const [pending, setPending] = useState<number | null>(null)
@@ -188,10 +202,16 @@ export default function FlipGame() {
         <RotateCcw size={20} strokeWidth={2.5} />
       </IconBtn>
 
-      {/* Next — top right, next level's color, only when won */}
+      {/* Next — top right, only when won and not last level */}
       {won && hasNext && (
         <IconBtn onClick={goNext} title="Next level" color={level.backColor} side="right">
           <ChevronRight size={22} strokeWidth={2.5} />
+        </IconBtn>
+      )}
+      {/* Replay — top right, only when won on last level */}
+      {won && !hasNext && (
+        <IconBtn onClick={() => { setLevelIdx(0); reset(LEVELS[0]) }} title="Play again from start" color={level.backColor} side="right">
+          <span style={{ fontSize: 20 }}>👏</span>
         </IconBtn>
       )}
 
@@ -214,7 +234,7 @@ export default function FlipGame() {
       {/* Grid */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: `repeat(${level.cols}, ${size}px)`,
+        gridTemplateColumns: `repeat(${cols}, ${size}px)`,
         gridTemplateRows: `repeat(${rows}, ${size}px)`,
         gap: 10,
       }}>
