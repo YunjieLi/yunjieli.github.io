@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import '@fontsource-variable/nunito'
 import { RotateCcw, ChevronRight, Star } from 'lucide-react'
 import { LEVELS, type Level, type Sprite } from './sprites'
@@ -87,7 +87,6 @@ function IconBtn({ onClick, title, color, side, children }: {
         width: 44, height: 44, borderRadius: '50%', border: 'none',
         background: color, color: '#fff', cursor: 'pointer',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        boxShadow: '0 3px 10px rgba(0,0,0,0.18)',
       }}
     >
       {children}
@@ -119,6 +118,15 @@ export default function FlipGame() {
     setLevelIdx(levelIdx + 1)
     reset(next)
   }
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'x' || e.key === 'X')
+        setCards(prev => prev.map(c => ({ ...c, flipped: true, matched: true })))
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   const handleFlip = useCallback((uid: number) => {
     if (locked || uid === pending) return
@@ -177,17 +185,15 @@ export default function FlipGame() {
         <div style={{ fontSize: 28, fontWeight: 900, letterSpacing: -0.5, color: '#333' }}>
           {won ? '🎉 All matched!' : `${level.emoji} ${level.title}`}
         </div>
-        {!won && (
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 3,
-            marginTop: 6, padding: '3px 10px', borderRadius: 999,
-            background: level.backColor + '22', border: `1.5px solid ${level.backColor}55`,
-          }}>
-            {Array.from({ length: level.stars }, (_, i) => (
-              <Star key={i} size={13} strokeWidth={2} fill={level.backColor} color={level.backColor} />
-            ))}
-          </div>
-        )}
+        <div style={{
+          display: 'inline-flex', alignItems: 'center', gap: 3,
+          marginTop: 6, padding: '3px 10px', borderRadius: 999,
+          background: level.backColor + '22', border: `1.5px solid ${level.backColor}55`,
+        }}>
+          {Array.from({ length: level.stars }, (_, i) => (
+            <Star key={i} size={13} strokeWidth={2} fill={level.backColor} color={level.backColor} />
+          ))}
+        </div>
       </div>
 
       {/* Grid */}
