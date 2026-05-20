@@ -7,7 +7,7 @@ import { viteStaticCopy } from 'vite-plugin-static-copy'
 const legacyDirs = [
   'toc', 'kings', 'swordsmen', 'lily', 'quip-insights',
   'deck-tests', 'tuner', 'vanilla-english', 'chinese-names',
-  'press-here', 'mapbox', 'static', 'turbines', 'flip-game',
+  'press-here', 'mapbox', 'static', 'turbines', 'flip-game', 'dinosaur-game',
 ]
 
 export default defineConfig({

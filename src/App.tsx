@@ -13,6 +13,7 @@ import Lily from './pages/Lily'
 import PressHere from './pages/PressHere'
 import Turbines from './pages/Turbines'
 import FlipGame from './flip-game'
+import DinosaurGame from './pages/DinosaurGame'
 
 export default function App() {
   return (
@@ -32,6 +33,7 @@ export default function App() {
         <Route path="/press-here" element={<PressHere />} />
         <Route path="/turbines" element={<Turbines />} />
         <Route path="/flip-game" element={<FlipGame />} />
+        <Route path="/dinosaur-game" element={<DinosaurGame />} />
       </Routes>
     </BrowserRouter>
   )

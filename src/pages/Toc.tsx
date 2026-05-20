@@ -57,6 +57,8 @@ const morePages = [
   { href: '/tuner', label: 'Online Tuner' },
   { href: '/vanilla-english', label: 'Vanilla English' },
   { href: '/turbines', label: 'Turbines' },
+  { href: '/flip-game', label: 'Flip Game' },
+  { href: '/dinosaur-game', label: 'Dinosaur Game' },
 ]
 
 export default function Toc() {
