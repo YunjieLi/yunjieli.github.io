@@ -26,7 +26,6 @@ export default defineConfig({
         // Games
         { src: 'src/games/flip/*.jpg',        dest: 'src/games/flip' },
         { src: 'src/games/press-here',        dest: 'src/games' },
-        { src: 'src/games/whack/game.html',   dest: 'src/games/whack' },
         { src: 'src/games/dinosaur/game.html',dest: 'src/games/dinosaur' },
         // Maps
         { src: 'src/maps/kings',      dest: 'src/maps' },
