@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils'
 
 const featured = [
   {
-    bg: '/toc/img/jumbotron-nyc.png',
+    bg: '/src/pages/toc/img/jumbotron-nyc.png',
     title: 'Restaurants Noise of NYC',
     blogHref: 'https://blog.mapbox.com/exploring-nyc-open-data-with-3d-hexbins-5af2b7d8bc46',
     blogLabel: 'Mapbox Blog',
@@ -12,7 +12,7 @@ const featured = [
     href: 'https://www.mapbox.com/bites/00304/',
   },
   {
-    bg: '/toc/img/jumbotron-boston.png',
+    bg: '/src/pages/toc/img/jumbotron-boston.png',
     title: 'Historical Boston',
     blogHref: 'https://blog.mapbox.com/mapping-historic-boston-in-the-mapbox-studio-dataset-editor-838c49209bd1',
     blogLabel: 'Mapbox Blog',
@@ -20,7 +20,7 @@ const featured = [
     href: 'https://www.mapbox.com/bites/00287/',
   },
   {
-    bg: '/toc/img/jumbotron-lush.png',
+    bg: '/src/pages/toc/img/jumbotron-lush.png',
     title: 'Mono <> Colors',
     blogHref: 'https://blog.mapbox.com/mobile-runtime-styling-get-active-553b0c9aaa16',
     blogLabel: 'Mapbox Blog',
@@ -28,7 +28,7 @@ const featured = [
     href: 'https://www.mapbox.com/bites/00299/compare.html',
   },
   {
-    bg: '/toc/img/jumbotron-heroes.png',
+    bg: '/src/pages/toc/img/jumbotron-heroes.png',
     title: 'Glorious Kings',
     blogHref: null,
     blogLabel: null,
@@ -37,7 +37,7 @@ const featured = [
     internal: true,
   },
   {
-    bg: '/toc/img/jumbotron-swordsmen.png',
+    bg: '/src/pages/toc/img/jumbotron-swordsmen.png',
     title: 'Smiling Swordsmen',
     blogHref: null,
     blogLabel: null,
@@ -76,7 +76,7 @@ export default function Toc() {
     <div className="min-h-screen flex flex-col">
       <div className="max-w-2xl mx-auto w-full px-6 pt-12 pb-16 flex-1">
         <div className="mb-10 flex items-end gap-4">
-          <img src="/toc/img/icon_full.png" alt="logo" className="h-14 w-14" />
+          <img src="/src/pages/toc/img/icon_full.png" alt="logo" className="h-14 w-14" />
           <div>
             <h1 className="text-3xl font-bold leading-tight">顺流而上</h1>
             <p className="mt-1 text-sm text-muted-foreground">用设计，用代码，用地图装故事。用故事装X。</p>

@@ -4,12 +4,11 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
 
-// Root-level legacy HTML dirs still at project root
+// Root-level legacy HTML dirs (not yet moved into src/)
 const legacyDirs = [
-  'toc', 'lily', 'quip-insights',
+  'lily', 'quip-insights',
   'tuner', 'vanilla-english', 'chinese-names',
-  'mapbox', 'static', 'studio', 'turbines',
-  'dinosaur-game', 'wack-a-virus',
+  'static', 'studio', 'turbines',
 ]
 
 export default defineConfig({
@@ -24,14 +23,19 @@ export default defineConfig({
     viteStaticCopy({
       targets: [
         ...legacyDirs.map(dir => ({ src: dir, dest: '.' })),
-        // Games — assets that now live inside src/
-        { src: 'src/games/flip/*.jpg', dest: 'src/games/flip' },
-        { src: 'src/games/press-here', dest: 'src/games' },
-        // Maps — full directories now living inside src/
+        // Games
+        { src: 'src/games/flip/*.jpg',        dest: 'src/games/flip' },
+        { src: 'src/games/press-here',        dest: 'src/games' },
+        { src: 'src/games/whack/game.html',   dest: 'src/games/whack' },
+        { src: 'src/games/dinosaur/game.html',dest: 'src/games/dinosaur' },
+        // Maps
         { src: 'src/maps/kings',      dest: 'src/maps' },
         { src: 'src/maps/swordsmen',  dest: 'src/maps' },
         { src: 'src/maps/deck-tests', dest: 'src/maps' },
         { src: 'src/maps/liancheng',  dest: 'src/maps' },
+        { src: 'src/maps/mapbox',     dest: 'src/maps' },
+        // Pages
+        { src: 'src/pages/toc/img',   dest: 'src/pages/toc' },
         { src: 'upstream_land_logo.svg', dest: '.' },
         { src: 'favicon.ico', dest: '.' },
         { src: 'CNAME', dest: '.' },
