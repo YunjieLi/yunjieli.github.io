@@ -50,6 +50,7 @@
       }
   
       h2 { margin: 0 0 10px 0; font-size: 24px; font-family: 'Space Grotesk', sans-serif; }
+      .columns h2 { font-size: 44px; margin-bottom: 6px; }
       p { margin: 0; color: var(--muted); font-size: 18px; line-height: 1.6; }
       .columns p { font-size: 14px; opacity: 0.8; }
   
@@ -69,6 +70,15 @@
   
       .contact-box { display: grid; gap: 12px; align-content: start; }
       .contact-box .cta { width: fit-content; }
+
+      .about-grid { display: flex; gap: 24px; align-items: start; flex-wrap: wrap; }
+      .about-bio { display: grid; gap: 12px; flex: 1; min-width: 220px; }
+      .info-list { display: grid; gap: 0; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--border); background: rgba(255,255,255,0.02); width: fit-content; flex-shrink: 0; }
+      .info-row { display: flex; flex-direction: column; gap: 1px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+      .info-row:last-child { border-bottom: none; padding-bottom: 0; }
+      .info-row:first-child { padding-top: 0; }
+      .info-row .label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+      .info-row .value { font-size: 14px; color: var(--text); }
   
       .logo {
         height: 80px; width: 80px;
@@ -107,6 +117,30 @@
         
       </section>
   
+      <section class="panel">
+        <h2 style="margin-bottom: 20px;">About me</h2>
+        <div class="about-grid">
+          <div class="about-bio">
+            <p>I'm Yunjie Li, a designer and independent contractor based in the San Francisco Bay Area. I hold a Master in Design Studies degree from the Harvard Graduate School of Design, where I developed a multidisciplinary approach spanning spatial, digital, and brand contexts.</p>
+            <p>I work with clients directly as a contractor — bringing focused attention, design rigor, and clear communication to every engagement.</p>
+          </div>
+          <div class="info-list">
+            <div class="info-row">
+              <span class="label">Name</span>
+              <span class="value">Yunjie Li</span>
+            </div>
+            <div class="info-row">
+              <span class="label">EIN</span>
+              <span class="value">41-3349249</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Address</span>
+              <span class="value">10630 Tuggle Pl, Cupertino CA 95014</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section class="panel contact-box">
         <h2>Ready to talk?</h2>
         <p>Tell me about your timeline, scope, and goals. I respond within one business day.</p>
