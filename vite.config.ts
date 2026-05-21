@@ -24,7 +24,9 @@ export default defineConfig({
       targets: [
         ...legacyDirs.map(dir => ({ src: dir, dest: '.' })),
         // Games
-        { src: 'src/games/flip/*.jpg',        dest: 'src/games/flip' },
+        { src: 'src/games/flip/*.jpg',         dest: 'src/games/flip' },
+        { src: 'src/games/whack/*.gif',        dest: 'src/games/whack' },
+        { src: 'src/games/whack/*.svg',        dest: 'src/games/whack' },
         { src: 'src/games/press-here',        dest: 'src/games' },
         { src: 'src/games/dinosaur/game.html',dest: 'src/games/dinosaur' },
         // Maps
