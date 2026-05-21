@@ -95,7 +95,7 @@ function FlipCard({ card, level, size, onClick }: {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
           <img
-            src={`/flip-game/${sprite.file}.jpg`}
+            src={`/src/games/flip/${sprite.file}.jpg`}
             draggable={false}
             style={{ width: '88%', height: '88%', objectFit: 'contain' }}
           />

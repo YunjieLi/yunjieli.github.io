@@ -47,19 +47,28 @@ const featured = [
   },
 ]
 
-const morePages = [
-  { href: '/studio', label: 'Upstream.land Studio' },
-  { href: '/chinese-names', label: 'Chinese Name Guide' },
-  { href: '/deck-tests', label: '黄金大劫案' },
-  { href: '/lily', label: '子豪+筠洁' },
-  { href: '/press-here', label: 'Press Here in HTML' },
-  { href: '/quip-insights', label: 'Quip Analytics' },
-  { href: '/tuner', label: 'Online Tuner' },
-  { href: '/vanilla-english', label: 'Vanilla English' },
-  { href: '/turbines', label: 'Turbines' },
-  { href: '/flip-game', label: 'Flip Game' },
-  { href: '/dinosaur-game', label: 'Dinosaur Game' },
+const maps = [
+  { href: '/kings',      label: 'Glorious Kings',     sub: '王者荣耀·英雄地图' },
+  { href: '/swordsmen',  label: 'Smiling Swordsmen',  sub: '在地图上重读《笑傲江湖》' },
+  { href: '/deck-tests', label: '黄金大劫案',           sub: 'Deck.gl arc map' },
+  { href: '/liancheng',  label: '连城诀',               sub: 'Deck.gl arc map' },
+]
+
+const games = [
+  { href: '/flip-game',    label: 'Flip Game' },
+  { href: '/dinosaur-game',label: 'Dinosaur Game' },
   { href: '/wack-a-virus', label: 'Whack-a-Virus' },
+  { href: '/press-here',   label: 'Press Here' },
+]
+
+const otherPages = [
+  { href: '/studio',         label: 'Upstream.land Studio' },
+  { href: '/chinese-names',  label: 'Chinese Name Guide' },
+  { href: '/lily',           label: '子豪+筠洁' },
+  { href: '/quip-insights',  label: 'Quip Analytics' },
+  { href: '/tuner',          label: 'Online Tuner' },
+  { href: '/vanilla-english',label: 'Vanilla English' },
+  { href: '/turbines',       label: 'Turbines' },
 ]
 
 export default function Toc() {
@@ -106,10 +115,46 @@ export default function Toc() {
           ))}
         </div>
 
+        {/* Maps section */}
         <div className="mt-14 mb-10">
-          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3.5">More pages</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3.5">Maps</p>
           <ul className="grid gap-2">
-            {morePages.map(p => (
+            {maps.map(p => (
+              <li key={p.href}>
+                <Link
+                  to={p.href}
+                  className="flex items-baseline justify-between px-4 py-3 rounded-md border border-border text-foreground text-[15px] no-underline hover:bg-muted transition-colors"
+                >
+                  <span>{p.label}</span>
+                  <span className="text-xs text-muted-foreground ml-3 shrink-0">{p.sub}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Games section */}
+        <div className="mb-10">
+          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3.5">Games</p>
+          <ul className="grid gap-2">
+            {games.map(p => (
+              <li key={p.href}>
+                <Link
+                  to={p.href}
+                  className="block px-4 py-3 rounded-md border border-border text-foreground text-[15px] no-underline hover:bg-muted transition-colors"
+                >
+                  {p.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Other pages */}
+        <div className="mb-10">
+          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3.5">More</p>
+          <ul className="grid gap-2">
+            {otherPages.map(p => (
               <li key={p.href}>
                 <Link
                   to={p.href}
