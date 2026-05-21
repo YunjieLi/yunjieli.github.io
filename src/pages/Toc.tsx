@@ -59,6 +59,7 @@ const morePages = [
   { href: '/turbines', label: 'Turbines' },
   { href: '/flip-game', label: 'Flip Game' },
   { href: '/dinosaur-game', label: 'Dinosaur Game' },
+  { href: '/wack-a-virus', label: 'Whack-a-Virus' },
 ]
 
 export default function Toc() {

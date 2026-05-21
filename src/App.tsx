@@ -14,6 +14,7 @@ import PressHere from './pages/PressHere'
 import Turbines from './pages/Turbines'
 import FlipGame from './flip-game'
 import DinosaurGame from './pages/DinosaurGame'
+import WackAVirus from './pages/WackAVirus'
 
 export default function App() {
   return (
@@ -34,6 +35,7 @@ export default function App() {
         <Route path="/turbines" element={<Turbines />} />
         <Route path="/flip-game" element={<FlipGame />} />
         <Route path="/dinosaur-game" element={<DinosaurGame />} />
+        <Route path="/wack-a-virus" element={<WackAVirus />} />
       </Routes>
     </BrowserRouter>
   )
