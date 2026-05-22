@@ -509,7 +509,7 @@ function StartScreen({ onStart }: { onStart: () => void }) {
         <div>
           <div style={{ fontSize: 42, marginBottom: 6 }}>🦠🎯</div>
           <div style={{ fontSize: 34, fontWeight: 900, letterSpacing: '-0.02em' }}>
-            Whack-a-Mole!
+            Whack a Virus!
           </div>
           <div style={{ color: '#94a3b8', marginTop: 8, fontSize: 16, lineHeight: 1.5 }}>
             3 levels · 1 minute each
@@ -724,7 +724,7 @@ export default function WackAVirus() {
       }}>
         <h1 style={{ margin: 0, fontSize: 16, fontWeight: 700,
                      letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>
-          Whack-a-<span style={{ color: '#a855f7' }}>Mole</span>
+          Whack a <span style={{ color: '#a855f7' }}>Virus</span>
         </h1>
         <div style={{ display: 'flex', gap: 20 }}>
           <Stat label="Score" value={totalScore}       color="#a855f7" />
