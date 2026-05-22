@@ -29,11 +29,21 @@ function fmtTime(s: number) {
   return `${m}:${String(s % 60).padStart(2, '0')}`
 }
 
-// ── Types ──────────────────────────────────────────────────────────────────────
-type Cell    = { up: boolean; whacked: boolean }
-type Floater = { id: number; x: number; y: number }
+// ── Mole catalogue ────────────────────────────────────────────────────────────
+type MoleKind = 'bauchling1' | 'bauchling2' | 'virus1' | 'virus2'
+const MOLES: { kind: MoleKind; src: string; isVirus: boolean }[] = [
+  { kind: 'bauchling1', src: '/src/games/whack/bauchling1.gif', isVirus: false },
+  { kind: 'bauchling2', src: '/src/games/whack/bauchling2.gif', isVirus: false },
+  { kind: 'virus1',     src: '/src/games/whack/virus1.gif',     isVirus: true  },
+  { kind: 'virus2',     src: '/src/games/whack/virus2.gif',     isVirus: true  },
+]
+function randomMole() { return MOLES[Math.floor(Math.random() * MOLES.length)] }
 
-const makeCell  = (): Cell => ({ up: false, whacked: false })
+// ── Types ──────────────────────────────────────────────────────────────────────
+type Cell    = { up: boolean; whacked: boolean; mole: typeof MOLES[number] }
+type Floater = { id: number; x: number; y: number; delta: number }
+
+const makeCell  = (): Cell => ({ up: false, whacked: false, mole: MOLES[0] })
 const makeCells = ()       => Array.from({ length: TOTAL }, makeCell)
 
 // ── Inline SVG assets ──────────────────────────────────────────────────────────
@@ -212,6 +222,7 @@ export default function WackAVirus() {
   const clockRef     = useRef<ReturnType<typeof setInterval> | null>(null)
   const floaterIdRef = useRef(0)
   const upRef        = useRef<Set<number>>(new Set())
+  const moleKindRef  = useRef<(typeof MOLES[number])[]>(Array.from({ length: TOTAL }, () => MOLES[0]))
 
   const clearAll = useCallback(() => {
     timersRef.current.forEach(clearTimeout)
@@ -229,6 +240,8 @@ export default function WackAVirus() {
       const idx   = avail[Math.floor(Math.random() * avail.length)]
       const { down } = getLevel(scoreRef.current)
       const delay = down + Math.random() * 200 - 100
+      const mole  = randomMole()
+      moleKindRef.current[idx] = mole
       upRef.current.add(idx)
       const tid = setTimeout(() => {
         // Start the visual sink first, then clear upRef after a rAF so any
@@ -238,7 +251,7 @@ export default function WackAVirus() {
         requestAnimationFrame(() => upRef.current.delete(idx))
       }, delay)
       timersRef.current.push(tid)
-      return prev.map((c, i) => i === idx ? { ...c, up: true } : c)
+      return prev.map((c, i) => i === idx ? { ...c, up: true, mole } : c)
     })
   }, [])
 
@@ -282,11 +295,13 @@ export default function WackAVirus() {
     if (!runningRef.current) return
     if (!upRef.current.has(idx)) return
     upRef.current.delete(idx)
+    const mole  = moleKindRef.current[idx]
+    const delta = mole.isVirus ? 1 : -1
     setCells(prev => prev.map((c, i) => i === idx ? { ...c, whacked: true } : c))
-    scoreRef.current++
+    scoreRef.current = Math.max(0, scoreRef.current + delta)
     setScore(scoreRef.current)
     const id = ++floaterIdRef.current
-    setFloaters(fs => [...fs, { id, x: e.clientX, y: e.clientY }])
+    setFloaters(fs => [...fs, { id, x: e.clientX, y: e.clientY, delta }])
     const tid = setTimeout(() => {
       setCells(p => p.map((c, i) => i === idx ? { ...c, up: false, whacked: false } : c))
       setFloaters(fs => fs.filter(f => f.id !== id))
@@ -391,8 +406,8 @@ export default function WackAVirus() {
                   >
                     <img
                       className="wam-mole"
-                      src="/src/games/whack/bauchling1.gif"
-                      alt="mole"
+                      src={cell.mole.src}
+                      alt={cell.mole.kind}
                       draggable={false}
                     />
                   </div>
@@ -445,10 +460,12 @@ export default function WackAVirus() {
         </div>
       </main>
 
-      {/* +1 floaters */}
+      {/* score floaters */}
       {floaters.map(f => (
-        <div key={f.id} className="wam-floater" style={{ left: f.x - 12, top: f.y - 20 }}>
-          +1
+        <div key={f.id} className="wam-floater"
+          style={{ left: f.x - 12, top: f.y - 20,
+                   color: f.delta > 0 ? '#22c55e' : '#ef4444' }}>
+          {f.delta > 0 ? '+1' : '−1'}
         </div>
       ))}
     </div>
