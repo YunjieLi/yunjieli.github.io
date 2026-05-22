@@ -1,19 +1,13 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 
-// ── Speed schedule (score-based within a round) ───────────────────────────────
-const SPEED_TIERS = [
-  { threshold:  0, up: 1200, down: 1400 },
-  { threshold:  5, up: 1050, down: 1250 },
-  { threshold: 10, up:  900, down: 1100 },
-  { threshold: 18, up:  750, down:  950 },
-  { threshold: 28, up:  620, down:  800 },
-] as const
-
-function getSpeedTier(score: number, mult: number) {
-  let i = 0
-  for (; i < SPEED_TIERS.length - 1; i++) if (score < SPEED_TIERS[i + 1].threshold) break
-  const t = SPEED_TIERS[i]
-  return { up: Math.round(t.up * mult), down: Math.round(t.down * mult) }
+// ── Time-based speed (same curve for every level) ─────────────────────────────
+// Starts slow at elapsed=0, gets faster toward elapsed=LEVEL_DURATION
+function getSpeed(elapsed: number): { up: number; down: number } {
+  const p = Math.min(elapsed / LEVEL_DURATION, 1)   // 0 → 1 over 60 s
+  return {
+    up:   Math.round(1200 - 800 * p),   // 1200 ms → 400 ms
+    down: Math.round(1400 - 840 * p),   // 1400 ms → 560 ms
+  }
 }
 
 function fmtTime(s: number) {
@@ -33,6 +27,9 @@ type Mole = typeof MOLES[number]
 const VIRUSES   = MOLES.filter(m => m.isVirus)  as Mole[]
 const ALL_MOLES = [...MOLES]                     as Mole[]
 
+// ── Bubble foods ──────────────────────────────────────────────────────────────
+const FOODS = ['🍎','🥦','🥕','🍓','🫐','🍇','🥑','🍊','🥝','🍋','🍒','🥭','🍍','🫒','🥬','🍑']
+
 // ── Level definitions ─────────────────────────────────────────────────────────
 const GAME_LEVELS = [
   {
@@ -40,21 +37,21 @@ const GAME_LEVELS = [
     title: 'Virus Hunt!',
     tagline: 'Hit all the viruses!',
     moles: VIRUSES,
-    speedMult: 1.0,
+    hasBubbles: false,
   },
   {
     num: 2, color: '#ea580c',
     title: 'Watch Out!',
     tagline: 'Hit viruses, dodge bauchlings!',
     moles: ALL_MOLES,
-    speedMult: 1.0,
+    hasBubbles: false,
   },
   {
     num: 3, color: '#0891b2',
-    title: '⚡ Speed Round!',
-    tagline: 'Everything moves faster — stay sharp!',
+    title: '🫧 Bubble Bonus!',
+    tagline: 'Pop the food bubbles for extra points!',
     moles: ALL_MOLES,
-    speedMult: 0.5,
+    hasBubbles: true,
   },
 ]
 const LEVEL_DURATION = 60
@@ -63,8 +60,9 @@ const TOTAL = 9
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Phase     = 'start' | 'intro' | 'playing' | 'recap' | 'final'
 type Cell      = { up: boolean; whacked: boolean; mole: Mole }
-type Floater   = { id: number; x: number; y: number; delta: number }
-type LevelStat = { virusHits: number; bauchlingHits: number; net: number }
+type Floater   = { id: number; x: number; y: number; delta: number; emoji?: string }
+type Bubble    = { id: number; x: number; food: string; bonus: number; duration: number }
+type LevelStat = { virusHits: number; bauchlingHits: number; bubbleBonus: number; net: number }
 
 const makeCell  = (): Cell => ({ up: false, whacked: false, mole: MOLES[2] })
 const makeCells = ()       => Array.from({ length: TOTAL }, makeCell)
@@ -145,19 +143,16 @@ const CSS = `
     cursor: crosshair;
     transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
-  .wam-mwrap.wam-whacked {
-    transition: transform 0.15s ease-in;
-  }
+  .wam-mwrap.wam-whacked { transition: transform 0.15s ease-in; }
+
   .wam-mole {
     width: 100%; height: 100%;
-    object-fit: cover; object-position: top center;
-    display: block;
+    object-fit: cover; object-position: top center; display: block;
     animation: wam-wobble 0.55s ease-in-out infinite alternate;
     user-select: none; pointer-events: none;
   }
-  .wam-mwrap.wam-whacked .wam-mole {
-    animation: wam-splat 0.2s ease forwards;
-  }
+  .wam-mwrap.wam-whacked .wam-mole { animation: wam-splat 0.2s ease forwards; }
+
   @keyframes wam-wobble {
     from { transform: rotate(-3deg) scale(1);    }
     to   { transform: rotate( 3deg) scale(1.05); }
@@ -168,24 +163,69 @@ const CSS = `
     100% { transform: scale(.1)  rotate(-25deg); opacity: 0;  }
   }
   @keyframes wam-float {
-    0%   { opacity: 1; transform: translateY(0)     scale(1);   }
-    100% { opacity: 0; transform: translateY(-55px) scale(1.3); }
+    0%   { opacity: 1; transform: translateY(0) scale(1);     }
+    100% { opacity: 0; transform: translateY(-60px) scale(1.3); }
   }
   @keyframes wam-pop-in {
     0%   { opacity: 0; transform: scale(0.85) translateY(18px); }
     100% { opacity: 1; transform: scale(1)    translateY(0);    }
   }
-  .wam-card {
-    animation: wam-pop-in 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
+
+  /* ── Bubbles ── */
+  @keyframes wam-bubble-drop {
+    0%   { top: -90px;   opacity: 0;   }
+    6%   { opacity: 1;                 }
+    90%  { opacity: 1;                 }
+    100% { top: 105vh;   opacity: 0;   }
   }
+  @keyframes wam-bubble-sway {
+    0%   { transform: translateX(-14px) rotate(-4deg); }
+    50%  { transform: translateX(14px)  rotate( 4deg); }
+    100% { transform: translateX(-14px) rotate(-4deg); }
+  }
+  .wam-bubble-track {
+    position: fixed;
+    width: 84px; height: 84px;
+    animation: wam-bubble-drop var(--fall-dur, 4s) linear forwards;
+    z-index: 120;
+    pointer-events: none;
+  }
+  .wam-bubble {
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    background: radial-gradient(
+      circle at 33% 30%,
+      rgba(255,255,255,0.88) 0%,
+      rgba(190,230,255,0.45) 38%,
+      rgba(110,190,255,0.18) 70%,
+      rgba(80,160,240,0.08) 100%
+    );
+    border: 2.5px solid rgba(255,255,255,0.7);
+    box-shadow:
+      0 0 18px rgba(100,200,255,0.55),
+      inset 0 -6px 16px rgba(0,110,200,0.12),
+      inset 0 6px 12px rgba(255,255,255,0.45);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px;
+    cursor: pointer;
+    pointer-events: auto;
+    user-select: none;
+    animation: wam-bubble-sway var(--sway-dur, 1.4s) ease-in-out infinite;
+    transition: transform 0.1s;
+  }
+  .wam-bubble:hover  { transform: scale(1.12); }
+  .wam-bubble:active { transform: scale(0.92); }
+
+  .wam-card { animation: wam-pop-in 0.35s cubic-bezier(0.34,1.56,0.64,1) both; }
+
   .wam-btn {
     border: none; border-radius: 12px; padding: 12px 28px;
     font-size: 18px; font-weight: 800; cursor: pointer; color: #fff;
-    transition: opacity .15s, transform .1s;
-    letter-spacing: -0.01em;
+    transition: opacity .15s, transform .1s; letter-spacing: -0.01em;
   }
   .wam-btn:hover  { opacity: .88; transform: scale(1.04); }
   .wam-btn:active { transform: scale(.96); }
+
   .wam-btn-sm {
     border: none; border-radius: 8px; padding: 7px 15px;
     font-size: 13px; font-weight: 700; cursor: pointer; color: #fff;
@@ -193,10 +233,11 @@ const CSS = `
   }
   .wam-btn-sm:hover  { opacity: .88; transform: scale(1.03); }
   .wam-btn-sm:active { transform: scale(.97); }
+
   .wam-floater {
     position: fixed; font-size: 20px; font-weight: 800;
     pointer-events: none;
-    animation: wam-float 0.75s ease forwards; z-index: 999;
+    animation: wam-float 0.8s ease forwards; z-index: 999;
   }
   .wam-rule-card {
     display: flex; align-items: center; gap: 14px;
@@ -215,7 +256,7 @@ const CSS = `
   }
 `
 
-// ── Stat chip (HUD) ───────────────────────────────────────────────────────────
+// ── Stat chip ─────────────────────────────────────────────────────────────────
 function Stat({ label, value, color }: { label: string; value: string | number; color: string }) {
   return (
     <div style={{ textAlign: 'center' }}>
@@ -226,7 +267,7 @@ function Stat({ label, value, color }: { label: string; value: string | number; 
   )
 }
 
-// ── Overlay wrapper ───────────────────────────────────────────────────────────
+// ── Overlay ───────────────────────────────────────────────────────────────────
 function Overlay({ children }: { children: React.ReactNode }) {
   return (
     <div style={{
@@ -240,9 +281,9 @@ function Overlay({ children }: { children: React.ReactNode }) {
   )
 }
 
-// ── Level Intro screen ────────────────────────────────────────────────────────
+// ── Level Intro ───────────────────────────────────────────────────────────────
 function LevelIntro({ levelIdx, onPlay }: { levelIdx: number; onPlay: () => void }) {
-  const lvl = GAME_LEVELS[levelIdx]
+  const lvl  = GAME_LEVELS[levelIdx]
   const isL1 = levelIdx === 0
   const isL3 = levelIdx === 2
 
@@ -253,9 +294,8 @@ function LevelIntro({ levelIdx, onPlay }: { levelIdx: number; onPlay: () => void
         maxWidth: 480, width: '100%', color: '#f1f5f9',
         border: `2px solid ${lvl.color}44`,
         boxShadow: `0 0 60px ${lvl.color}33`,
-        display: 'flex', flexDirection: 'column', gap: 24, textAlign: 'center',
+        display: 'flex', flexDirection: 'column', gap: 22, textAlign: 'center',
       }}>
-        {/* Badge */}
         <div>
           <div style={{
             display: 'inline-block', padding: '4px 16px', borderRadius: 999,
@@ -264,18 +304,14 @@ function LevelIntro({ levelIdx, onPlay }: { levelIdx: number; onPlay: () => void
           }}>
             LEVEL {lvl.num} OF 3
           </div>
-          <div style={{ fontSize: 34, fontWeight: 900, lineHeight: 1.1,
-                        letterSpacing: '-0.02em' }}>
+          <div style={{ fontSize: 34, fontWeight: 900, lineHeight: 1.1, letterSpacing: '-0.02em' }}>
             {lvl.title}
           </div>
-          <div style={{ marginTop: 6, color: '#94a3b8', fontSize: 16 }}>
-            {lvl.tagline}
-          </div>
+          <div style={{ marginTop: 6, color: '#94a3b8', fontSize: 16 }}>{lvl.tagline}</div>
         </div>
 
-        {/* Rule cards */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {/* Viruses — always hit */}
+          {/* Viruses — always present */}
           <div className="wam-rule-card">
             <div style={{ display: 'flex', gap: 6 }}>
               <img className="wam-gif-preview" src="/src/games/whack/virus1.gif" alt="virus" />
@@ -283,13 +319,11 @@ function LevelIntro({ levelIdx, onPlay }: { levelIdx: number; onPlay: () => void
             </div>
             <div style={{ textAlign: 'left' }}>
               <div style={{ fontSize: 22 }}>✅ Hit these!</div>
-              <div style={{ color: '#4ade80', fontWeight: 700, fontSize: 15 }}>
-                Viruses → <strong>+1 point</strong>
-              </div>
+              <div style={{ color: '#4ade80', fontWeight: 700, fontSize: 15 }}>Viruses → <strong>+1 point</strong></div>
             </div>
           </div>
 
-          {/* Bauchlings — level 2 and 3 only */}
+          {/* Bauchlings — levels 2 & 3 */}
           {!isL1 && (
             <div className="wam-rule-card">
               <div style={{ display: 'flex', gap: 6 }}>
@@ -298,32 +332,42 @@ function LevelIntro({ levelIdx, onPlay }: { levelIdx: number; onPlay: () => void
               </div>
               <div style={{ textAlign: 'left' }}>
                 <div style={{ fontSize: 22 }}>❌ Avoid these!</div>
-                <div style={{ color: '#f87171', fontWeight: 700, fontSize: 15 }}>
-                  Bauchlings → <strong>−1 point</strong>
-                </div>
+                <div style={{ color: '#f87171', fontWeight: 700, fontSize: 15 }}>Bauchlings → <strong>−1 point</strong></div>
               </div>
             </div>
           )}
 
-          {/* Speed warning for level 3 */}
+          {/* Bubbles — level 3 only */}
           {isL3 && (
-            <div style={{
-              padding: '10px 16px', borderRadius: 12,
-              background: '#0e7490', fontSize: 15, fontWeight: 700,
-              display: 'flex', alignItems: 'center', gap: 8,
-            }}>
-              ⚡ Moles pop up twice as fast this round!
+            <div className="wam-rule-card" style={{ background: 'rgba(8,145,178,0.15)', borderColor: '#0891b266' }}>
+              <div style={{
+                width: 72, height: 72, borderRadius: '50%', flexShrink: 0,
+                background: 'radial-gradient(circle at 33% 30%, rgba(255,255,255,0.9), rgba(150,210,255,0.4))',
+                border: '2px solid rgba(255,255,255,0.6)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 32,
+                boxShadow: '0 0 14px rgba(100,200,255,0.5)',
+              }}>
+                🍎
+              </div>
+              <div style={{ textAlign: 'left' }}>
+                <div style={{ fontSize: 22 }}>🫧 Pop these!</div>
+                <div style={{ color: '#67e8f9', fontWeight: 700, fontSize: 15 }}>
+                  Food bubbles → <strong>+2 or +3 pts!</strong>
+                </div>
+              </div>
             </div>
           )}
         </div>
 
-        {/* Timer reminder */}
-        <div style={{ color: '#64748b', fontSize: 14 }}>
-          ⏱ You have <strong style={{ color: '#f1f5f9' }}>60 seconds</strong>
+        {/* Speed note */}
+        <div style={{ padding: '10px 14px', borderRadius: 12, background: 'rgba(255,255,255,0.06)',
+                      fontSize: 14, color: '#94a3b8' }}>
+          ⏱ <strong style={{ color: '#f1f5f9' }}>60 seconds</strong>
+          &nbsp;· moles get faster as time runs out!
         </div>
 
-        <button className="wam-btn" style={{ background: lvl.color }}
-                onClick={onPlay}>
+        <button className="wam-btn" style={{ background: lvl.color }} onClick={onPlay}>
           Let's Go! 🚀
         </button>
       </div>
@@ -331,20 +375,13 @@ function LevelIntro({ levelIdx, onPlay }: { levelIdx: number; onPlay: () => void
   )
 }
 
-// ── Level Recap screen ────────────────────────────────────────────────────────
-function LevelRecap({
-  levelIdx, stat, totalScore,
-  onNext,
-}: {
-  levelIdx: number
-  stat: LevelStat
-  totalScore: number
-  onNext: () => void
-}) {
-  const lvl      = GAME_LEVELS[levelIdx]
-  const isLast   = levelIdx === GAME_LEVELS.length - 1
-  const stars    = stat.net >= 10 ? 3 : stat.net >= 5 ? 2 : stat.net >= 1 ? 1 : 0
-  const starStr  = '⭐'.repeat(stars) + '✩'.repeat(3 - stars)
+// ── Level Recap ───────────────────────────────────────────────────────────────
+function LevelRecap({ levelIdx, stat, totalScore, onNext }:
+  { levelIdx: number; stat: LevelStat; totalScore: number; onNext: () => void }) {
+  const lvl    = GAME_LEVELS[levelIdx]
+  const isLast = levelIdx === GAME_LEVELS.length - 1
+  const stars  = stat.net >= 10 ? 3 : stat.net >= 5 ? 2 : stat.net >= 1 ? 1 : 0
+  const starStr = '⭐'.repeat(stars) + '✩'.repeat(3 - stars)
 
   return (
     <Overlay>
@@ -353,29 +390,23 @@ function LevelRecap({
         maxWidth: 460, width: '100%', color: '#f1f5f9',
         border: `2px solid ${lvl.color}44`,
         boxShadow: `0 0 60px ${lvl.color}33`,
-        display: 'flex', flexDirection: 'column', gap: 22, textAlign: 'center',
+        display: 'flex', flexDirection: 'column', gap: 20, textAlign: 'center',
       }}>
-        {/* Header */}
         <div>
           <div style={{ fontSize: 40, marginBottom: 4 }}>🎉</div>
-          <div style={{ fontSize: 28, fontWeight: 900, letterSpacing: '-0.02em' }}>
-            Level {lvl.num} Done!
-          </div>
+          <div style={{ fontSize: 28, fontWeight: 900, letterSpacing: '-0.02em' }}>Level {lvl.num} Done!</div>
           <div style={{ fontSize: 28, marginTop: 6, letterSpacing: 4 }}>{starStr}</div>
         </div>
 
-        {/* Stats breakdown */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <div className="wam-stat-row">
             <img style={{ width: 48, height: 48, objectFit: 'contain' }}
                  src="/src/games/whack/virus1.gif" alt="virus" />
             <div style={{ flex: 1, textAlign: 'left' }}>
               <div style={{ fontWeight: 700 }}>Viruses hit</div>
-              <div style={{ color: '#94a3b8', fontSize: 13 }}>+1 point each</div>
+              <div style={{ color: '#94a3b8', fontSize: 13 }}>+1 each</div>
             </div>
-            <div style={{ fontSize: 22, fontWeight: 800, color: '#4ade80' }}>
-              +{stat.virusHits}
-            </div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: '#4ade80' }}>+{stat.virusHits}</div>
           </div>
 
           {stat.bauchlingHits > 0 && (
@@ -384,11 +415,25 @@ function LevelRecap({
                    src="/src/games/whack/bauchling1.gif" alt="bauchling" />
               <div style={{ flex: 1, textAlign: 'left' }}>
                 <div style={{ fontWeight: 700 }}>Bauchlings hit</div>
-                <div style={{ color: '#94a3b8', fontSize: 13 }}>−1 point each</div>
+                <div style={{ color: '#94a3b8', fontSize: 13 }}>−1 each</div>
               </div>
-              <div style={{ fontSize: 22, fontWeight: 800, color: '#f87171' }}>
-                −{stat.bauchlingHits}
+              <div style={{ fontSize: 22, fontWeight: 800, color: '#f87171' }}>−{stat.bauchlingHits}</div>
+            </div>
+          )}
+
+          {stat.bubbleBonus > 0 && (
+            <div className="wam-stat-row" style={{ background: 'rgba(8,145,178,0.15)' }}>
+              <div style={{
+                width: 48, height: 48, borderRadius: '50%', flexShrink: 0,
+                background: 'radial-gradient(circle at 33% 30%, rgba(255,255,255,0.9), rgba(150,210,255,0.4))',
+                border: '2px solid rgba(255,255,255,0.6)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24,
+              }}>🫧</div>
+              <div style={{ flex: 1, textAlign: 'left' }}>
+                <div style={{ fontWeight: 700 }}>Bubbles popped!</div>
+                <div style={{ color: '#94a3b8', fontSize: 13 }}>bonus points</div>
               </div>
+              <div style={{ fontSize: 22, fontWeight: 800, color: '#67e8f9' }}>+{stat.bubbleBonus}</div>
             </div>
           )}
 
@@ -405,15 +450,12 @@ function LevelRecap({
           </div>
         </div>
 
-        {/* Total */}
         <div style={{
           padding: '10px 0', borderTop: '1px solid rgba(255,255,255,0.08)',
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         }}>
           <span style={{ color: '#94a3b8', fontWeight: 600 }}>Total score</span>
-          <span style={{ fontSize: 28, fontWeight: 900, color: '#a78bfa' }}>
-            {totalScore} pts
-          </span>
+          <span style={{ fontSize: 28, fontWeight: 900, color: '#a78bfa' }}>{totalScore} pts</span>
         </div>
 
         <button className="wam-btn"
@@ -427,35 +469,23 @@ function LevelRecap({
 }
 
 // ── Final screen ──────────────────────────────────────────────────────────────
-function FinalScreen({
-  stats, totalScore, onRestart,
-}: {
-  stats: LevelStat[]
-  totalScore: number
-  onRestart: () => void
-}) {
+function FinalScreen({ stats, totalScore, onRestart }:
+  { stats: LevelStat[]; totalScore: number; onRestart: () => void }) {
   const medal = totalScore >= 30 ? '🥇' : totalScore >= 15 ? '🥈' : totalScore >= 5 ? '🥉' : '🎮'
-
   return (
     <Overlay>
       <div className="wam-card" style={{
         background: '#1a1f35', borderRadius: 28, padding: '36px 32px',
         maxWidth: 460, width: '100%', color: '#f1f5f9',
-        border: '2px solid #7c3aed44',
-        boxShadow: '0 0 80px #7c3aed44',
+        border: '2px solid #7c3aed44', boxShadow: '0 0 80px #7c3aed44',
         display: 'flex', flexDirection: 'column', gap: 22, textAlign: 'center',
       }}>
         <div>
           <div style={{ fontSize: 56 }}>{medal}</div>
-          <div style={{ fontSize: 30, fontWeight: 900, letterSpacing: '-0.02em', marginTop: 6 }}>
-            Game Over!
-          </div>
-          <div style={{ fontSize: 44, fontWeight: 900, color: '#a78bfa', marginTop: 4 }}>
-            {totalScore} pts
-          </div>
+          <div style={{ fontSize: 30, fontWeight: 900, letterSpacing: '-0.02em', marginTop: 6 }}>Game Over!</div>
+          <div style={{ fontSize: 44, fontWeight: 900, color: '#a78bfa', marginTop: 4 }}>{totalScore} pts</div>
         </div>
 
-        {/* Per-level breakdown */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {stats.map((s, i) => (
             <div key={i} style={{
@@ -468,26 +498,22 @@ function FinalScreen({
                 <span style={{
                   padding: '2px 10px', borderRadius: 999, fontSize: 12,
                   fontWeight: 700, background: GAME_LEVELS[i].color,
-                }}>
-                  L{i + 1}
-                </span>
+                }}>L{i + 1}</span>
                 <span style={{ color: '#94a3b8', fontSize: 13 }}>
                   🦠×{s.virusHits}
                   {s.bauchlingHits > 0 ? `  💚×${s.bauchlingHits}` : ''}
+                  {s.bubbleBonus   > 0 ? `  🫧+${s.bubbleBonus}`  : ''}
                 </span>
               </div>
-              <span style={{
-                fontWeight: 800, fontSize: 18,
-                color: s.net >= 0 ? '#4ade80' : '#f87171',
-              }}>
+              <span style={{ fontWeight: 800, fontSize: 18,
+                             color: s.net >= 0 ? '#4ade80' : '#f87171' }}>
                 {s.net >= 0 ? '+' : ''}{s.net}
               </span>
             </div>
           ))}
         </div>
 
-        <button className="wam-btn" style={{ background: '#7c3aed' }}
-                onClick={onRestart}>
+        <button className="wam-btn" style={{ background: '#7c3aed' }} onClick={onRestart}>
           Play Again 🔄
         </button>
       </div>
@@ -502,21 +528,17 @@ function StartScreen({ onStart }: { onStart: () => void }) {
       <div className="wam-card" style={{
         background: '#1a1f35', borderRadius: 28, padding: '40px 32px',
         maxWidth: 440, width: '100%', color: '#f1f5f9',
-        border: '2px solid #7c3aed44',
-        boxShadow: '0 0 60px #7c3aed33',
+        border: '2px solid #7c3aed44', boxShadow: '0 0 60px #7c3aed33',
         display: 'flex', flexDirection: 'column', gap: 24, textAlign: 'center',
       }}>
         <div>
           <div style={{ fontSize: 42, marginBottom: 6 }}>🦠🎯</div>
-          <div style={{ fontSize: 34, fontWeight: 900, letterSpacing: '-0.02em' }}>
-            Whack a Virus!
-          </div>
+          <div style={{ fontSize: 34, fontWeight: 900, letterSpacing: '-0.02em' }}>Whack a Virus!</div>
           <div style={{ color: '#94a3b8', marginTop: 8, fontSize: 16, lineHeight: 1.5 }}>
             3 levels · 1 minute each
           </div>
         </div>
 
-        {/* Preview of moles */}
         <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
           {ALL_MOLES.map(m => (
             <img key={m.kind} src={m.src} alt={m.kind}
@@ -525,7 +547,6 @@ function StartScreen({ onStart }: { onStart: () => void }) {
           ))}
         </div>
 
-        {/* Level overview */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {GAME_LEVELS.map(lvl => (
             <div key={lvl.num} style={{
@@ -535,18 +556,15 @@ function StartScreen({ onStart }: { onStart: () => void }) {
               textAlign: 'left',
             }}>
               <span style={{
-                padding: '2px 12px', borderRadius: 999,
-                background: lvl.color, fontSize: 13, fontWeight: 700, flexShrink: 0,
-              }}>
-                Level {lvl.num}
-              </span>
+                padding: '2px 12px', borderRadius: 999, background: lvl.color,
+                fontSize: 13, fontWeight: 700, flexShrink: 0,
+              }}>Level {lvl.num}</span>
               <span style={{ color: '#cbd5e1', fontSize: 14 }}>{lvl.tagline}</span>
             </div>
           ))}
         </div>
 
-        <button className="wam-btn" style={{ background: '#7c3aed' }}
-                onClick={onStart}>
+        <button className="wam-btn" style={{ background: '#7c3aed' }} onClick={onStart}>
           Start Game! 🚀
         </button>
       </div>
@@ -563,31 +581,37 @@ export default function WackAVirus() {
   const [totalScore, setTotalScore] = useState(0)
   const [levelStats, setLevelStats] = useState<LevelStat[]>([])
   const [floaters,   setFloaters]   = useState<Floater[]>([])
+  const [bubbles,    setBubbles]    = useState<Bubble[]>([])
 
-  // per-level accumulators in refs (avoid stale closures)
-  const totalScoreRef    = useRef(0)
-  const levelVirusRef    = useRef(0)
-  const levelBauchRef    = useRef(0)
-  const runningRef       = useRef(false)
-  const timersRef        = useRef<ReturnType<typeof setTimeout>[]>([])
-  const scheduleRef      = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const clockRef         = useRef<ReturnType<typeof setInterval> | null>(null)
-  const floaterIdRef     = useRef(0)
-  const upRef            = useRef<Set<number>>(new Set())
-  const moleKindRef      = useRef<Mole[]>(Array.from({ length: TOTAL }, () => MOLES[2]))
-  const levelIdxRef      = useRef(0)
+  const totalScoreRef   = useRef(0)
+  const levelVirusRef   = useRef(0)
+  const levelBauchRef   = useRef(0)
+  const levelBubbleRef  = useRef(0)
+  const levelElapsedRef = useRef(0)
+  const runningRef      = useRef(false)
+  const timersRef       = useRef<ReturnType<typeof setTimeout>[]>([])
+  const scheduleRef     = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const bubbleSchedRef  = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const clockRef        = useRef<ReturnType<typeof setInterval> | null>(null)
+  const floaterIdRef    = useRef(0)
+  const bubbleIdRef     = useRef(0)
+  const upRef           = useRef<Set<number>>(new Set())
+  const moleKindRef     = useRef<Mole[]>(Array.from({ length: TOTAL }, () => MOLES[2]))
+  const levelIdxRef     = useRef(0)
 
   const clearAll = useCallback(() => {
     timersRef.current.forEach(clearTimeout)
     timersRef.current = []
-    if (scheduleRef.current) { clearTimeout(scheduleRef.current); scheduleRef.current = null }
-    if (clockRef.current)    { clearInterval(clockRef.current);   clockRef.current    = null }
+    if (scheduleRef.current)    { clearTimeout(scheduleRef.current);    scheduleRef.current    = null }
+    if (bubbleSchedRef.current) { clearTimeout(bubbleSchedRef.current); bubbleSchedRef.current = null }
+    if (clockRef.current)       { clearInterval(clockRef.current);      clockRef.current       = null }
   }, [])
 
   const stopBoard = useCallback(() => {
     runningRef.current = false
     clearAll()
     upRef.current.clear()
+    setBubbles([])
     setCells(prev => prev.map(c => ({ ...c, up: false, whacked: false })))
   }, [clearAll])
 
@@ -598,10 +622,10 @@ export default function WackAVirus() {
       const avail = prev.reduce<number[]>((a, c, i) =>
         !c.up && !c.whacked ? [...a, i] : a, [])
       if (!avail.length) return prev
-      const idx   = avail[Math.floor(Math.random() * avail.length)]
-      const pool  = lvl.moles as Mole[]
-      const mole  = pool[Math.floor(Math.random() * pool.length)]
-      const { down } = getSpeedTier(totalScoreRef.current, lvl.speedMult)
+      const idx  = avail[Math.floor(Math.random() * avail.length)]
+      const pool = lvl.moles as Mole[]
+      const mole = pool[Math.floor(Math.random() * pool.length)]
+      const { down } = getSpeed(levelElapsedRef.current)
       const delay = down + Math.random() * 200 - 100
       moleKindRef.current[idx] = mole
       upRef.current.add(idx)
@@ -617,30 +641,59 @@ export default function WackAVirus() {
 
   const scheduleNext = useCallback(() => {
     if (!runningRef.current) return
-    const lvl   = GAME_LEVELS[levelIdxRef.current]
-    const { up } = getSpeedTier(totalScoreRef.current, lvl.speedMult)
+    const { up } = getSpeed(levelElapsedRef.current)
     const delay  = up + Math.random() * 300 - 150
     scheduleRef.current = setTimeout(() => { popMole(); scheduleNext() }, delay)
   }, [popMole])
 
-  // Called when 60s runs out
+  // ── Bubble spawning (Level 3 only) ─────────────────────────────────────────
+  const spawnBubble = useCallback(() => {
+    if (!runningRef.current) return
+    const id       = ++bubbleIdRef.current
+    const x        = 6 + Math.random() * 78          // 6% – 84% from left
+    const food     = FOODS[Math.floor(Math.random() * FOODS.length)]
+    const bonus    = Math.random() < 0.3 ? 3 : 2
+    const duration = 3800 + Math.random() * 1800      // 3.8 – 5.6 s to fall
+    const sway     = 1.2 + Math.random() * 0.6        // 1.2 – 1.8 s sway period
+    setBubbles(bs => [...bs, { id, x, food, bonus, duration }])
+    const tid = setTimeout(() => setBubbles(bs => bs.filter(b => b.id !== id)), duration)
+    timersRef.current.push(tid)
+    // Pass sway duration via dataset (stored alongside id)
+    ;(window as any)[`__bubble_sway_${id}`] = sway
+  }, [])
+
+  const scheduleBubble = useCallback(() => {
+    if (!runningRef.current) return
+    const delay = 4500 + Math.random() * 3500          // every 4.5 – 8 s
+    bubbleSchedRef.current = setTimeout(() => {
+      spawnBubble()
+      scheduleBubble()
+    }, delay)
+  }, [spawnBubble])
+
+  // ── Level end ──────────────────────────────────────────────────────────────
   const endLevel = useCallback(() => {
     stopBoard()
     const stat: LevelStat = {
       virusHits:    levelVirusRef.current,
       bauchlingHits: levelBauchRef.current,
-      net: levelVirusRef.current - levelBauchRef.current,
+      bubbleBonus:  levelBubbleRef.current,
+      net: levelVirusRef.current - levelBauchRef.current + levelBubbleRef.current,
     }
     setLevelStats(prev => [...prev, stat])
     setPhase('recap')
   }, [stopBoard])
 
+  // ── Start a level ──────────────────────────────────────────────────────────
   const startPlaying = useCallback((idx: number) => {
-    levelIdxRef.current  = idx
+    levelIdxRef.current   = idx
     levelVirusRef.current = 0
     levelBauchRef.current = 0
-    runningRef.current = true
+    levelBubbleRef.current = 0
+    levelElapsedRef.current = 0
+    runningRef.current    = true
     setCells(makeCells())
+    setBubbles([])
     upRef.current.clear()
     setTimeLeft(LEVEL_DURATION)
     setPhase('playing')
@@ -649,9 +702,18 @@ export default function WackAVirus() {
     setTimeout(() => { if (runningRef.current) popMole() }, 400)
     scheduleNext()
 
+    // Bubbles for level 3 — first one after ~2.5 s
+    if (GAME_LEVELS[idx].hasBubbles) {
+      bubbleSchedRef.current = setTimeout(() => {
+        spawnBubble()
+        scheduleBubble()
+      }, 2500)
+    }
+
     let remaining = LEVEL_DURATION
     clockRef.current = setInterval(() => {
       remaining--
+      levelElapsedRef.current++
       setTimeLeft(remaining)
       if (remaining <= 0) {
         clearInterval(clockRef.current!)
@@ -659,8 +721,9 @@ export default function WackAVirus() {
         endLevel()
       }
     }, 1000)
-  }, [popMole, scheduleNext, endLevel])
+  }, [popMole, scheduleNext, spawnBubble, scheduleBubble, endLevel])
 
+  // ── Mole hit ───────────────────────────────────────────────────────────────
   const handleWhack = useCallback((idx: number, e: React.MouseEvent) => {
     if (!runningRef.current) return
     if (!upRef.current.has(idx)) return
@@ -681,25 +744,40 @@ export default function WackAVirus() {
     timersRef.current.push(tid)
   }, [])
 
+  // ── Bubble hit ─────────────────────────────────────────────────────────────
+  const handleBubbleHit = useCallback((bubbleId: number, food: string, bonus: number, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setBubbles(bs => {
+      if (!bs.find(b => b.id === bubbleId)) return bs  // already gone
+      levelBubbleRef.current += bonus
+      totalScoreRef.current  += bonus
+      setTotalScore(totalScoreRef.current)
+      const id = ++floaterIdRef.current
+      setFloaters(fs => [...fs, { id, x: e.clientX, y: e.clientY, delta: bonus, emoji: food }])
+      setTimeout(() => setFloaters(fs => fs.filter(f => f.id !== id)), 800)
+      return bs.filter(b => b.id !== bubbleId)
+    })
+  }, [])
+
+  // ── Navigation ─────────────────────────────────────────────────────────────
   const handleNext = useCallback(() => {
     const next = levelIdx + 1
-    if (next >= GAME_LEVELS.length) {
-      setPhase('final')
-    } else {
-      setLevelIdx(next)
-      setPhase('intro')
-    }
+    if (next >= GAME_LEVELS.length) { setPhase('final') }
+    else { setLevelIdx(next); setPhase('intro') }
   }, [levelIdx])
 
   const handleRestart = useCallback(() => {
     clearAll()
-    totalScoreRef.current = 0
-    levelVirusRef.current = 0
-    levelBauchRef.current = 0
+    totalScoreRef.current  = 0
+    levelVirusRef.current  = 0
+    levelBauchRef.current  = 0
+    levelBubbleRef.current = 0
+    levelElapsedRef.current = 0
     setLevelIdx(0)
     setTotalScore(0)
     setLevelStats([])
     setFloaters([])
+    setBubbles([])
     setCells(makeCells())
     setPhase('start')
   }, [clearAll])
@@ -727,16 +805,16 @@ export default function WackAVirus() {
           Whack a <span style={{ color: '#a855f7' }}>Virus</span>
         </h1>
         <div style={{ display: 'flex', gap: 20 }}>
-          <Stat label="Score" value={totalScore}       color="#a855f7" />
-          <Stat label="Time"  value={phase === 'playing' ? fmtTime(timeLeft) : '–'}
+          <Stat label="Score" value={totalScore} color="#a855f7" />
+          <Stat label="Time"
+                value={phase === 'playing' ? fmtTime(timeLeft) : '–'}
                 color={timeLeft <= 10 && phase === 'playing' ? '#ef4444' : '#fb923c'} />
-          <Stat label="Level" value={phase === 'start' ? '–' : `${levelIdx + 1} / 3`}
+          <Stat label="Level"
+                value={phase === 'start' ? '–' : `${levelIdx + 1} / 3`}
                 color={lvl.color} />
         </div>
         <button className="wam-btn-sm" style={{ background: '#475569' }}
-                onClick={handleRestart}>
-          Restart
-        </button>
+                onClick={handleRestart}>Restart</button>
       </header>
 
       {/* ── Board ── */}
@@ -746,12 +824,9 @@ export default function WackAVirus() {
         background: BG,
       }}>
         <div style={{
-          position: 'relative',
-          height: '100%',
-          aspectRatio: `${CW} / ${CH}`,
-          maxWidth: '100%',
-          overflow: 'hidden',
-          background: BG,
+          position: 'relative', height: '100%',
+          aspectRatio: `${CW} / ${CH}`, maxWidth: '100%',
+          overflow: 'hidden', background: BG,
         }}>
           {ROWS.map((row, ri) => (
             <div key={ri}>
@@ -781,8 +856,7 @@ export default function WackAVirus() {
                     top:    pct(row.moleRestTop, CH),
                     width:  pct(row.moleW,       CW),
                     height: pct(row.moleH,       CH),
-                    zIndex: row.moleZ,
-                    pointerEvents: 'none',
+                    zIndex: row.moleZ, pointerEvents: 'none',
                     transform: isUp ? `translateY(-${row.upPct}%)` : 'translateY(0%)',
                   }}>
                     <img className="wam-mole" src={cell.mole.src}
@@ -799,8 +873,7 @@ export default function WackAVirus() {
                 const hzTop    = row.moleRestTop - (row.upPct / 100) * row.moleH
                 const hzBottom = row.moleRestTop
                 return (
-                  <div key={`hz-${hi}`}
-                    onClick={(e) => handleWhack(cellIdx, e)}
+                  <div key={`hz-${hi}`} onClick={(e) => handleWhack(cellIdx, e)}
                     style={{
                       position: 'absolute',
                       left:   pct(hzLeft,          CW),
@@ -815,8 +888,7 @@ export default function WackAVirus() {
               })}
 
               <div style={{
-                position: 'absolute',
-                left: '0', top: pct(row.maskTop, CH),
+                position: 'absolute', left: '0', top: pct(row.maskTop, CH),
                 width: '100%', height: pct(row.maskH, CH),
                 zIndex: row.maskZ, pointerEvents: 'none',
               }}>
@@ -826,6 +898,21 @@ export default function WackAVirus() {
           ))}
         </div>
       </main>
+
+      {/* ── Falling bubbles (Level 3) ── */}
+      {bubbles.map(b => (
+        <div key={b.id} className="wam-bubble-track"
+             style={{
+               left: `${b.x}%`,
+               ['--fall-dur' as string]: `${b.duration}ms`,
+             }}>
+          <div className="wam-bubble"
+               style={{ ['--sway-dur' as string]: `${(window as any)[`__bubble_sway_${b.id}`] ?? 1.4}s` }}
+               onClick={(e) => handleBubbleHit(b.id, b.food, b.bonus, e)}>
+            {b.food}
+          </div>
+        </div>
+      ))}
 
       {/* ── Overlays ── */}
       {phase === 'start' && (
@@ -846,12 +933,12 @@ export default function WackAVirus() {
         <FinalScreen stats={levelStats} totalScore={totalScore} onRestart={handleRestart} />
       )}
 
-      {/* score floaters */}
+      {/* ── Score floaters ── */}
       {floaters.map(f => (
         <div key={f.id} className="wam-floater"
-             style={{ left: f.x - 12, top: f.y - 20,
+             style={{ left: f.x - 16, top: f.y - 24,
                       color: f.delta > 0 ? '#22c55e' : '#ef4444' }}>
-          {f.delta > 0 ? '+1' : '−1'}
+          {f.emoji ? `${f.emoji} +${f.delta}` : f.delta > 0 ? '+1' : '−1'}
         </div>
       ))}
     </div>
