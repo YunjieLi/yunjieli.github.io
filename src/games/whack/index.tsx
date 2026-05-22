@@ -526,46 +526,15 @@ function StartScreen({ onStart }: { onStart: () => void }) {
   return (
     <Overlay>
       <div className="wam-card" style={{
-        background: '#1a1f35', borderRadius: 28, padding: '40px 32px',
-        maxWidth: 440, width: '100%', color: '#f1f5f9',
-        border: '2px solid #7c3aed44', boxShadow: '0 0 60px #7c3aed33',
-        display: 'flex', flexDirection: 'column', gap: 24, textAlign: 'center',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28,
+        textAlign: 'center', color: '#f1f5f9',
       }}>
-        <div>
-          <div style={{ fontSize: 42, marginBottom: 6 }}>🦠🎯</div>
-          <div style={{ fontSize: 34, fontWeight: 900, letterSpacing: '-0.02em' }}>Whack a Virus!</div>
-          <div style={{ color: '#94a3b8', marginTop: 8, fontSize: 16, lineHeight: 1.5 }}>
-            3 levels · 1 minute each
-          </div>
+        <div style={{ fontSize: 52, fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1 }}>
+          Whack a Virus!
         </div>
-
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
-          {ALL_MOLES.map(m => (
-            <img key={m.kind} src={m.src} alt={m.kind}
-                 style={{ width: 64, height: 64, objectFit: 'contain',
-                          filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.4))' }} />
-          ))}
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {GAME_LEVELS.map(lvl => (
-            <div key={lvl.num} style={{
-              display: 'flex', alignItems: 'center', gap: 12,
-              padding: '10px 14px', borderRadius: 12,
-              background: `${lvl.color}1a`, border: `1px solid ${lvl.color}44`,
-              textAlign: 'left',
-            }}>
-              <span style={{
-                padding: '2px 12px', borderRadius: 999, background: lvl.color,
-                fontSize: 13, fontWeight: 700, flexShrink: 0,
-              }}>Level {lvl.num}</span>
-              <span style={{ color: '#cbd5e1', fontSize: 14 }}>{lvl.tagline}</span>
-            </div>
-          ))}
-        </div>
-
-        <button className="wam-btn" style={{ background: '#7c3aed' }} onClick={onStart}>
-          Start Game! 🚀
+        <button className="wam-btn" style={{ background: '#7c3aed', fontSize: 22, padding: '14px 40px' }}
+                onClick={onStart}>
+          Start Game 🚀
         </button>
       </div>
     </Overlay>
