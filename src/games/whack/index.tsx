@@ -27,8 +27,13 @@ type Mole = typeof MOLES[number]
 const VIRUSES   = MOLES.filter(m => m.isVirus)  as Mole[]
 const ALL_MOLES = [...MOLES]                     as Mole[]
 
-// ── Bubble foods ──────────────────────────────────────────────────────────────
-const FOODS = ['🍎','🥦','🥕','🍓','🫐','🍇','🥑','🍊','🥝','🍋','🍒','🥭','🍍','🫒','🥬','🍑']
+// ── Bubble food images ────────────────────────────────────────────────────────
+const FOOD_IMGS = [
+  '/src/games/whack/food-greens.png',
+  '/src/games/whack/food-meat.png',
+  '/src/games/whack/food-milk.png',
+  '/src/games/whack/food-rice.png',
+]
 
 // ── Level definitions ─────────────────────────────────────────────────────────
 const GAME_LEVELS = [
@@ -61,7 +66,7 @@ const TOTAL = 9
 type Phase     = 'start' | 'intro' | 'playing' | 'recap' | 'final'
 type Cell      = { up: boolean; whacked: boolean; mole: Mole }
 type Floater   = { id: number; x: number; y: number; delta: number; emoji?: string }
-type Bubble    = { id: number; x: number; food: string; bonus: number; duration: number }
+type Bubble    = { id: number; x: number; foodSrc: string; bonus: number; duration: number }
 type LevelStat = { virusHits: number; bauchlingHits: number; bubbleBonus: number; net: number }
 
 const makeCell  = (): Cell => ({ up: false, whacked: false, mole: MOLES[2] })
@@ -185,7 +190,7 @@ const CSS = `
   }
   .wam-bubble-track {
     position: fixed;
-    width: 84px; height: 84px;
+    width: 120px; height: 120px;
     animation: wam-bubble-drop var(--fall-dur, 4s) linear forwards;
     z-index: 120;
     pointer-events: none;
@@ -195,26 +200,32 @@ const CSS = `
     border-radius: 50%;
     background: radial-gradient(
       circle at 33% 30%,
-      rgba(255,255,255,0.88) 0%,
-      rgba(190,230,255,0.45) 38%,
-      rgba(110,190,255,0.18) 70%,
-      rgba(80,160,240,0.08) 100%
+      rgba(255,255,255,0.78) 0%,
+      rgba(190,230,255,0.38) 38%,
+      rgba(110,190,255,0.14) 70%,
+      rgba(80,160,240,0.06) 100%
     );
-    border: 2.5px solid rgba(255,255,255,0.7);
+    border: 3px solid rgba(255,255,255,0.65);
     box-shadow:
-      0 0 18px rgba(100,200,255,0.55),
-      inset 0 -6px 16px rgba(0,110,200,0.12),
-      inset 0 6px 12px rgba(255,255,255,0.45);
+      0 0 22px rgba(100,200,255,0.5),
+      inset 0 -8px 20px rgba(0,110,200,0.1),
+      inset 0 8px 16px rgba(255,255,255,0.4);
     display: flex; align-items: center; justify-content: center;
-    font-size: 36px;
     cursor: pointer;
     pointer-events: auto;
     user-select: none;
     animation: wam-bubble-sway var(--sway-dur, 1.4s) ease-in-out infinite;
     transition: transform 0.1s;
+    overflow: hidden;
   }
-  .wam-bubble:hover  { transform: scale(1.12); }
-  .wam-bubble:active { transform: scale(0.92); }
+  .wam-bubble img {
+    width: 72%; height: 72%;
+    object-fit: contain;
+    pointer-events: none;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.2));
+  }
+  .wam-bubble:hover  { transform: scale(1.1); }
+  .wam-bubble:active { transform: scale(0.9); }
 
   .wam-card { animation: wam-pop-in 0.35s cubic-bezier(0.34,1.56,0.64,1) both; }
 
@@ -619,12 +630,12 @@ export default function WackAVirus() {
   const spawnBubble = useCallback(() => {
     if (!runningRef.current) return
     const id       = ++bubbleIdRef.current
-    const x        = 6 + Math.random() * 78          // 6% – 84% from left
-    const food     = FOODS[Math.floor(Math.random() * FOODS.length)]
+    const x        = 6 + Math.random() * 72          // 6% – 78% from left
+    const foodSrc  = FOOD_IMGS[Math.floor(Math.random() * FOOD_IMGS.length)]
     const bonus    = Math.random() < 0.3 ? 3 : 2
     const duration = 3800 + Math.random() * 1800      // 3.8 – 5.6 s to fall
     const sway     = 1.2 + Math.random() * 0.6        // 1.2 – 1.8 s sway period
-    setBubbles(bs => [...bs, { id, x, food, bonus, duration }])
+    setBubbles(bs => [...bs, { id, x, foodSrc, bonus, duration }])
     const tid = setTimeout(() => setBubbles(bs => bs.filter(b => b.id !== id)), duration)
     timersRef.current.push(tid)
     // Pass sway duration via dataset (stored alongside id)
@@ -714,7 +725,7 @@ export default function WackAVirus() {
   }, [])
 
   // ── Bubble hit ─────────────────────────────────────────────────────────────
-  const handleBubbleHit = useCallback((bubbleId: number, food: string, bonus: number, e: React.MouseEvent) => {
+  const handleBubbleHit = useCallback((bubbleId: number, bonus: number, e: React.MouseEvent) => {
     e.stopPropagation()
     setBubbles(bs => {
       if (!bs.find(b => b.id === bubbleId)) return bs  // already gone
@@ -722,7 +733,7 @@ export default function WackAVirus() {
       totalScoreRef.current  += bonus
       setTotalScore(totalScoreRef.current)
       const id = ++floaterIdRef.current
-      setFloaters(fs => [...fs, { id, x: e.clientX, y: e.clientY, delta: bonus, emoji: food }])
+      setFloaters(fs => [...fs, { id, x: e.clientX, y: e.clientY, delta: bonus, emoji: '🫧' }])
       setTimeout(() => setFloaters(fs => fs.filter(f => f.id !== id)), 800)
       return bs.filter(b => b.id !== bubbleId)
     })
@@ -750,6 +761,16 @@ export default function WackAVirus() {
     setCells(makeCells())
     setPhase('start')
   }, [clearAll])
+
+  // X key skips current level (debug)
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() !== 'x') return
+      if (phase === 'playing') endLevel()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [phase, endLevel])
 
   useEffect(() => () => clearAll(), [clearAll])
 
@@ -779,7 +800,7 @@ export default function WackAVirus() {
                 value={phase === 'playing' ? fmtTime(timeLeft) : '–'}
                 color={timeLeft <= 10 && phase === 'playing' ? '#ef4444' : '#fb923c'} />
           <Stat label="Level"
-                value={phase === 'start' ? '–' : `${levelIdx + 1} / 3`}
+                value={phase === 'start' ? '–' : `${levelIdx + 1}`}
                 color={lvl.color} />
         </div>
         <button className="wam-btn-sm" style={{ background: '#475569' }}
@@ -875,10 +896,10 @@ export default function WackAVirus() {
                left: `${b.x}%`,
                ['--fall-dur' as string]: `${b.duration}ms`,
              }}>
-          <div className="wam-bubble"
+              <div className="wam-bubble"
                style={{ ['--sway-dur' as string]: `${(window as any)[`__bubble_sway_${b.id}`] ?? 1.4}s` }}
-               onClick={(e) => handleBubbleHit(b.id, b.food, b.bonus, e)}>
-            {b.food}
+               onClick={(e) => handleBubbleHit(b.id, b.bonus, e)}>
+            <img src={b.foodSrc} alt="food" />
           </div>
         </div>
       ))}
