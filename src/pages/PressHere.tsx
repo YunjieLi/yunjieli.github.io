@@ -153,36 +153,43 @@ function Page1() {
 
 // ─── Page 2 — reveal colors ───────────────────────────────────────────────────
 function Page2() {
-  const [leftRevealed,  setLeftRevealed]  = useState(false)
-  const [midRevealed,   setMidRevealed]   = useState(false)
-  const [rightRevealed, setRightRevealed] = useState(false)
-  const done = leftRevealed && midRevealed && rightRevealed
+  const [revealed, setRevealed] = useState([false, false, false])
+  const done = revealed.every(Boolean)
   useRYBKeyframe()
 
   const TARGETS = [RED, YELLOW, BLUE]
-  const revealed = [leftRevealed, midRevealed, rightRevealed]
-  const setters  = [setLeftRevealed, setMidRevealed, setRightRevealed]
 
   return (
     <>
       <div style={canvasStyle}>
-        {TARGETS.map((color, i) =>
-          revealed[i] ? (
-            <div
-              key={`p2-${i}`}
-              style={{
-                position: 'absolute',
-                left: `${COL_X[i]}%`, top: `${ROW_Y[0]}%`,
-                transform: 'translate(-50%,-50%)',
-                width: DOT_SIZE, height: DOT_SIZE,
-                borderRadius: '50%', background: color,
-                cursor: 'default',
-              }}
-            />
-          ) : (
-            <RainbowDot key={`p2-${i}`} i={i} onClick={() => setters[i](true)} />
-          )
-        )}
+        {TARGETS.map((color, i) => (
+          // Keep shimmer running underneath; fade solid-color overlay in on click
+          <div
+            key={`p2-${i}`}
+            onClick={revealed[i] ? undefined : () =>
+              setRevealed(r => r.map((v, j) => j === i ? true : v) as [boolean, boolean, boolean])
+            }
+            style={{
+              position: 'absolute',
+              left: `${COL_X[i]}%`, top: `${ROW_Y[0]}%`,
+              transform: 'translate(-50%,-50%)',
+              width: DOT_SIZE, height: DOT_SIZE,
+              borderRadius: '50%',
+              cursor: revealed[i] ? 'default' : 'pointer',
+              WebkitTapHighlightColor: 'transparent',
+              animation: 'rybShimmer 3s linear infinite',
+              animationDelay: `${-i * 1}s`,
+            }}
+          >
+            <div style={{
+              position: 'absolute', inset: 0, borderRadius: '50%',
+              background: color,
+              opacity: revealed[i] ? 1 : 0,
+              transition: 'opacity 0.55s ease',
+              pointerEvents: 'none',
+            }} />
+          </div>
+        ))}
       </div>
       <IntroText>Press each dot to reveal its color!</IntroText>
       <SetDone done={done} />
