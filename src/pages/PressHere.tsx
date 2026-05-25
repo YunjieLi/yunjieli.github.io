@@ -1663,9 +1663,201 @@ function Chapter2Page3() {
   )
 }
 
+// ─── Chapter 2 Page 4 — triangle ─────────────────────────────────────────────
+// Triangle: apex at cursor, base hanging below.
+// Row i (0–6) has (i+1) dots; dx = (–i + 2·j) × 20 px, dy = i × 25 px
+// Total: 1+2+3+4+5+6+7 = 28 dots — exactly BURST_COUNT.
+function buildTriangleSlots() {
+  const COLORS = [
+    ['#ffffff'],
+    ['#dd88ff', '#dd88ff'],
+    ['#9944ff', '#bb66ff', '#9944ff'],
+    ['#3399ff', '#00bbff', '#00bbff', '#3399ff'],
+    ['#00cc88', '#44cc44', '#88cc00', '#44cc44', '#00cc88'],
+    ['#ffee00', '#ffcc00', '#ffcc00', '#ffcc00', '#ffee00', '#ffaa00'],
+    ['#ff5500', '#ff3300', '#ff1100', '#ff1100', '#ff1100', '#ff3300', '#ff5500'],
+  ]
+  const slots: Array<{ dx: number; dy: number; color: string; size: number }> = []
+  for (let row = 0; row <= 6; row++) {
+    for (let col = 0; col <= row; col++) {
+      slots.push({
+        dx:    (-row + 2 * col) * 20,   // px offset from apex (x)
+        dy:    row * 25,                 // px offset from apex (y, downward)
+        color: COLORS[row][col],
+        size:  26 - row * 2,            // 26 → 14 px
+      })
+    }
+  }
+  return slots
+}
+const TRIANGLE_SLOTS = buildTriangleSlots()
+
+function Chapter2Page4() {
+  const active     = useContext(PageActiveCtx)
+  const [phase, setPhase]       = useState<'roaming' | 'triangle'>('roaming')
+  const [doneEver, setDoneEver] = useState(false)
+  const dotsRef    = useRef<PhysDot[]>([])
+  const rafRef     = useRef<number | null>(null)
+  const canvasRef  = useRef<HTMLDivElement>(null)
+  const dimsRef    = useRef({ cw: 960, ch: 520 })
+  const cursorRef  = useRef({ x: 50, y: 35 })
+  const phaseRef   = useRef<'roaming' | 'triangle'>('roaming')
+  const initedRef  = useRef(false)
+  const [, tick]   = useState(0)
+
+  useLayoutEffect(() => {
+    const el = canvasRef.current
+    if (!el) return
+    const obs = new ResizeObserver(entries => {
+      const { width: cw, height: ch } = entries[0].contentRect
+      if (cw > 0 && ch > 0) dimsRef.current = { cw, ch }
+    })
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [])
+
+  useEffect(() => {
+    if (!active || initedRef.current) return
+    initedRef.current = true
+    dotsRef.current = Array.from({ length: BURST_COUNT }, (_, i) => ({
+      id: `c4-${i}`,
+      color: BURST_COLORS[i % BURST_COLORS.length],
+      x: 8 + Math.random() * 84,
+      y: 8 + Math.random() * 84,
+      vx: (Math.random() - 0.5) * 0.5,
+      vy: (Math.random() - 0.5) * 0.5,
+      friction: 0.92 + Math.random() * 0.06,
+    }))
+    tick(n => n + 1)
+  }, [active])   // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!active) {
+      if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null }
+      return
+    }
+    let alive = true
+    const step = () => {
+      if (!alive) return
+      const { cw, ch } = dimsRef.current
+      const rx = MINI_PX / 2 / cw * 100
+      const ry = MINI_PX / 2 / ch * 100
+
+      if (phaseRef.current === 'roaming') {
+        dotsRef.current = dotsRef.current.map(dot => {
+          let { x, y, vx, vy, friction } = dot
+          vx += (Math.random() - 0.5) * 0.13
+          vy += (Math.random() - 0.5) * 0.13
+          vx *= friction; vy *= friction
+          const spd = Math.sqrt(vx * vx + vy * vy)
+          if (spd > 0.75) { vx = vx / spd * 0.75; vy = vy / spd * 0.75 }
+          x += vx; y += vy
+          if (x < rx)       { x = rx;       vx =  Math.abs(vx) * BOUNCE }
+          if (x > 100 - rx) { x = 100 - rx; vx = -Math.abs(vx) * BOUNCE }
+          if (y < ry)       { y = ry;       vy =  Math.abs(vy) * BOUNCE }
+          if (y > 100 - ry) { y = 100 - ry; vy = -Math.abs(vy) * BOUNCE }
+          return { ...dot, x, y, vx, vy }
+        })
+        dotsRef.current = resolveCollisions(dotsRef.current, cw, ch, MINI_PX)
+
+      } else {
+        // Triangle: spring each dot toward its slot, offset from cursor
+        const curX = cursorRef.current.x / 100 * cw
+        const curY = cursorRef.current.y / 100 * ch
+        dotsRef.current = dotsRef.current.map((dot, i) => {
+          const slot = TRIANGLE_SLOTS[i]
+          const tx = (curX + slot.dx) / cw * 100
+          const ty = (curY + slot.dy) / ch * 100
+          let { x, y, vx, vy } = dot
+          vx += (tx - x) * 0.06 + (Math.random() - 0.5) * 0.055
+          vy += (ty - y) * 0.06 + (Math.random() - 0.5) * 0.055
+          vx *= 0.82; vy *= 0.82
+          x += vx; y += vy
+          x = Math.max(rx, Math.min(100 - rx, x))
+          y = Math.max(ry, Math.min(100 - ry, y))
+          return { ...dot, x, y, vx, vy }
+        })
+      }
+
+      tick(n => n + 1)
+      rafRef.current = requestAnimationFrame(step)
+    }
+    rafRef.current = requestAnimationFrame(step)
+    return () => {
+      alive = false
+      if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null }
+    }
+  }, [active])   // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => () => { if (rafRef.current) cancelAnimationFrame(rafRef.current) }, [])
+
+  function getPct(e: React.PointerEvent) {
+    const rect = canvasRef.current?.getBoundingClientRect()
+    if (!rect) return null
+    return { x: (e.clientX - rect.left) / rect.width * 100, y: (e.clientY - rect.top) / rect.height * 100 }
+  }
+
+  function handlePointerDown(e: React.PointerEvent) {
+    const pos = getPct(e)
+    if (!pos) return
+    e.currentTarget.setPointerCapture(e.pointerId)
+    cursorRef.current = pos
+    dotsRef.current = dotsRef.current.map((dot, i) => ({ ...dot, color: TRIANGLE_SLOTS[i].color }))
+    phaseRef.current = 'triangle'
+    setPhase('triangle')
+    setDoneEver(true)
+  }
+
+  function handlePointerMove(e: React.PointerEvent) {
+    if (phaseRef.current !== 'triangle') return
+    const pos = getPct(e)
+    if (pos) cursorRef.current = pos
+  }
+
+  function handlePointerUp() {
+    if (phaseRef.current !== 'triangle') return
+    dotsRef.current = dotsRef.current.map((dot, i) => ({ ...dot, color: BURST_COLORS[i % BURST_COLORS.length] }))
+    phaseRef.current = 'roaming'
+    setPhase('roaming')
+  }
+
+  return (
+    <>
+      <div
+        ref={canvasRef}
+        style={{ ...canvasStyle, cursor: 'crosshair', touchAction: 'none' }}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+      >
+        {dotsRef.current.map((dot, i) => {
+          const scale = phase === 'triangle' ? TRIANGLE_SLOTS[i].size / MINI_PX : 1
+          return (
+            <div key={dot.id} style={{
+              position: 'absolute',
+              left: `${dot.x}%`, top: `${dot.y}%`,
+              width: MINI_PX, height: MINI_PX,
+              borderRadius: '50%',
+              backgroundColor: dot.color,
+              transform: `translate(-50%,-50%) scale(${scale.toFixed(3)})`,
+              pointerEvents: 'none',
+              transition: 'transform 0.4s ease, background-color 0.45s ease',
+            }} />
+          )
+        })}
+      </div>
+      <IntroText>
+        {phase === 'triangle' ? '🔺 Hold and drag!' : 'Press and hold to form a triangle!'}
+      </IntroText>
+      <SetDone done={doneEver} />
+    </>
+  )
+}
+
 // ─── Shell ────────────────────────────────────────────────────────────────────
 const CHAPTER1_PAGES = [Page1, Page2, Page3, Page4, Page56, Page7, Page8, Page9, Page10, Page11]
-const CHAPTER2_PAGES = [Chapter2Page1, Chapter2Page2, Chapter2Page3]
+const CHAPTER2_PAGES = [Chapter2Page1, Chapter2Page2, Chapter2Page3, Chapter2Page4]
 
 export default function PressHere() {
   const [page,      setPage]      = useState(0)
