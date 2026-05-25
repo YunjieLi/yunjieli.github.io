@@ -1077,8 +1077,101 @@ const dotStyle = (color: string, interactive = true): React.CSSProperties => ({
   WebkitTapHighlightColor: 'transparent',
 })
 
+// ─── Chapter 2 Page 1 — merge the baskets ────────────────────────────────────
+type MergePhase = 'idle' | 'merging' | 'merged'
+
+function Chapter2Page1() {
+  const [phase, setPhase] = useState<MergePhase>('idle')
+
+  useLayoutEffect(() => {
+    const s = document.createElement('style')
+    s.textContent = '@keyframes basketPop{0%{opacity:0;transform:translateX(-50%) scale(0.5)}60%{transform:translateX(-50%) scale(1.15)}100%{opacity:1;transform:translateX(-50%) scale(1)}}'
+    document.head.appendChild(s)
+    return () => { document.head.removeChild(s) }
+  }, [])
+
+  function handleBasketClick() {
+    if (phase !== 'idle') return
+    setPhase('merging')
+    setTimeout(() => setPhase('merged'), 700)
+  }
+
+  const colors = [BLUE, YELLOW, RED]
+
+  return (
+    <>
+      <div style={canvasStyle}>
+        {/* 3 individual baskets — animate to center then vanish */}
+        {colors.map((color) => (
+          <div
+            key={color}
+            onClick={handleBasketClick}
+            style={{
+              position: 'absolute',
+              left: phase === 'idle' ? BASKET_LEFT[color] : '50%',
+              bottom: '5%',
+              transform: 'translateX(-50%)',
+              transition: 'left 0.6s cubic-bezier(0.34,1.1,0.64,1)',
+              display: phase === 'merged' ? 'none' : 'flex',
+              flexDirection: 'column', alignItems: 'center',
+              cursor: phase === 'idle' ? 'pointer' : 'default',
+              pointerEvents: phase === 'idle' ? 'auto' : 'none',
+              zIndex: 2,
+            }}
+          >
+            <div style={{
+              margin: '0 auto', width: 70, height: 28,
+              border: `5px solid ${color}`, borderBottom: 'none',
+              borderRadius: '40px 40px 0 0',
+            }} />
+            <div style={{
+              width: 110, height: 72,
+              border: `5px solid ${color}`,
+              borderRadius: '0 0 18px 18px',
+              background: color + '20',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 22, fontWeight: 700, color,
+            }}>✓</div>
+          </div>
+        ))}
+
+        {/* Single merged big basket */}
+        {phase === 'merged' && (
+          <div style={{
+            position: 'absolute', left: '50%', bottom: '5%',
+            transform: 'translateX(-50%)',
+            display: 'flex', flexDirection: 'column', alignItems: 'center',
+            animation: 'basketPop 0.55s cubic-bezier(0.34,1.1,0.64,1) forwards',
+            zIndex: 3,
+          }}>
+            <div style={{
+              margin: '0 auto', width: 120, height: 46,
+              border: '6px solid #888', borderBottom: 'none',
+              borderRadius: '60px 60px 0 0',
+            }} />
+            <div style={{
+              width: 190, height: 120,
+              border: '6px solid #888',
+              borderRadius: '0 0 28px 28px',
+              background: '#88888818',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              gap: 10,
+            }}>
+              {[YELLOW, BLUE, RED].map(c => (
+                <div key={c} style={{ width: 30, height: 30, borderRadius: '50%', background: c }} />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+      <IntroText>{phase === 'merged' ? 'All together now! 🎉' : 'Tap any basket to combine them!'}</IntroText>
+      <SetDone done={phase === 'merged'} />
+    </>
+  )
+}
+
 // ─── Well Done screen ─────────────────────────────────────────────────────────
-function WellDone({ onReset }: { onReset: () => void }) {
+function WellDone({ onReset, onNextChapter }: { onReset: () => void; onNextChapter: () => void }) {
   useLayoutEffect(() => {
     const s = document.createElement('style')
     s.textContent = '@keyframes shineText{0%{background-position:200% center}100%{background-position:0% center}}'
@@ -1108,27 +1201,45 @@ function WellDone({ onReset }: { onReset: () => void }) {
       }}>
         Well done!
       </div>
-      <button
-        onClick={onReset}
-        style={{
-          display: 'flex', alignItems: 'center', gap: 8,
-          padding: '10px 28px', borderRadius: 40,
-          background: 'transparent', border: '2px solid #ccc',
-          fontSize: 16, fontWeight: 700, color: '#888',
-          fontFamily: 'inherit', cursor: 'pointer',
-        }}
-        onMouseEnter={e => { e.currentTarget.style.borderColor = '#aaa'; e.currentTarget.style.color = '#555' }}
-        onMouseLeave={e => { e.currentTarget.style.borderColor = '#ccc'; e.currentTarget.style.color = '#888' }}
-      >
-        <RotateCcw size={16} /> Play again
-      </button>
+      <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+        <button
+          onClick={onNextChapter}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            padding: '14px 36px', borderRadius: 40,
+            background: '#FDD302', border: 'none',
+            fontSize: 20, fontWeight: 800, color: '#333',
+            fontFamily: 'inherit', cursor: 'pointer',
+          }}
+          onMouseEnter={e => (e.currentTarget.style.background = '#ffc700')}
+          onMouseLeave={e => (e.currentTarget.style.background = '#FDD302')}
+          onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.96)')}
+          onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}
+        >
+          Next Chapter <ChevronRight size={22} strokeWidth={3} />
+        </button>
+        <button
+          onClick={onReset}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            padding: '10px 28px', borderRadius: 40,
+            background: 'transparent', border: '2px solid #ccc',
+            fontSize: 16, fontWeight: 700, color: '#888',
+            fontFamily: 'inherit', cursor: 'pointer',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = '#aaa'; e.currentTarget.style.color = '#555' }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = '#ccc'; e.currentTarget.style.color = '#888' }}
+        >
+          <RotateCcw size={16} /> Play again
+        </button>
+      </div>
     </div>
   )
 }
 
 // ─── Shell ────────────────────────────────────────────────────────────────────
-const PAGES = [Page1, Page2, Page3, Page4, Page56, Page7, Page8, Page9, Page10, Page11]
-const TOTAL = PAGES.length
+const CHAPTER1_PAGES = [Page1, Page2, Page3, Page4, Page56, Page7, Page8, Page9, Page10, Page11]
+const CHAPTER2_PAGES = [Chapter2Page1]
 
 export default function PressHere() {
   const [page,      setPage]      = useState(0)
@@ -1136,10 +1247,13 @@ export default function PressHere() {
   const [done,      setDone]      = useState(false)
   const [globalKey, setGlobalKey] = useState(0)
   const [wellDone,  setWellDone]  = useState(false)
+  const [chapter,   setChapter]   = useState(1)
   const handoffRef     = useRef<Handoff>({ page4Dots: null, page5Dots: null, page6Dots: null })
   const canvasAreaRef  = useRef<HTMLDivElement>(null)
   const firstRenderRef = useRef(true)
 
+  const activePages = chapter === 1 ? CHAPTER1_PAGES : CHAPTER2_PAGES
+  const TOTAL = activePages.length
   const isFirst = page === 0
   const isLast  = page === TOTAL - 1
 
@@ -1153,6 +1267,16 @@ export default function PressHere() {
     setPage(0)
     setDone(false)
     setWellDone(false)
+    setChapter(1)
+    handoffRef.current = { page4Dots: null, page5Dots: null, page6Dots: null }
+  }
+
+  function startChapter2() {
+    setGlobalKey(k => k + 1)
+    setPage(0)
+    setDone(false)
+    setWellDone(false)
+    setChapter(2)
     handoffRef.current = { page4Dots: null, page5Dots: null, page6Dots: null }
   }
 
@@ -1194,7 +1318,7 @@ export default function PressHere() {
     document.body.style.overflow = 'hidden'
   }, [])
 
-  if (wellDone) return <WellDone onReset={reset} />
+  if (wellDone) return <WellDone onReset={reset} onNextChapter={startChapter2} />
 
   return (
     <CaptionCtx.Provider value={setCaption}>
@@ -1209,7 +1333,7 @@ export default function PressHere() {
 
             {/* Canvas area — all pages mounted; opacity+pointer-events for transition */}
             <div ref={canvasAreaRef} key={globalKey} style={{ flex: 1, minHeight: 0, position: 'relative', minWidth: 960 }}>
-              {PAGES.map((P, i) => (
+              {activePages.map((P, i) => (
                 <PageActiveCtx.Provider key={i} value={i === page}>
                   <div style={{
                     position: 'absolute', inset: 0, display: i === page ? 'flex' : 'none', flexDirection: 'column',
