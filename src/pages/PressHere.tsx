@@ -1426,7 +1426,6 @@ function Chapter2Page2() {
             transform: 'translate(-50%,-50%)',
             width: MINI_PX, height: MINI_PX, borderRadius: '50%',
             background: dot.color,
-            boxShadow: `0 0 7px ${dot.color}`,
             pointerEvents: 'none',
           }} />
         ))}
@@ -1439,9 +1438,234 @@ function Chapter2Page2() {
   )
 }
 
+// ─── Chapter 2 Page 3 — comet ─────────────────────────────────────────────────
+// Comet slots: [along%, perp%, color, size_px]
+// along = distance behind head (% of canvas width), perp = lateral offset (same units)
+const COMET_SLOTS: Array<{ along: number; perp: number; color: string; size: number }> = [
+  // Head — bright, compact
+  { along: 0,   perp:  0,    color: '#ffffff', size: 28 },
+  { along: 1.5, perp:  0.9,  color: '#eeccff', size: 22 },
+  { along: 1.5, perp: -0.9,  color: '#eeccff', size: 22 },
+  { along: 3,   perp:  0,    color: '#bb66ff', size: 20 },
+  { along: 3,   perp:  1.7,  color: '#9944ff', size: 20 },
+  { along: 3,   perp: -1.7,  color: '#9944ff', size: 20 },
+  // Body — widens with blue → cyan
+  { along: 5,   perp:  0,    color: '#4488ff', size: 18 },
+  { along: 5,   perp:  2.3,  color: '#22aaff', size: 18 },
+  { along: 5,   perp: -2.3,  color: '#22aaff', size: 18 },
+  { along: 7,   perp:  1,    color: '#00cccc', size: 18 },
+  { along: 7,   perp: -1,    color: '#00cccc', size: 18 },
+  { along: 7,   perp:  3.6,  color: '#00cc99', size: 17 },
+  { along: 7,   perp: -3.6,  color: '#00cc99', size: 17 },
+  // Midsection — green → yellow
+  { along: 9,   perp:  0,    color: '#33cc33', size: 17 },
+  { along: 9,   perp:  2.6,  color: '#77cc00', size: 17 },
+  { along: 9,   perp: -2.6,  color: '#77cc00', size: 17 },
+  { along: 9,   perp:  5.2,  color: '#bbdd00', size: 16 },
+  { along: 9,   perp: -5.2,  color: '#bbdd00', size: 16 },
+  // Outer body — yellow → orange
+  { along: 12,  perp:  2,    color: '#ffee00', size: 16 },
+  { along: 12,  perp: -2,    color: '#ffee00', size: 16 },
+  { along: 12,  perp:  5.6,  color: '#ffcc00', size: 15 },
+  { along: 12,  perp: -5.6,  color: '#ffcc00', size: 15 },
+  { along: 15,  perp:  1,    color: '#ffaa00', size: 15 },
+  { along: 15,  perp: -1,    color: '#ffaa00', size: 15 },
+  { along: 15,  perp:  4.6,  color: '#ff5500', size: 14 },
+  { along: 15,  perp: -4.6,  color: '#ff5500', size: 14 },
+  // Tail tip — red, sparse
+  { along: 19,  perp:  2.5,  color: '#ff1100', size: 13 },
+  { along: 19,  perp: -2.5,  color: '#ff1100', size: 13 },
+]
+
+function Chapter2Page3() {
+  const active     = useContext(PageActiveCtx)
+  const [phase, setPhase] = useState<'roaming' | 'comet'>('roaming')
+  const dotsRef    = useRef<PhysDot[]>([])
+  const rafRef     = useRef<number | null>(null)
+  const canvasRef  = useRef<HTMLDivElement>(null)
+  const dimsRef    = useRef({ cw: 960, ch: 520 })
+  const headRef    = useRef({ x: 50, y: 40 })
+  // Tail direction: pixel-space unit vector pointing away from movement
+  const tailDirRef = useRef({ x: 0, y: 1 })
+  const prevPtrRef = useRef({ x: 50, y: 40 })
+  const phaseRef   = useRef<'roaming' | 'comet'>('roaming')
+  const initedRef  = useRef(false)
+  const [, tick]   = useState(0)
+
+  useLayoutEffect(() => {
+    const el = canvasRef.current
+    if (!el) return
+    const obs = new ResizeObserver(entries => {
+      const { width: cw, height: ch } = entries[0].contentRect
+      if (cw > 0 && ch > 0) dimsRef.current = { cw, ch }
+    })
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [])
+
+  // Initialise dots when page first becomes active
+  useEffect(() => {
+    if (!active || initedRef.current) return
+    initedRef.current = true
+    dotsRef.current = Array.from({ length: BURST_COUNT }, (_, i) => ({
+      id: `c3-${i}`,
+      color: BURST_COLORS[i % BURST_COLORS.length],
+      x: 8 + Math.random() * 84,
+      y: 8 + Math.random() * 84,
+      vx: (Math.random() - 0.5) * 0.5,
+      vy: (Math.random() - 0.5) * 0.5,
+      friction: 0.92 + Math.random() * 0.06,
+    }))
+    tick(n => n + 1)
+  }, [active])   // eslint-disable-line react-hooks/exhaustive-deps
+
+  // RAF loop — runs the entire time the page is active
+  useEffect(() => {
+    if (!active) {
+      if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null }
+      return
+    }
+    let alive = true
+    const step = () => {
+      if (!alive) return
+      const { cw, ch } = dimsRef.current
+      const rx = MINI_PX / 2 / cw * 100
+      const ry = MINI_PX / 2 / ch * 100
+
+      if (phaseRef.current === 'roaming') {
+        // Brownian motion + collision prevention
+        dotsRef.current = dotsRef.current.map(dot => {
+          let { x, y, vx, vy, friction } = dot
+          vx += (Math.random() - 0.5) * 0.13
+          vy += (Math.random() - 0.5) * 0.13
+          vx *= friction; vy *= friction
+          const spd = Math.sqrt(vx * vx + vy * vy)
+          if (spd > 0.75) { vx = vx / spd * 0.75; vy = vy / spd * 0.75 }
+          x += vx; y += vy
+          if (x < rx)       { x = rx;       vx =  Math.abs(vx) * BOUNCE }
+          if (x > 100 - rx) { x = 100 - rx; vx = -Math.abs(vx) * BOUNCE }
+          if (y < ry)       { y = ry;       vy =  Math.abs(vy) * BOUNCE }
+          if (y > 100 - ry) { y = 100 - ry; vy = -Math.abs(vy) * BOUNCE }
+          return { ...dot, x, y, vx, vy }
+        })
+        dotsRef.current = resolveCollisions(dotsRef.current, cw, ch, MINI_PX)
+
+      } else {
+        // Comet: spring force toward slot targets + subtle Brownian roaming
+        const hx = headRef.current.x / 100 * cw
+        const hy = headRef.current.y / 100 * ch
+        // Normalise tail direction
+        const { x: tdx, y: tdy } = tailDirRef.current
+        const tlen = Math.sqrt(tdx * tdx + tdy * tdy)
+        const tnx = tlen > 0.001 ? tdx / tlen : 0   // along-tail unit vector
+        const tny = tlen > 0.001 ? tdy / tlen : 1
+        const pnx = -tny, pny = tnx                  // perpendicular unit vector
+
+        dotsRef.current = dotsRef.current.map((dot, i) => {
+          const slot = COMET_SLOTS[i]
+          // Slot target in canvas %
+          const aPx = slot.along / 100 * cw   // along offset in px
+          const pPx = slot.perp  / 100 * cw   // perp  offset in px (uniform scale)
+          const tx = (hx + aPx * tnx + pPx * pnx) / cw * 100
+          const ty = (hy + aPx * tny + pPx * pny) / ch * 100
+          let { x, y, vx, vy } = dot
+          // Spring toward target + noise for organic roaming
+          vx += (tx - x) * 0.06 + (Math.random() - 0.5) * 0.055
+          vy += (ty - y) * 0.06 + (Math.random() - 0.5) * 0.055
+          vx *= 0.82; vy *= 0.82
+          x += vx; y += vy
+          x = Math.max(rx, Math.min(100 - rx, x))
+          y = Math.max(ry, Math.min(100 - ry, y))
+          return { ...dot, x, y, vx, vy }
+        })
+      }
+
+      tick(n => n + 1)
+      rafRef.current = requestAnimationFrame(step)
+    }
+    rafRef.current = requestAnimationFrame(step)
+    return () => {
+      alive = false
+      if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null }
+    }
+  }, [active])   // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => () => { if (rafRef.current) cancelAnimationFrame(rafRef.current) }, [])
+
+  function getPct(e: React.PointerEvent) {
+    const rect = canvasRef.current?.getBoundingClientRect()
+    if (!rect) return null
+    return { x: (e.clientX - rect.left) / rect.width * 100, y: (e.clientY - rect.top) / rect.height * 100 }
+  }
+
+  function handlePointerDown(e: React.PointerEvent) {
+    if (phaseRef.current !== 'roaming') return
+    const pos = getPct(e)
+    if (!pos) return
+    e.currentTarget.setPointerCapture(e.pointerId)
+    headRef.current = pos
+    prevPtrRef.current = pos
+    // Assign comet colours to each dot
+    dotsRef.current = dotsRef.current.map((dot, i) => ({ ...dot, color: COMET_SLOTS[i].color }))
+    phaseRef.current = 'comet'
+    setPhase('comet')
+  }
+
+  function handlePointerMove(e: React.PointerEvent) {
+    if (phaseRef.current !== 'comet') return
+    const pos = getPct(e)
+    if (!pos) return
+    const { cw, ch } = dimsRef.current
+    // Compute drag delta in pixel space for accurate direction
+    const dx = (pos.x - prevPtrRef.current.x) * cw / 100
+    const dy = (pos.y - prevPtrRef.current.y) * ch / 100
+    const len = Math.sqrt(dx * dx + dy * dy)
+    if (len > 1) {
+      // Tail points opposite to movement; smooth the direction update
+      tailDirRef.current = {
+        x: tailDirRef.current.x * 0.75 + (-dx / len) * 0.25,
+        y: tailDirRef.current.y * 0.75 + (-dy / len) * 0.25,
+      }
+    }
+    headRef.current = pos
+    prevPtrRef.current = pos
+  }
+
+  return (
+    <>
+      <div
+        ref={canvasRef}
+        style={{ ...canvasStyle, cursor: phase === 'roaming' ? 'pointer' : 'crosshair', touchAction: 'none' }}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+      >
+        {dotsRef.current.map((dot, i) => {
+          const scale = phase === 'comet' ? COMET_SLOTS[i].size / MINI_PX : 1
+          return (
+            <div key={dot.id} style={{
+              position: 'absolute',
+              left: `${dot.x}%`, top: `${dot.y}%`,
+              width: MINI_PX, height: MINI_PX,
+              borderRadius: '50%',
+              backgroundColor: dot.color,
+              transform: `translate(-50%,-50%) scale(${scale.toFixed(3)})`,
+              pointerEvents: 'none',
+              transition: 'transform 0.45s ease, background-color 0.5s ease',
+            }} />
+          )
+        })}
+      </div>
+      <IntroText>
+        {phase === 'roaming' ? 'Press and drag to shape a comet!' : '☄️ Drag the comet!'}
+      </IntroText>
+      <SetDone done={phase === 'comet'} />
+    </>
+  )
+}
+
 // ─── Shell ────────────────────────────────────────────────────────────────────
 const CHAPTER1_PAGES = [Page1, Page2, Page3, Page4, Page56, Page7, Page8, Page9, Page10, Page11]
-const CHAPTER2_PAGES = [Chapter2Page1, Chapter2Page2]
+const CHAPTER2_PAGES = [Chapter2Page1, Chapter2Page2, Chapter2Page3]
 
 export default function PressHere() {
   const [page,      setPage]      = useState(0)
