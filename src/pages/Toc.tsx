@@ -1,51 +1,4 @@
 import { Link } from 'react-router-dom'
-import { buttonVariants } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
-
-const featured = [
-  {
-    bg: '/src/pages/toc/img/jumbotron-nyc.png',
-    title: 'Restaurants Noise of NYC',
-    blogHref: 'https://blog.mapbox.com/exploring-nyc-open-data-with-3d-hexbins-5af2b7d8bc46',
-    blogLabel: 'Mapbox Blog',
-    sub: 'Visualizing NYC 311 Data in 3D',
-    href: 'https://www.mapbox.com/bites/00304/',
-  },
-  {
-    bg: '/src/pages/toc/img/jumbotron-boston.png',
-    title: 'Historical Boston',
-    blogHref: 'https://blog.mapbox.com/mapping-historic-boston-in-the-mapbox-studio-dataset-editor-838c49209bd1',
-    blogLabel: 'Mapbox Blog',
-    sub: 'Mapping, Urban History',
-    href: 'https://www.mapbox.com/bites/00287/',
-  },
-  {
-    bg: '/src/pages/toc/img/jumbotron-lush.png',
-    title: 'Mono <> Colors',
-    blogHref: 'https://blog.mapbox.com/mobile-runtime-styling-get-active-553b0c9aaa16',
-    blogLabel: 'Mapbox Blog',
-    sub: 'Map Design – Greenifying this world',
-    href: 'https://www.mapbox.com/bites/00299/compare.html',
-  },
-  {
-    bg: '/src/pages/toc/img/jumbotron-heroes.png',
-    title: 'Glorious Kings',
-    blogHref: null,
-    blogLabel: null,
-    sub: '#自嗨 王者荣耀·英雄地图。',
-    href: '/kings',
-    internal: true,
-  },
-  {
-    bg: '/src/pages/toc/img/jumbotron-swordsmen.png',
-    title: 'Smiling Swordsmen',
-    blogHref: null,
-    blogLabel: null,
-    sub: '#自嗨 在地图上重读《笑傲江湖》。',
-    href: '/swordsmen',
-    internal: true,
-  },
-]
 
 const maps = [
   { href: '/kings',      label: 'Glorious Kings',     sub: '王者荣耀·英雄地图' },
@@ -85,34 +38,34 @@ export default function Toc() {
 
         <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3.5">Featured</p>
 
-        <div className="flex flex-col gap-2.5">
-          {featured.map(item => (
-            <div
-              key={item.title}
-              className="relative rounded-md overflow-hidden bg-cover bg-center text-white"
-              style={{ backgroundImage: `url(${item.bg})` }}
-            >
-              <div className="absolute inset-0 bg-black/65" />
-              <div className="relative z-10 px-6 py-4">
-                <h2 className="text-xl font-semibold mb-1 leading-snug">{item.title}</h2>
-                <p className="text-[13px] mb-2.5 opacity-80">
-                  {item.blogHref && (
-                    <><a href={item.blogHref} target="_blank" rel="noreferrer" className="underline underline-offset-2">{item.blogLabel}</a> · </>
-                  )}
-                  {item.sub}
-                </p>
-                {item.internal ? (
-                  <Link to={item.href} className={cn(buttonVariants({ variant: 'secondary', size: 'sm' }), 'bg-white/20 hover:bg-white/30 text-white border-0')}>
-                    Check it out
-                  </Link>
-                ) : (
-                  <a href={item.href} target="_blank" rel="noreferrer" className={cn(buttonVariants({ variant: 'secondary', size: 'sm' }), 'bg-white/20 hover:bg-white/30 text-white border-0')}>
-                    Check it out
-                  </a>
-                )}
-              </div>
+        <div className="grid grid-cols-2 gap-2.5">
+          {/* Press Here */}
+          <Link
+            to="/press-here"
+            className="relative rounded-md overflow-hidden no-underline text-white flex flex-col justify-end min-h-[160px] hover:opacity-90 transition-opacity"
+            style={{ background: 'linear-gradient(135deg, #ff6b6b 0%, #ffd93d 25%, #6bcb77 50%, #4d96ff 75%, #c77dff 100%)' }}
+          >
+            <div className="absolute inset-0 bg-black/30" />
+            <div className="relative z-10 px-5 py-4">
+              <div className="text-2xl mb-1">📖</div>
+              <h2 className="text-lg font-semibold leading-snug mb-0.5">Press Here</h2>
+              <p className="text-[12px] opacity-80">Interactive children's book</p>
             </div>
-          ))}
+          </Link>
+
+          {/* Flip Game */}
+          <Link
+            to="/flip-game"
+            className="relative rounded-md overflow-hidden no-underline text-white flex flex-col justify-end min-h-[160px] hover:opacity-90 transition-opacity"
+            style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 70%, #533483 100%)' }}
+          >
+            <div className="absolute inset-0 bg-black/20" />
+            <div className="relative z-10 px-5 py-4">
+              <div className="text-2xl mb-1">🃏</div>
+              <h2 className="text-lg font-semibold leading-snug mb-0.5">Flip Game</h2>
+              <p className="text-[12px] opacity-80">Memory card matching</p>
+            </div>
+          </Link>
         </div>
 
         {/* Maps section */}
