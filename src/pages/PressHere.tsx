@@ -226,10 +226,10 @@ function Page3() {
 }
 
 // ─── Dot-dot collision resolution (elastic, equal mass) ─────────────────────
-function resolveCollisions(dots: PhysDot[], cw: number, ch: number): PhysDot[] {
+function resolveCollisions(dots: PhysDot[], cw: number, ch: number, dotSize = DOT_SIZE): PhysDot[] {
   const result = dots.map(d => ({ ...d }))
   const n = result.length
-  const minDist = DOT_SIZE  // collision when centers are closer than 1 diameter
+  const minDist = dotSize  // collision when centers are closer than 1 diameter
 
   for (let i = 0; i < n; i++) {
     for (let j = i + 1; j < n; j++) {
@@ -1280,9 +1280,168 @@ function WellDone({ onReset, onNextChapter }: { onReset: () => void; onNextChapt
   )
 }
 
+// ─── Chapter 2 Page 2 — rainbow dots burst and roam ──────────────────────────
+const BURST_COLORS = [
+  '#ff2200','#ff6600','#ffaa00','#ffdd00','#aadd00',
+  '#33bb33','#00bbaa','#00aaff','#4466ff','#8833ff',
+  '#cc22ee','#ff22aa','#ff5588','#ff8833',
+]
+const BURST_COUNT  = 28
+const MINI_PX      = 20   // dot diameter in px
+
+function Chapter2Page2() {
+  const active    = useContext(PageActiveCtx)
+  const [phase, setPhase] = useState<'basket' | 'bursting' | 'roaming'>('basket')
+  const dotsRef   = useRef<PhysDot[]>([])
+  const rafRef    = useRef<number | null>(null)
+  const canvasRef = useRef<HTMLDivElement>(null)
+  const dimsRef   = useRef({ cw: 960, ch: 520 })
+  const frameRef  = useRef(0)
+  const [, tick]  = useState(0)
+
+  useLayoutEffect(() => {
+    const el = canvasRef.current
+    if (!el) return
+    const obs = new ResizeObserver(entries => {
+      const { width: cw, height: ch } = entries[0].contentRect
+      if (cw > 0 && ch > 0) dimsRef.current = { cw, ch }
+    })
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [])
+
+  // RAF loop — runs while bursting or roaming and page is active
+  useEffect(() => {
+    if (!active || phase === 'basket') return
+    let alive = true
+    const step = () => {
+      if (!alive) return
+      const { cw, ch } = dimsRef.current
+      const rx = (MINI_PX / 2) / cw * 100
+      const ry = (MINI_PX / 2) / ch * 100
+      const settling = frameRef.current < 40   // first ~650 ms = burst outward
+
+      dotsRef.current = dotsRef.current.map(dot => {
+        let { x, y, vx, vy, friction } = dot
+        if (!settling) {
+          vx += (Math.random() - 0.5) * 0.13
+          vy += (Math.random() - 0.5) * 0.13
+        }
+        vx *= friction; vy *= friction
+        const spd = Math.sqrt(vx * vx + vy * vy)
+        const cap = settling ? 4.0 : 0.75
+        if (spd > cap) { vx = vx / spd * cap; vy = vy / spd * cap }
+        x += vx; y += vy
+        if (x < rx)       { x = rx;       vx =  Math.abs(vx) * BOUNCE }
+        if (x > 100 - rx) { x = 100 - rx; vx = -Math.abs(vx) * BOUNCE }
+        if (y < ry)       { y = ry;       vy =  Math.abs(vy) * BOUNCE }
+        if (y > 100 - ry) { y = 100 - ry; vy = -Math.abs(vy) * BOUNCE }
+        return { ...dot, x, y, vx, vy }
+      })
+
+      dotsRef.current = resolveCollisions(dotsRef.current, cw, ch, MINI_PX)
+
+      frameRef.current++
+      if (frameRef.current === 40) setPhase('roaming')
+
+      tick(n => n + 1)
+      rafRef.current = requestAnimationFrame(step)
+    }
+    rafRef.current = requestAnimationFrame(step)
+    return () => {
+      alive = false
+      if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null }
+    }
+  }, [active, phase])   // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => () => { if (rafRef.current) cancelAnimationFrame(rafRef.current) }, [])
+
+  function handleBasketClick() {
+    if (phase !== 'basket') return
+    const { cw, ch } = dimsRef.current
+    // Basket center: left 50%, bottom 5%, basket total height ≈ 172px
+    const bx = 50
+    const by = 100 - 5 - (172 / ch * 100 / 2)
+    frameRef.current = 0
+    dotsRef.current = Array.from({ length: BURST_COUNT }, (_, i) => {
+      const angle  = (i / BURST_COUNT) * Math.PI * 2 + (Math.random() - 0.5) * 0.5
+      const speed  = 1.6 + Math.random() * 2.4
+      return {
+        id:       `rdot-${i}`,
+        color:    BURST_COLORS[i % BURST_COLORS.length],
+        x:        bx + (Math.random() - 0.5) * 3,
+        y:        by + (Math.random() - 0.5) * 3,
+        vx:       Math.cos(angle) * speed,
+        vy:       Math.sin(angle) * speed - 1.2,   // bias upward
+        friction: 0.93 + Math.random() * 0.05,
+      }
+    })
+    setPhase('bursting')
+  }
+
+  return (
+    <>
+      <div ref={canvasRef} style={canvasStyle}>
+        {/* Rainbow basket — fades out on burst */}
+        {phase !== 'roaming' && (
+          <div
+            onClick={handleBasketClick}
+            style={{
+              position: 'absolute', left: '50%', bottom: '5%',
+              transform: 'translateX(-50%)',
+              display: 'flex', flexDirection: 'column', alignItems: 'center',
+              cursor: phase === 'basket' ? 'pointer' : 'default',
+              opacity: phase === 'bursting' ? 0 : 1,
+              transition: 'opacity 0.3s ease',
+              pointerEvents: phase === 'basket' ? 'auto' : 'none',
+              zIndex: 5,
+            }}
+          >
+            <div style={{
+              margin: '0 auto', width: 120, height: 46,
+              border: '6px solid #ffdd00', borderBottom: 'none',
+              borderRadius: '60px 60px 0 0',
+              background: RAINBOW_BG, backgroundSize: '300% 100%',
+              animation: 'rainbowScroll 1.5s linear infinite',
+              boxShadow: '0 0 22px rgba(255,200,0,0.75)',
+            }} />
+            <div style={{
+              width: 190, height: 120,
+              border: '6px solid #ffdd00', borderRadius: '0 0 28px 28px',
+              background: RAINBOW_BG, backgroundSize: '300% 100%',
+              animation: 'rainbowScroll 1.5s linear infinite',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 0 32px 8px rgba(255,200,0,0.7),inset 0 0 18px rgba(255,255,255,0.25)',
+            }}>
+              <span style={{ fontSize: 44, lineHeight: 1 }}>✨</span>
+            </div>
+          </div>
+        )}
+
+        {/* Bursting / roaming dots */}
+        {phase !== 'basket' && dotsRef.current.map(dot => (
+          <div key={dot.id} style={{
+            position: 'absolute',
+            left: `${dot.x}%`, top: `${dot.y}%`,
+            transform: 'translate(-50%,-50%)',
+            width: MINI_PX, height: MINI_PX, borderRadius: '50%',
+            background: dot.color,
+            boxShadow: `0 0 7px ${dot.color}`,
+            pointerEvents: 'none',
+          }} />
+        ))}
+      </div>
+      <IntroText>
+        {phase === 'basket' ? 'Tap the basket!' : '🌈 Rainbow dots — free at last!'}
+      </IntroText>
+      <SetDone done={phase === 'roaming'} />
+    </>
+  )
+}
+
 // ─── Shell ────────────────────────────────────────────────────────────────────
 const CHAPTER1_PAGES = [Page1, Page2, Page3, Page4, Page56, Page7, Page8, Page9, Page10, Page11]
-const CHAPTER2_PAGES = [Chapter2Page1]
+const CHAPTER2_PAGES = [Chapter2Page1, Chapter2Page2]
 
 export default function PressHere() {
   const [page,      setPage]      = useState(0)
