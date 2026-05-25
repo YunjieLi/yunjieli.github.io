@@ -1078,14 +1078,20 @@ const dotStyle = (color: string, interactive = true): React.CSSProperties => ({
 })
 
 // ─── Chapter 2 Page 1 — merge the baskets ────────────────────────────────────
-type MergePhase = 'idle' | 'merging' | 'merged'
+type MergePhase = 'idle' | 'merging' | 'merged' | 'shining'
+
+const RAINBOW_BG = 'linear-gradient(90deg,#ff0000,#ff9900,#ffff00,#33dd33,#3399ff,#cc33ff,#ff0000)'
 
 function Chapter2Page1() {
   const [phase, setPhase] = useState<MergePhase>('idle')
 
   useLayoutEffect(() => {
     const s = document.createElement('style')
-    s.textContent = '@keyframes basketPop{0%{opacity:0;transform:translateX(-50%) scale(0.5)}60%{transform:translateX(-50%) scale(1.15)}100%{opacity:1;transform:translateX(-50%) scale(1)}}'
+    s.textContent = [
+      '@keyframes basketPop{0%{opacity:0;transform:translateX(-50%) scale(0.5)}60%{transform:translateX(-50%) scale(1.15)}100%{opacity:1;transform:translateX(-50%) scale(1)}}',
+      '@keyframes beamReveal{0%{transform:scaleY(0);opacity:0}15%{opacity:1}65%{transform:scaleY(1);opacity:0.72}100%{transform:scaleY(1);opacity:0}}',
+      '@keyframes rainbowScroll{0%{background-position:0% center}100%{background-position:200% center}}',
+    ].join('')
     document.head.appendChild(s)
     return () => { document.head.removeChild(s) }
   }, [])
@@ -1093,10 +1099,14 @@ function Chapter2Page1() {
   function handleBasketClick() {
     if (phase !== 'idle') return
     setPhase('merging')
-    setTimeout(() => setPhase('merged'), 700)
+    setTimeout(() => {
+      setPhase('merged')
+      setTimeout(() => setPhase('shining'), 680)  // after pop animation completes
+    }, 700)  // after slide animation completes
   }
 
   const colors = [BLUE, YELLOW, RED]
+  const isVisible = phase === 'merged' || phase === 'shining'
 
   return (
     <>
@@ -1112,7 +1122,7 @@ function Chapter2Page1() {
               bottom: '5%',
               transform: 'translateX(-50%)',
               transition: 'left 0.6s cubic-bezier(0.34,1.1,0.64,1)',
-              display: phase === 'merged' ? 'none' : 'flex',
+              display: isVisible ? 'none' : 'flex',
               flexDirection: 'column', alignItems: 'center',
               cursor: phase === 'idle' ? 'pointer' : 'default',
               pointerEvents: phase === 'idle' ? 'auto' : 'none',
@@ -1135,37 +1145,70 @@ function Chapter2Page1() {
           </div>
         ))}
 
-        {/* Single merged big basket */}
-        {phase === 'merged' && (
+        {/* Rainbow beam descending from top */}
+        {phase === 'shining' && (
+          <div style={{
+            position: 'absolute',
+            left: '50%', marginLeft: -110,
+            top: 0, bottom: '16%',
+            width: 220,
+            background: 'linear-gradient(to bottom,rgba(255,0,0,0.5) 0%,rgba(255,165,0,0.45) 16%,rgba(255,255,0,0.4) 32%,rgba(0,200,0,0.35) 48%,rgba(0,100,255,0.35) 64%,rgba(148,0,211,0.3) 82%,rgba(255,50,180,0.18) 100%)',
+            clipPath: 'polygon(38% 0%,62% 0%,95% 100%,5% 100%)',
+            transformOrigin: 'top center',
+            animation: 'beamReveal 1.9s ease-out forwards',
+            pointerEvents: 'none',
+            zIndex: 10,
+          }} />
+        )}
+
+        {/* Merged big basket */}
+        {isVisible && (
           <div style={{
             position: 'absolute', left: '50%', bottom: '5%',
             transform: 'translateX(-50%)',
             display: 'flex', flexDirection: 'column', alignItems: 'center',
-            animation: 'basketPop 0.55s cubic-bezier(0.34,1.1,0.64,1) forwards',
-            zIndex: 3,
+            animation: phase === 'merged' ? 'basketPop 0.55s cubic-bezier(0.34,1.1,0.64,1) forwards' : 'none',
+            zIndex: 11,
           }}>
+            {/* handle */}
             <div style={{
               margin: '0 auto', width: 120, height: 46,
-              border: '6px solid #888', borderBottom: 'none',
+              border: `6px solid ${phase === 'shining' ? '#ffdd00' : '#888'}`,
+              borderBottom: 'none',
               borderRadius: '60px 60px 0 0',
+              background: phase === 'shining' ? RAINBOW_BG : 'transparent',
+              backgroundSize: phase === 'shining' ? '300% 100%' : 'auto',
+              animation: phase === 'shining' ? 'rainbowScroll 1.5s linear infinite' : 'none',
+              boxShadow: phase === 'shining' ? '0 0 22px rgba(255,200,0,0.75)' : 'none',
+              transition: 'box-shadow 0.4s ease',
             }} />
+            {/* body */}
             <div style={{
               width: 190, height: 120,
-              border: '6px solid #888',
+              border: `6px solid ${phase === 'shining' ? '#ffdd00' : '#888'}`,
               borderRadius: '0 0 28px 28px',
-              background: '#88888818',
+              background: phase === 'shining' ? RAINBOW_BG : '#88888818',
+              backgroundSize: phase === 'shining' ? '300% 100%' : 'auto',
+              animation: phase === 'shining' ? 'rainbowScroll 1.5s linear infinite' : 'none',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               gap: 10,
+              boxShadow: phase === 'shining' ? '0 0 32px 8px rgba(255,200,0,0.7),inset 0 0 18px rgba(255,255,255,0.25)' : 'none',
+              transition: 'box-shadow 0.4s ease',
             }}>
-              {[YELLOW, BLUE, RED].map(c => (
+              {phase !== 'shining' && [YELLOW, BLUE, RED].map(c => (
                 <div key={c} style={{ width: 30, height: 30, borderRadius: '50%', background: c }} />
               ))}
+              {phase === 'shining' && <span style={{ fontSize: 44, lineHeight: 1 }}>✨</span>}
             </div>
           </div>
         )}
       </div>
-      <IntroText>{phase === 'merged' ? 'All together now! 🎉' : 'Tap any basket to combine them!'}</IntroText>
-      <SetDone done={phase === 'merged'} />
+      <IntroText>
+        {phase === 'shining' ? '✨ Rainbow power! ✨'
+          : phase === 'merged' ? 'All together now! 🎉'
+          : 'Tap any basket to combine them!'}
+      </IntroText>
+      <SetDone done={phase === 'shining'} />
     </>
   )
 }
