@@ -55,6 +55,51 @@ type Handoff = {
 const HandoffCtx = createContext<React.MutableRefObject<Handoff>>(
   { current: { page4Dots: null, page5Dots: null, page6Dots: null, ch2p2Dots: null, ch2LatestDots: null } }
 )
+type ShapeDef = { vertices: [number,number][]; open: boolean; emoji: string; label: string }
+const Ch2ShapesCtx = createContext<ShapeDef[]>([])
+
+// ─── Sound effects (Web Audio API — no files needed) ─────────────────────────
+function playPageComplete() {
+  try {
+    const ctx  = new AudioContext()
+    // Quick ascending chime: C5 → E5 → G5
+    const notes: [number, number][] = [[523.25, 0], [659.25, 0.13], [783.99, 0.26]]
+    notes.forEach(([freq, delay]) => {
+      const osc = ctx.createOscillator(); const gain = ctx.createGain()
+      osc.type = 'triangle'; osc.frequency.value = freq
+      osc.connect(gain); gain.connect(ctx.destination)
+      const t = ctx.currentTime + delay
+      gain.gain.setValueAtTime(0, t)
+      gain.gain.linearRampToValueAtTime(0.35, t + 0.015)
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.40)
+      osc.start(t); osc.stop(t + 0.42)
+    })
+  } catch { /* blocked */ }
+}
+
+function playChapterComplete() {
+  try {
+    const ctx = new AudioContext()
+    // Triumphant fanfare: G4 → C5 → E5 → G5 → C6 (held)
+    const notes: [number, number, number][] = [
+      [392.00, 0.00, 0.15],
+      [523.25, 0.15, 0.15],
+      [659.25, 0.30, 0.15],
+      [783.99, 0.45, 0.18],
+      [1046.5, 0.62, 0.80],
+    ]
+    notes.forEach(([freq, delay, dur]) => {
+      const osc = ctx.createOscillator(); const gain = ctx.createGain()
+      osc.type = 'triangle'; osc.frequency.value = freq
+      osc.connect(gain); gain.connect(ctx.destination)
+      const t = ctx.currentTime + delay
+      gain.gain.setValueAtTime(0, t)
+      gain.gain.linearRampToValueAtTime(0.32, t + 0.018)
+      gain.gain.exponentialRampToValueAtTime(0.001, t + dur)
+      osc.start(t); osc.stop(t + dur + 0.05)
+    })
+  } catch { /* blocked */ }
+}
 
 // ─── Context consumers ────────────────────────────────────────────────────────
 function IntroText({ children }: { children: React.ReactNode }) {
@@ -65,10 +110,15 @@ function IntroText({ children }: { children: React.ReactNode }) {
 }
 
 function SetDone({ done }: { done: boolean }) {
-  const active  = useContext(PageActiveCtx)
-  const setDone = useContext(DoneCtx)
+  const active     = useContext(PageActiveCtx)
+  const setDone    = useContext(DoneCtx)
+  const prevRef    = useRef(false)
   useLayoutEffect(() => { if (active) setDone(done) })
-  return null
+  useEffect(() => {
+    if (active && done && !prevRef.current) playPageComplete()
+    prevRef.current = done
+  }, [active, done])
+  return (active && done) ? <ClapCelebration /> : null
 }
 
 // ─── Dot component (no entrance animation) ───────────────────────────────────
@@ -214,9 +264,7 @@ function Page23() {
           )
         })}
       </div>
-      <IntroText>
-        {allRevealed ? 'Press each column to grow it!' : 'Press each dot to reveal its color!'}
-      </IntroText>
+      <IntroText>Press the dots!</IntroText>
       <SetDone done={done} />
     </>
   )
@@ -749,13 +797,13 @@ function Page8() {
 function ClapCelebration() {
   useLayoutEffect(() => {
     const s = document.createElement('style')
-    s.textContent = '@keyframes clapPop{0%{opacity:0;transform:translateX(-50%) scale(0.3)}25%{opacity:1;transform:translateX(-50%) scale(1.4)}65%{opacity:1;transform:translateX(-50%) scale(1)}100%{opacity:0;transform:translateX(-50%) scale(0.8)}}'
+    s.textContent = '@keyframes clapPop{0%{opacity:0;transform:translate(-50%,-50%) scale(0.3)}25%{opacity:1;transform:translate(-50%,-50%) scale(1.4)}65%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(0.8)}}'
     document.head.appendChild(s)
     return () => { document.head.removeChild(s) }
   }, [])
   return (
     <div style={{
-      position: 'absolute', left: '50%', bottom: 'calc(5% + 140px)',
+      position: 'absolute', left: '50%', top: '50%',
       fontSize: 90, lineHeight: 1,
       animation: 'clapPop 1.4s ease forwards',
       pointerEvents: 'none', zIndex: 30,
@@ -871,7 +919,6 @@ function Page9() {
           </div>
         </div>
 
-        {done && <ClapCelebration />}
       </div>
       <IntroText>{intro}</IntroText>
       <SetDone done={done} />
@@ -1077,7 +1124,6 @@ function BrownCatch({ targetColor, maxSpd, prevColors, previewColor }: {
           )
         })}
 
-        {done && <ClapCelebration />}
       </div>
       <IntroText>{intro}</IntroText>
       <SetDone done={done} />
@@ -1260,15 +1306,6 @@ function Chapter2Page1() {
   // Small baskets only shown before the merge completes
   const showSmallBaskets = phase === 'idle' || phase === 'merging'
 
-  const label =
-    phase === 'idle'     ? 'Get ready…' :
-    phase === 'merging'  ? 'Here they come…' :
-    phase === 'merged'   ? 'All together now! 🎉' :
-    phase === 'shining'  ? '✨ Rainbow power! ✨' :
-    phase === 'lit'      ? '✨ Rainbow power! ✨' :
-    phase === 'rainbow'  ? 'Tap the rainbow basket! 🌈' :
-    phase === 'bursting' ? '🎆 Up, up, and away!' :
-                           '🌈 Rainbow dots — free at last!'
 
   return (
     <>
@@ -1374,14 +1411,14 @@ function Chapter2Page1() {
         ))}
 
       </div>
-      <IntroText>{label}</IntroText>
+      <IntroText>Watch the magic happen! 🌈</IntroText>
       <SetDone done={phase === 'roaming'} />
     </>
   )
 }
 
-// ─── Great Job screen (Ch2 completion) ───────────────────────────────────────
-function GreatJob({ onReset }: { onReset: () => void }) {
+// ─── Great Job screen (Ch2 / Ch3 completion) ─────────────────────────────────
+function GreatJob({ onReset, onNextChapter }: { onReset: () => void; onNextChapter?: () => void }) {
   useLayoutEffect(() => {
     const s = document.createElement('style')
     s.textContent = '@keyframes shineText2{0%{background-position:200% center}100%{background-position:0% center}}'
@@ -1397,7 +1434,7 @@ function GreatJob({ onReset }: { onReset: () => void }) {
       userSelect: 'none',
     }}>
       <img
-        src="/src/games/press-here/great-job.gif"
+        src="/src/games/press-here/completion-ch2.gif"
         alt="Great job!"
         style={{ width: 320, height: 320, borderRadius: 28, objectFit: 'cover' }}
       />
@@ -1410,6 +1447,77 @@ function GreatJob({ onReset }: { onReset: () => void }) {
         animation: 'shineText2 2.8s linear infinite',
       }}>
         Great job!
+      </div>
+      <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+        <button
+          onClick={onReset}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            padding: '12px 30px', borderRadius: 40,
+            background: 'transparent', border: '2px solid #ccc',
+            fontSize: 17, fontWeight: 700, color: '#888',
+            fontFamily: 'inherit', cursor: 'pointer',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = '#aaa'; e.currentTarget.style.color = '#555' }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = '#ccc'; e.currentTarget.style.color = '#888' }}
+          onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.96)')}
+          onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}
+        >
+          <RotateCcw size={16} /> Play again
+        </button>
+        {onNextChapter && (
+          <button
+            onClick={onNextChapter}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              padding: '12px 30px', borderRadius: 40,
+              background: '#FDD302', border: 'none',
+              fontSize: 17, fontWeight: 800, color: '#333',
+              fontFamily: 'inherit', cursor: 'pointer',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = '#ffc700')}
+            onMouseLeave={e => (e.currentTarget.style.background = '#FDD302')}
+            onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.96)')}
+            onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}
+          >
+            Next Chapter <ChevronRight size={18} strokeWidth={3} />
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ─── Woohoo screen (ch3) ─────────────────────────────────────────────────────
+function WoohooScreen({ onReset }: { onReset: () => void }) {
+  useLayoutEffect(() => {
+    const s = document.createElement('style')
+    s.textContent = '@keyframes shineText3{0%{background-position:200% center}100%{background-position:0% center}}'
+    document.head.appendChild(s)
+    return () => { document.head.removeChild(s) }
+  }, [])
+  return (
+    <div style={{
+      height: '100dvh', display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center', gap: 36,
+      background: '#fff',
+      fontFamily: '"Nunito Variable", Nunito, sans-serif',
+      userSelect: 'none',
+    }}>
+      <img
+        src="/src/games/press-here/completion-ch3.gif"
+        alt="Woohoo!"
+        style={{ width: 320, height: 320, borderRadius: 28, objectFit: 'cover' }}
+      />
+      <div style={{
+        fontSize: 'clamp(56px,8vw,96px)', fontWeight: 900, letterSpacing: -2,
+        background: 'linear-gradient(90deg, #5CCBF8 0%, #FDD302 30%, #F63664 60%, #5CCBF8 100%)',
+        backgroundSize: '300% auto',
+        WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+        backgroundClip: 'text',
+        animation: 'shineText3 2.8s linear infinite',
+      }}>
+        Woohoo!!!
       </div>
       <button
         onClick={onReset}
@@ -1448,7 +1556,7 @@ function WellDone({ onReset, onNextChapter }: { onReset: () => void; onNextChapt
       userSelect: 'none',
     }}>
       <img
-        src="/src/games/press-here/well-done.gif"
+        src="/src/games/press-here/completion-ch1.gif"
         alt="Well done!"
         style={{ maxWidth: 380, maxHeight: 340, width: '100%', borderRadius: 28, objectFit: 'contain', display: 'block' }}
       />
@@ -1517,10 +1625,11 @@ function Chapter2Page3() {
   const initedRef  = useRef(false)
   const [, tick]   = useState(0)
 
-  const centerRef      = useRef({ x: 50, y: 50 })  // % coords of circle center
-  const radiusPxRef    = useRef(MAX_CIRCLE_R)
-  const pressTimeRef   = useRef(0)
+  const centerRef       = useRef({ x: 50, y: 50 })  // % coords of circle center
+  const radiusPxRef     = useRef(MAX_CIRCLE_R)
+  const pressTimeRef    = useRef(0)
   const explodeFrameRef = useRef(0)
+  const hasCompletedRef = useRef(false)  // true once first explosion finishes
 
   useLayoutEffect(() => {
     const el = canvasRef.current
@@ -1650,6 +1759,7 @@ function Chapter2Page3() {
           // Snapshot final positions for static page 3
           handoff.current.ch2LatestDots = dotsRef.current.map(d => ({ id: d.id, color: d.color, x: d.x, y: d.y, vx: d.vx, vy: d.vy }))
           explodeFrameRef.current = 0
+          hasCompletedRef.current = true
           phaseRef.current = 'roaming'
           setPhase('roaming')
         }
@@ -1718,11 +1828,6 @@ function Chapter2Page3() {
     setPhase('exploding')
   }
 
-  const label =
-    phase === 'roaming'   ? 'Press and hold — make a circle!' :
-    phase === 'forming'   ? '⭕ Hold longer for a smaller circle…' :
-                            '💥 Boom!'
-
   return (
     <>
       <div
@@ -1745,8 +1850,8 @@ function Chapter2Page3() {
           }} />
         ))}
       </div>
-      <IntroText>{label}</IntroText>
-      <SetDone done={phase === 'roaming'} />
+      <IntroText>Press and hold to make a circle!</IntroText>
+      <SetDone done={phase === 'roaming' && hasCompletedRef.current} />
     </>
   )
 }
@@ -1783,55 +1888,77 @@ function isNeighbor(a: number, b: number, n: number, open = false) {
 }
 function edgeKey(a: number, b: number) { return `${Math.min(a, b)}-${Math.max(a, b)}` }
 
-// ── Raw SVG vertices in the 720×720 coordinate space ─────────────────────────
-// red.svg — star (closed, 10 verts)
-const SVG_RED: [number,number][] = [
-  [293.5,298.5],[360,91],[428,298.5],[642.5,298.5],[468.5,424.5],
-  [533.5,629.5],[360,502.5],[186,629.5],[252,424.5],[78,298.5],
-]
-// orange.svg — gem / shield (closed, 8 verts)
-const SVG_ORANGE: [number,number][] = [
-  [502.093,130],[359.273,234.949],[215.777,130],[80,205.187],
-  [80,393.678],[359.273,590],[639,393.678],[639,205.187],
-]
-// yellow.svg — comet / lightning (closed, 11 verts)
-const SVG_YELLOW: [number,number][] = [
-  [410.929,325.658],[501.745,196.832],[538.546,106],[576.535,106],
-  [553.386,169.523],[589,245.513],[501.745,451.516],[309.428,575],
-  [72,526.319],[72,496.042],[259.568,451.516],
-]
-// green.svg — Y / tree (closed, 11 verts)
-const SVG_GREEN: [number,number][] = [
-  [344.09,474.299],[344.09,612],[378.238,612],[378.238,474.299],
-  [569.153,377.053],[639,160],[444.981,251.022],[360.388,429.955],
-  [273.467,251.022],[81,160],[149.295,377.053],
-]
-// blue.svg — spiral (OPEN, 12 verts)
-const SVG_BLUE: [number,number][] = [
-  [405.504,326.324],[351.837,372.934],[413.663,441.184],[493.285,385.923],
-  [413.592,263.654],[278.33,334.955],[307.05,490.673],[505.733,527.341],
-  [617.202,301.83],[463.275,121.986],[146.546,195.544],[82.644,543.242],
-]
-// indigo.svg — staircase (OPEN, 10 verts)
-const SVG_INDIGO: [number,number][] = [
-  [64,596],[181.383,596],[181.383,478.846],[300.461,478.846],[300.461,360],
-  [418.691,360],[418.691,240.731],[536.922,240.731],[536.922,124],[656,124],
-]
-// purple.svg — arch / goblet (closed, 11 verts)
-const SVG_PURPLE: [number,number][] = [
-  [254.664,182.986],[360.684,71],[467.388,182.986],[467.388,362.573],
-  [531,435.637],[531,648],[477.648,584.496],[254.664,584.496],
-  [189,648],[189,435.637],[254.664,362.573],
+// ── All available shapes (720×720 space) — pool for Ch2 dot-connection pages ──
+const SHAPE_DEFS: ShapeDef[] = [
+  // 01 — umbrella (handle hook → up → cap arc, open, 9 verts; start at tip of handle)
+  { vertices: [[280.938,580.237],[280.938,631],[360.285,631],[360.285,312.77],[80,312.77],[194.169,172.459],[360.285,112],[527.543,172.459],[640,312.77]],
+    open:true, emoji:'☂️', label:'Connect the umbrella!' },
+  // 02 — irregular shield (closed, 7 verts)
+  { vertices: [[387.264,430.841],[387.264,122],[603,122],[603,628],[98.576,628],[78,571.223],[135.987,470.772]],
+    open:false, emoji:'🔷', label:'Connect it!' },
+  // 03 — twisted loop (closed, 10 verts)
+  { vertices: [[563.163,354.904],[593,416.786],[494.483,557.429],[494.483,630],[258.042,630],[250.724,554.616],[128,276.707],[290.694,122],[494.483,181.632],[465.209,455.604]],
+    open:false, emoji:'💫', label:'Connect it!' },
+  // 04 — double arrow (closed, 11 verts)
+  { vertices: [[143.695,291.855],[361.487,58],[577.791,291.855],[433.588,291.855],[638,520.496],[406.413,520.496],[406.413,662],[317.304,662],[317.304,520.496],[82,520.496],[290.128,291.855]],
+    open:false, emoji:'⬆️', label:'Connect it!' },
+  // 05 — trident (closed, 7 verts)
+  { vertices: [[257.155,398.23],[359.729,190],[460.679,398.23],[625,222.536],[625,530],[95,530],[95,222.536]],
+    open:false, emoji:'🔱', label:'Connect it!' },
+  // 06 — house (closed, 11 verts)
+  { vertices: [[213.192,371.258],[213.192,597],[298.436,597],[298.436,443.688],[421.564,443.688],[421.564,597],[507.4,597],[507.4,371.258],[640,371.258],[360.592,123],[80,371.258]],
+    open:false, emoji:'🏠', label:'Connect the house!' },
+  // 07 — frame (closed, 11 verts)
+  { vertices: [[188.868,153],[59,304.901],[90.7048,359.195],[59,414.709],[188.868,566],[401.046,566],[516.28,414.709],[662,503.775],[662,214.004],[516.28,304.901],[401.046,153]],
+    open:false, emoji:'🎮', label:'Connect it!' },
+  // 08 — bolt (closed, 11 verts)
+  { vertices: [[569.495,129],[673,182.767],[615.276,218.612],[615.276,342.078],[527.695,429.698],[258.981,487.448],[83.819,591],[298.79,342.078],[46,129],[258.981,129],[434.143,218.612]],
+    open:false, emoji:'⚡', label:'Connect it!' },
+  // 09 — zigzag scissors (closed, 13 verts)
+  { vertices: [[489.119,138.37],[573.863,125.784],[560.858,210.109],[289.721,466.982],[371.049,548.309],[307.389,574.212],[244.94,511.763],[182.444,588.523],[110.705,516.784],[188.724,455.546],[124.177,391],[151.338,328.599],[233.505,410.765]],
+    open:false, emoji:'✂️', label:'Connect it!' },
+  // 10 — trophy / goblet  (closed, 11 verts)
+  { vertices: [[254.664,182.986],[360.684,71],[467.388,182.986],[467.388,362.573],[531,435.637],[531,648],[477.648,584.496],[254.664,584.496],[189,648],[189,435.637],[254.664,362.573]],
+    open:false, emoji:'🏆', label:'Connect the arch!' },
+  // 11 — spiral  (OPEN, 12 verts)
+  { vertices: [[405.504,326.324],[351.837,372.934],[413.663,441.184],[493.285,385.923],[413.592,263.654],[278.33,334.955],[307.05,490.673],[505.733,527.341],[617.202,301.83],[463.275,121.986],[146.546,195.544],[82.644,543.242]],
+    open:true, emoji:'🌊', label:'Connect the wave!' },
+  // 12 — staircase  (OPEN, 10 verts)
+  { vertices: [[64,596],[181.383,596],[181.383,478.846],[300.461,478.846],[300.461,360],[418.691,360],[418.691,240.731],[536.922,240.731],[536.922,124],[656,124]],
+    open:true, emoji:'📶', label:'Connect the stairs!' },
+  // 13 — tree / Y  (closed, 11 verts)
+  { vertices: [[344.09,474.299],[344.09,612],[378.238,612],[378.238,474.299],[569.153,377.053],[639,160],[444.981,251.022],[360.388,429.955],[273.467,251.022],[81,160],[149.295,377.053]],
+    open:false, emoji:'🌿', label:'Connect the tree!' },
+  // 14 — comet  (closed, 11 verts)
+  { vertices: [[410.929,325.658],[501.745,196.832],[538.546,106],[576.535,106],[553.386,169.523],[589,245.513],[501.745,451.516],[309.428,575],[72,526.319],[72,496.042],[259.568,451.516]],
+    open:false, emoji:'☄️', label:'Connect the comet!' },
+  // 15 — gem / shield  (closed, 8 verts)
+  { vertices: [[502.093,130],[359.273,234.949],[215.777,130],[80,205.187],[80,393.678],[359.273,590],[639,393.678],[639,205.187]],
+    open:false, emoji:'💎', label:'Connect the gem!' },
+  // 16 — star  (closed, 10 verts)
+  { vertices: [[293.5,298.5],[360,91],[428,298.5],[642.5,298.5],[468.5,424.5],[533.5,629.5],[360,502.5],[186,629.5],[252,424.5],[78,298.5]],
+    open:false, emoji:'⭐', label:'Connect the star!' },
 ]
 
-// ── buildVertices helpers — map raw SVG coords to canvas % ────────────────────
-function buildRedVertices    (cw: number, ch: number) { return svgToCanvas(SVG_RED,    cw, ch) }
-function buildOrangeVertices (cw: number, ch: number) { return svgToCanvas(SVG_ORANGE, cw, ch) }
-function buildYellowVertices (cw: number, ch: number) { return svgToCanvas(SVG_YELLOW, cw, ch) }
-function buildGreenVertices  (cw: number, ch: number) { return svgToCanvas(SVG_GREEN,  cw, ch) }
-function buildBlueVertices   (cw: number, ch: number) { return svgToCanvas(SVG_BLUE,   cw, ch) }
-function buildIndigoVertices (cw: number, ch: number) { return svgToCanvas(SVG_INDIGO, cw, ch) }
-function buildPurpleVertices (cw: number, ch: number) { return svgToCanvas(SVG_PURPLE, cw, ch) }
+// Tracks which SHAPE_DEFS indices have been used this browser session
+const _usedShapeIndices = new Set<number>()
+
+function pickRandomShapes(n: number): ShapeDef[] {
+  // Build pool excluding already-used shapes; reset if not enough remain
+  let pool = SHAPE_DEFS.map((s, i) => ({ s, i })).filter(({ i }) => !_usedShapeIndices.has(i))
+  if (pool.length < n) {
+    _usedShapeIndices.clear()
+    pool = SHAPE_DEFS.map((s, i) => ({ s, i }))
+  }
+  const result: ShapeDef[] = []
+  for (let k = 0; k < n; k++) {
+    const idx = Math.floor(Math.random() * pool.length)
+    const { s, i } = pool.splice(idx, 1)[0]
+    result.push(s)
+    _usedShapeIndices.add(i)
+  }
+  return result
+}
 
 // ── Shape color palette matching SVG stroke colors ────────────────────────────
 const SHAPE_COLORS = {
@@ -2070,7 +2197,7 @@ function Chapter2DotPage({ shapeColor, buildVertices, emoji, connectLabel, open 
     const dotVtx = dot.vertexIdx
 
     if (pathHead === null)     { setPathHead(dot.id); return }
-    if (pathHead === dot.id)   { setPathHead(null);   return }
+    if (pathHead === dot.id)   { return }  // clicking current dot does nothing
 
     const headDot = dotsRef.current.find(d => d.id === pathHead)
     if (!headDot || headDot.vertexIdx === undefined) { setPathHead(dot.id); return }
@@ -2198,47 +2325,1057 @@ function Chapter2DotPage({ shapeColor, buildVertices, emoji, connectLabel, open 
         })}
 
       </div>
-      <IntroText>
-        {complete
-          ? emoji
-          : phase === 'interactive'
-          ? `${connectLabel} (${drawnEdges.size}/${nEdges})`
-          : '✨'}
-      </IntroText>
+      <IntroText>{connectLabel}</IntroText>
       <SetDone done={complete} />
     </>
   )
 }
 
-// ── Per-shape wrapper components (must be module-level for stable identity) ───
-function Ch2StarPage()   { return <Chapter2DotPage shapeColor={SHAPE_COLORS.red}    buildVertices={buildRedVertices}    emoji="⭐" connectLabel="Connect the star!"      /> }
-function Ch2GemPage()    { return <Chapter2DotPage shapeColor={SHAPE_COLORS.orange} buildVertices={buildOrangeVertices} emoji="💎" connectLabel="Connect the gem!"       /> }
-function Ch2CometPage()  { return <Chapter2DotPage shapeColor={SHAPE_COLORS.yellow} buildVertices={buildYellowVertices} emoji="☄️" connectLabel="Connect the comet!"     /> }
-function Ch2TreePage()   { return <Chapter2DotPage shapeColor={SHAPE_COLORS.green}  buildVertices={buildGreenVertices}  emoji="🌿" connectLabel="Connect the tree!"      /> }
-function Ch2WavePage()   { return <Chapter2DotPage shapeColor={SHAPE_COLORS.blue}   buildVertices={buildBlueVertices}   emoji="🌊" connectLabel="Connect the wave!"   open /> }
-function Ch2StairPage()  { return <Chapter2DotPage shapeColor={SHAPE_COLORS.indigo} buildVertices={buildIndigoVertices} emoji="📶" connectLabel="Connect the stairs!" open /> }
-function Ch2ArchPage()   { return <Chapter2DotPage shapeColor={SHAPE_COLORS.purple} buildVertices={buildPurpleVertices} emoji="🏆" connectLabel="Connect the arch!"      /> }
+// ── Per-slot wrapper components: read shape from context by slot index ────────
+// Must be module-level (stable identity) so React doesn't unmount/remount on re-render.
+function makeCh2DotPage(slotIdx: number): React.FC {
+  return function Ch2DotSlot() {
+    const shapes = useContext(Ch2ShapesCtx)
+    const shape  = shapes[slotIdx]
+    if (!shape) return null
+    return (
+      <Chapter2DotPage
+        shapeColor={COLOR_PALETTE[slotIdx]}
+        buildVertices={(cw, ch) => svgToCanvas(shape.vertices, cw, ch)}
+        emoji={shape.emoji}
+        connectLabel={shape.label}
+        open={shape.open}
+      />
+    )
+  }
+}
+const Ch2DotSlots = Array.from({ length: 7 }, (_, i) => makeCh2DotPage(i))
+
+// ─── Shared Ch3 replay button ────────────────────────────────────────────────
+function Ch3ReplayBtn({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      onClick={e => { e.stopPropagation(); onClick() }}
+      title="Restart"
+      style={{
+        position: 'absolute', top: 12, left: 12, zIndex: 4,
+        width: 34, height: 34, borderRadius: '50%',
+        border: '1.5px solid #d0ccc5', background: '#fff',
+        cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+      }}
+    >
+      <RotateCcw size={15} strokeWidth={2.2} color="#888" />
+    </button>
+  )
+}
+
+// ─── Chapter 3 Page 1 — Dot Runner ───────────────────────────────────────────
+
+/** Squared distance from point (px,py) to segment (ax,ay)→(bx,by). */
+function ptSegSq(px: number, py: number, ax: number, ay: number, bx: number, by: number): number {
+  const dx = bx - ax, dy = by - ay
+  const lenSq = dx * dx + dy * dy
+  if (lenSq === 0) return (px - ax) ** 2 + (py - ay) ** 2
+  const t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / lenSq))
+  return (px - (ax + t * dx)) ** 2 + (py - (ay + t * dy)) ** 2
+}
+
+type RunObs = { id: number; xPct: number; wPx: number; hPx: number; passed?: boolean }
+
+const CH3_DOT_PX   = 44
+const CH3_GROUND   = 78      // % from top of canvas
+const CH3_JUMP_V   = 1.8     // %/frame initial upward velocity (soft arc)
+const CH3_GRAV     = 0.09    // %/frame² gravity (gentle)
+const CH3_SPD0     = 0.40    // %/frame initial obstacle speed
+const CH3_ACCEL    = 0.00005
+const CH3_MAX_SPD  = 0.90
+const CH3_WIN      = 1       // mountains to jump — level 1
+const CH3_WIN2     = 10      // mountains to jump — level 2
+const CH3_WIN3     = 15      // mountains to jump — level 3 (hard)
+const CH3_PX       = 50      // player x position (% from left — horizontal centre)
+const CH3_OBS_W    = 60      // all obstacles same width px
+const CH3_OBS_H    = 80      // all obstacles same height px
+
+function Ch3Page1({ winTarget = CH3_WIN, variant = 'normal' }: { winTarget?: number; variant?: 'normal' | 'hard' } = {}) {
+  const active    = useContext(PageActiveCtx)
+  const canvasRef = useRef<HTMLDivElement>(null)
+  const dimsRef   = useRef({ cw: 960, ch: 520 })
+  const rafRef    = useRef<number | null>(null)
+  const [, tick]  = useState(0)
+
+  const yRef        = useRef(CH3_GROUND)   // player BOTTOM edge y in % (starts on ground)
+  const vyRef       = useRef(0)            // velocity %/frame (positive = down)
+  const obsRef      = useRef<RunObs[]>([])
+  const spdRef      = useRef(CH3_SPD0)
+  const distRef     = useRef(0)
+  const runRef      = useRef(false)
+  const deadRef     = useRef(false)
+  const wonRef      = useRef(false)
+  const nextSpRef   = useRef(150)          // dist units until first spawn
+  const obsIdRef    = useRef(0)
+  const jumpedRef   = useRef(0)            // mountains confirmed landed-after (on ground)
+  const pendingRef  = useRef(0)            // mountains passed mid-air, not yet confirmed
+
+  useLayoutEffect(() => {
+    // Sun spin keyframe
+    const s = document.createElement('style')
+    s.textContent = '@keyframes ch3SunSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}'
+    document.head.appendChild(s)
+    return () => { document.head.removeChild(s) }
+  }, [])
+
+  useLayoutEffect(() => {
+    const el = canvasRef.current; if (!el) return
+    const ro = new ResizeObserver(entries => {
+      const { width: cw, height: ch } = entries[0].contentRect
+      if (cw > 0 && ch > 0) dimsRef.current = { cw, ch }
+    })
+    ro.observe(el); return () => ro.disconnect()
+  }, [])
+
+  useEffect(() => {
+    if (!active) {
+      if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null }
+      return
+    }
+    let alive = true
+    const step = () => {
+      if (!alive) return
+
+      if (runRef.current && !wonRef.current && !deadRef.current) {
+        const { cw, ch } = dimsRef.current
+        const gndPx = CH3_GROUND / 100 * ch
+
+        // Gravity
+        vyRef.current = Math.min(vyRef.current + CH3_GRAV, 5)
+        yRef.current += vyRef.current
+        if (yRef.current >= CH3_GROUND) {
+          yRef.current = CH3_GROUND; vyRef.current = 0
+          // Flush mountains passed mid-air as confirmed jumps on landing
+          if (pendingRef.current > 0) {
+            jumpedRef.current += pendingRef.current
+            pendingRef.current = 0
+          }
+        }
+
+        // Accelerate + distance (hard mode: gently faster accel)
+        spdRef.current  = Math.min(spdRef.current + (variant === 'hard' ? CH3_ACCEL * 1.4 : CH3_ACCEL), CH3_MAX_SPD)
+        distRef.current += spdRef.current
+
+        // Move obstacles; o.xPct is the CENTRE x (SVG uses translate(-50%,-100%))
+        for (const o of obsRef.current) {
+          o.xPct -= spdRef.current
+          // Mountain passed dot centre — stage it as pending until dot lands
+          if (!o.passed && o.xPct < CH3_PX) {
+            o.passed = true
+            pendingRef.current++
+          }
+        }
+        // Despawn when visual right edge (centre + halfW) scrolls off the left
+        obsRef.current = obsRef.current.filter(o => o.xPct + o.wPx / cw * 50 > -2)
+
+        // Spawn (hard mode: gap shrinks as more mountains are jumped)
+        if (distRef.current >= nextSpRef.current) {
+          obsRef.current.push({
+            id: ++obsIdRef.current, xPct: 102, wPx: CH3_OBS_W, hPx: CH3_OBS_H,
+          })
+          if (variant === 'hard') {
+            // Base gap shrinks as mountains are cleared; ±30 random jitter stays constant
+            const baseGap = Math.max(50, 110 - jumpedRef.current * 6)
+            nextSpRef.current = distRef.current + baseGap + Math.random() * 30
+          } else {
+            nextSpRef.current = distRef.current + 110 + Math.random() * 160
+          }
+        }
+
+        // Circle vs. mountain-sides collision (accurate triangle hitbox)
+        // o.xPct is the centre x of the mountain (matches the SVG translate(-50%,-100%))
+        const dotX = CH3_PX / 100 * cw
+        const dotY = yRef.current / 100 * ch - CH3_DOT_PX / 2  // dot centre Y in px
+        const r2   = (CH3_DOT_PX / 2 - 1) ** 2                 // tight circle radius²
+        for (const o of obsRef.current) {
+          const cx    = o.xPct / 100 * cw   // mountain centre X in px
+          const halfW = o.wPx / 2
+          const peakY = gndPx - o.hPx
+          // Left slope:  (cx-halfW, gndPx) → (cx, peakY)
+          // Right slope: (cx, peakY)        → (cx+halfW, gndPx)
+          if (
+            ptSegSq(dotX, dotY, cx - halfW, gndPx, cx,         peakY) < r2 ||
+            ptSegSq(dotX, dotY, cx,         peakY, cx + halfW, gndPx) < r2
+          ) {
+            deadRef.current = true; runRef.current = false; break
+          }
+        }
+
+        if (jumpedRef.current >= winTarget) {
+          wonRef.current = true; runRef.current = false
+        }
+      }
+
+      tick(n => n + 1)
+      rafRef.current = requestAnimationFrame(step)
+    }
+    rafRef.current = requestAnimationFrame(step)
+    return () => { alive = false; if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null } }
+  }, [active])  // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!active) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); handleAction() }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [active])  // eslint-disable-line react-hooks/exhaustive-deps
+
+  function handleAction() {
+    if (wonRef.current) return
+    if (deadRef.current) { handleRestart(); return }
+    runRef.current = true
+    if (yRef.current >= CH3_GROUND - 0.3) vyRef.current = -CH3_JUMP_V
+  }
+
+  function handleRestart() {
+    yRef.current = CH3_GROUND; vyRef.current = 0
+    obsRef.current = []; spdRef.current = variant === 'hard' ? CH3_SPD0 * 1.05 : CH3_SPD0
+    distRef.current = 0; nextSpRef.current = 150; jumpedRef.current = 0; pendingRef.current = 0
+    deadRef.current = false; wonRef.current = false; runRef.current = false
+    tick(n => n + 1)
+  }
+
+  const won  = wonRef.current
+  const dead = deadRef.current
+  const run  = runRef.current
+
+  return (
+    <>
+      <div
+        ref={canvasRef}
+        onClick={won ? undefined : handleAction}
+        style={{ ...canvasStyle, cursor: won ? 'default' : 'pointer', overflow: 'hidden' }}
+      >
+        {/* Sun — fixed in sky, slowly spinning */}
+        <img
+          src="/src/games/press-here/sun.svg"
+          draggable={false}
+          style={{
+            position: 'absolute', right: '11%', top: '8%',
+            width: 86, height: 86, pointerEvents: 'none',
+            animation: run ? 'ch3SunSpin 20s linear infinite' : 'none',
+          }}
+        />
+
+        {/* Ground line */}
+        <div style={{
+          position: 'absolute', top: `${CH3_GROUND}%`,
+          left: 0, right: 0, height: 1.5, background: '#1a1a1a', pointerEvents: 'none',
+        }} />
+
+        {/* Player dot — bottom edge sits on ground (transform -100% aligns bottom to top%) */}
+        <div style={{
+          position: 'absolute',
+          left: `${CH3_PX}%`, top: `${yRef.current}%`,
+          width: CH3_DOT_PX, height: CH3_DOT_PX, borderRadius: '50%',
+          background: RED, transform: 'translate(-50%, -100%)',
+          pointerEvents: 'none',
+        }} />
+
+        {/* Obstacles — pointed mountain; white rect breaks the ground line beneath */}
+        {obsRef.current.map(o => (
+          <svg
+            key={o.id}
+            style={{
+              position: 'absolute',
+              left: `${o.xPct}%`, top: `${CH3_GROUND}%`,
+              transform: 'translate(-50%, -100%)',
+              overflow: 'visible', pointerEvents: 'none',
+            }}
+            width={o.wPx} height={o.hPx}
+            viewBox={`0 0 ${o.wPx} ${o.hPx}`}
+          >
+            {/* Erase ground line under mountain base */}
+            <rect x={0} y={o.hPx - 1} width={o.wPx} height={3} fill="white" />
+            <polyline
+              points={`0,${o.hPx} ${o.wPx / 2},0 ${o.wPx},${o.hPx}`}
+              fill="none" stroke="#1a1a1a" strokeWidth="2" strokeLinejoin="miter"
+            />
+          </svg>
+        ))}
+
+        {/* Progress */}
+        {(run || won) && (
+          <div style={{
+            position: 'absolute', top: 14, right: 18,
+            fontSize: 14, fontWeight: 800, color: '#bbb',
+            fontFamily: 'inherit', letterSpacing: 0.5,
+          }}>
+            {jumpedRef.current} / {winTarget}
+          </div>
+        )}
+
+        {/* Start hint */}
+        {!run && !dead && !won && (
+          <div style={{
+            position: 'absolute', left: '50%', top: '38%',
+            transform: 'translate(-50%, -50%)',
+            fontSize: 17, fontWeight: 700, color: RED,
+            fontFamily: 'inherit', pointerEvents: 'none',
+          }}>
+            Press or tap to start!
+          </div>
+        )}
+
+        {/* Dead overlay */}
+        {dead && (
+          <div style={{
+            position: 'absolute', left: '50%', top: '38%',
+            transform: 'translate(-50%, -50%)',
+            textAlign: 'center', pointerEvents: 'none',
+          }}>
+            <div style={{ fontSize: 24, fontWeight: 900, color: RED, fontFamily: 'inherit' }}>Oops! 😵</div>
+            <div style={{ fontSize: 14, color: RED, opacity: 0.7, marginTop: 8, fontFamily: 'inherit' }}>Tap to try again</div>
+          </div>
+        )}
+
+        {/* Win overlay */}
+        {won && (
+          <div style={{
+            position: 'absolute', left: '50%', top: '38%',
+            transform: 'translate(-50%, -50%)',
+            textAlign: 'center', pointerEvents: 'none',
+          }}>
+            <div style={{ fontSize: 24, fontWeight: 900, color: RED, fontFamily: 'inherit' }}>You made it! 🎉</div>
+            <button
+              onClick={e => { e.stopPropagation(); handleRestart() }}
+              style={{
+                pointerEvents: 'auto', marginTop: 12, fontSize: 14, cursor: 'pointer',
+                background: 'none', border: `1.5px solid ${RED}55`, color: RED,
+                fontFamily: 'inherit', padding: '4px 18px', borderRadius: 20,
+              }}
+            >↺ Play again</button>
+          </div>
+        )}
+      </div>
+      <IntroText>Jump over the obstacles!</IntroText>
+      <SetDone done={wonRef.current} />
+    </>
+  )
+}
+
+// ─── Chapter 3 Page 2: Dot Descent ───────────────────────────────────────────
+type C3P2Cloud = { x: number; w: number; ppSpeed?: number; ppMin?: number; ppMax?: number; ppDir?: number }
+type C3P2Floor = { id: number; worldY: number; clouds: C3P2Cloud[] }
+
+const C3P2_R          = 22       // player radius px
+const C3P2_GRAV       = 0.40     // gravity px/frame²
+const C3P2_MAX_VY     = 14       // max fall speed
+const C3P2_SPD        = 6.0      // horizontal speed px/frame
+const C3P2_FLOOR_H    = 10       // platform height px (thin pill)
+const C3P2_SPACING    = 150      // world px between floor rows
+const C3P2_WIN        = 5        // levels to descend — level 1
+const C3P2_WIN2       = 20       // levels to descend — level 2
+const C3P2_WIN3       = 30       // levels to descend — level 3 (hard)
+const C3P2_CTR_SHIFT  = 140      // max platform-centre shift between consecutive rows
+const C3P2_SCROLL     = 0.60     // world px/frame the camera drifts upward (uniform)
+const C3P2_GAP_W      = 90       // gap between clouds when 2 per row (px)
+const C3P2_PP_SPEED   = 0.7      // uniform ping-pong speed for all moving clouds
+let _c3p2Fid = 0
+
+/** Generate a row of 1–2 platforms whose centre tracks prevGroupCx. */
+function makeC3P2Floor(worldY: number, cw: number, prevGroupCx?: number, hard = false): C3P2Floor {
+  const numClouds  = Math.random() < 0.45 ? 1 : 2
+  // Each platform: 16–34% of canvas width (slightly narrower than before)
+  const minCW      = Math.floor(cw * 0.16)
+  const maxCW      = Math.floor(cw * 0.34)
+  const widths     = Array.from({ length: numClouds }, () =>
+    minCW + Math.floor(Math.random() * (maxCW - minCW))
+  )
+  const gapBetween = numClouds > 1 ? (C3P2_GAP_W + Math.random() * 60) : 0
+  const groupW     = widths.reduce((s, w) => s + w, 0) + gapBetween * (numClouds - 1)
+
+  // Constrain group centre so consecutive rows stay reachable
+  const minGroupCx = groupW / 2 + 12
+  const maxGroupCx = cw - groupW / 2 - 12
+  let groupCx: number
+  if (prevGroupCx !== undefined) {
+    const shift = (Math.random() - 0.5) * 2 * C3P2_CTR_SHIFT
+    groupCx = Math.max(minGroupCx, Math.min(maxGroupCx, prevGroupCx + shift))
+  } else {
+    groupCx = minGroupCx + Math.random() * (maxGroupCx - minGroupCx)
+  }
+
+  const clouds: C3P2Cloud[] = []
+  // In hard mode: at most ONE cloud per row oscillates, chosen randomly
+  const ppIdx = (hard && Math.random() < 0.4) ? Math.floor(Math.random() * numClouds) : -1
+  let x = groupCx - groupW / 2
+  for (let i = 0; i < numClouds; i++) {
+    const cloud: C3P2Cloud = { x, w: widths[i] }
+    if (i === ppIdx) {
+      // Ping-pong: uniform speed, random amplitude and direction
+      const amp     = 30 + Math.random() * 50
+      cloud.ppSpeed = C3P2_PP_SPEED
+      cloud.ppMin   = Math.max(0, x - amp)
+      cloud.ppMax   = Math.min(cw - widths[i], x + amp)
+      cloud.ppDir   = Math.random() < 0.5 ? 1 : -1
+    }
+    clouds.push(cloud)
+    x += widths[i] + gapBetween
+  }
+  return { id: ++_c3p2Fid, worldY, clouds }
+}
+
+/** Centre X of a floor's cloud group (used to constrain the next floor). */
+function floorGroupCx(floor: C3P2Floor): number {
+  const left  = floor.clouds[0].x
+  const last  = floor.clouds[floor.clouds.length - 1]
+  return (left + last.x + last.w) / 2
+}
+
+/** True if player centre X sits on any cloud in this floor. */
+function onAnyCloud(px: number, floor: C3P2Floor): boolean {
+  return floor.clouds.some(c => px >= c.x && px <= c.x + c.w)
+}
+
+function Ch3Page2({ winTarget = C3P2_WIN, variant = 'normal' }: { winTarget?: number; variant?: 'normal' | 'hard' } = {}) {
+  const active    = useContext(PageActiveCtx)
+  const canvasRef = useRef<HTMLDivElement>(null)
+  const dimsRef   = useRef({ cw: 960, ch: 520 })
+  const rafRef    = useRef<number | null>(null)
+  const [, tick]  = useState(0)
+
+  // Player (world coords)
+  const pxRef         = useRef(480)
+  const pyRef         = useRef(0)
+  const vyRef         = useRef(0)
+  // Floors
+  const floorsRef     = useRef<C3P2Floor[]>([])
+  const onFloorRef    = useRef(-1)    // index of floor player stands on, -1 = airborne
+  const collStartRef  = useRef(0)     // first floor index to check for landing
+  const clearIdxRef   = useRef(0)     // next floor index to advance for clearing count
+  const clearedRef    = useRef(0)
+  // Camera (world Y of top of screen; increases → things rise on screen)
+  const camYRef       = useRef(0)
+  // State
+  const deadRef       = useRef(false)
+  const wonRef        = useRef(false)
+  const leftRef       = useRef(false)
+  const rightRef      = useRef(false)
+  const startedRef    = useRef(false)      // true once player has tapped to start
+  const lastLandedRef = useRef(-1)         // highest floor index landed on so far
+
+  function initGame(cw: number, ch: number) {
+    // Ball starts at screen centre, falling down onto first platform
+    // Camera: world 0 maps to screen centre → camY = -(ch/2)
+    camYRef.current       = -(ch * 0.5)
+    pxRef.current         = cw / 2
+    pyRef.current         = 0          // world Y 0 → screen Y ch/2 (centre)
+    vyRef.current         = 0
+    onFloorRef.current    = -1         // falling from centre
+    collStartRef.current  = 0
+    clearIdxRef.current   = 0
+    clearedRef.current    = 0
+    deadRef.current       = false
+    wonRef.current        = false
+    leftRef.current       = false
+    rightRef.current      = false
+    startedRef.current    = false
+    lastLandedRef.current = -1
+    floorsRef.current     = []
+    // First platform: worldY = ch*0.18 → screen Y = ch*0.18 + ch*0.5 = 68% (below centre)
+    const firstWY = ch * 0.18
+    const cloudW0 = Math.floor(cw * 0.48)
+    floorsRef.current.push({
+      id: ++_c3p2Fid, worldY: firstWY,
+      clouds: [{ x: Math.floor(cw / 2 - cloudW0 / 2), w: cloudW0 }],
+    })
+    let prevGroupCx = cw / 2
+    for (let i = 1; i < 35; i++) {
+      const f    = makeC3P2Floor(firstWY + i * C3P2_SPACING, cw, prevGroupCx, variant === 'hard')
+      prevGroupCx = floorGroupCx(f)
+      floorsRef.current.push(f)
+    }
+  }
+
+  useLayoutEffect(() => {
+    const el = canvasRef.current; if (!el) return
+    const ro = new ResizeObserver(entries => {
+      const { width: cw, height: ch } = entries[0].contentRect
+      if (cw > 0 && ch > 0) dimsRef.current = { cw, ch }
+    })
+    ro.observe(el); return () => ro.disconnect()
+  }, [])
+
+  useEffect(() => {
+    if (!active) {
+      if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null }
+      leftRef.current = false; rightRef.current = false
+      return
+    }
+    const { cw, ch } = dimsRef.current
+    initGame(cw, ch)
+    let alive = true
+    const step = () => {
+      if (!alive) return
+      const { cw, ch } = dimsRef.current
+
+      if (!wonRef.current && !deadRef.current && startedRef.current) {
+        // ── 0. Ping-pong cloud update (hard mode) ────────────────────────────
+        // Each moving cloud has its own direction; it reverses on wall hit OR
+        // when it touches a neighbouring static cloud (which acts as a second wall).
+        if (variant === 'hard') {
+          for (const floor of floorsRef.current) {
+            const isStandingHere = onFloorRef.current >= 0 && floorsRef.current[onFloorRef.current] === floor
+            for (let ci = 0; ci < floor.clouds.length; ci++) {
+              const c = floor.clouds[ci]
+              if (c.ppSpeed === undefined) continue
+
+              const prevX = c.x
+              c.x += c.ppSpeed * c.ppDir!
+
+              // Wall bounce
+              if (c.x <= c.ppMin!) { c.x = c.ppMin!; c.ppDir = 1 }
+              if (c.x >= c.ppMax!) { c.x = c.ppMax!; c.ppDir = -1 }
+
+              // Bounce off a static left-neighbour
+              if (ci > 0) {
+                const nb = floor.clouds[ci - 1]
+                if (nb.ppSpeed === undefined && c.x < nb.x + nb.w) {
+                  c.x = nb.x + nb.w; c.ppDir = 1
+                }
+              }
+              // Bounce off a static right-neighbour
+              if (ci < floor.clouds.length - 1) {
+                const nb = floor.clouds[ci + 1]
+                if (nb.ppSpeed === undefined && c.x + c.w > nb.x) {
+                  c.x = nb.x - c.w; c.ppDir = -1
+                }
+              }
+
+              const cloudDx = c.x - prevX
+              if (isStandingHere && pxRef.current >= prevX && pxRef.current <= prevX + c.w) {
+                pxRef.current = Math.max(C3P2_R, Math.min(cw - C3P2_R, pxRef.current + cloudDx))
+              }
+            }
+          }
+        }
+
+        // ── 1. Horizontal movement ───────────────────────────────────────────
+        const dx = (leftRef.current ? -1 : 0) + (rightRef.current ? 1 : 0)
+        pxRef.current = Math.max(C3P2_R, Math.min(cw - C3P2_R, pxRef.current + dx * C3P2_SPD))
+
+        // ── 2. On-floor: did player walk off every cloud? ───────────────────
+        if (onFloorRef.current >= 0) {
+          const floor = floorsRef.current[onFloorRef.current]
+          if (!floor || !onAnyCloud(pxRef.current, floor)) {
+            onFloorRef.current = -1   // become airborne
+          }
+        }
+
+        // ── 3. Airborne: gravity + floor landing ─────────────────────────────
+        if (onFloorRef.current < 0) {
+          vyRef.current = Math.min(vyRef.current + C3P2_GRAV, C3P2_MAX_VY)
+          const prevY      = pyRef.current
+          pyRef.current   += vyRef.current
+
+          if (vyRef.current > 0) {
+            const prevBottom = prevY + C3P2_R
+            const newBottom  = pyRef.current + C3P2_R
+            for (let i = collStartRef.current; i < floorsRef.current.length; i++) {
+              const floor = floorsRef.current[i]
+              if (floor.worldY > newBottom) break
+              if (prevBottom <= floor.worldY && onAnyCloud(pxRef.current, floor)) {
+                pyRef.current         = floor.worldY - C3P2_R
+                vyRef.current         = 0
+                onFloorRef.current    = i
+                collStartRef.current  = i + 1
+                // Count each new (lower) floor landing as one level cleared
+                if (i > lastLandedRef.current) {
+                  lastLandedRef.current = i
+                  clearedRef.current++
+                  if (clearedRef.current >= winTarget) wonRef.current = true
+                }
+                break
+              }
+            }
+          }
+        }
+
+        // ── 5. Scroll camera upward (hard mode: speed increases with progress) ─
+        const scrollSpd = variant === 'hard' ? Math.min(C3P2_SCROLL + clearedRef.current * 0.015, 1.4) : C3P2_SCROLL
+        camYRef.current += scrollSpd
+
+        // ── 6. Death: ball fell below bottom of screen ───────────────────────
+        if (pyRef.current - C3P2_R > camYRef.current + ch) {
+          deadRef.current = true
+        }
+        // Death: ball pushed above top of screen
+        if (pyRef.current + C3P2_R < camYRef.current) {
+          deadRef.current = true
+        }
+
+        // ── 7. Extend floor pool ahead of camera ─────────────────────────────
+        const last = floorsRef.current[floorsRef.current.length - 1]
+        if (last && last.worldY < camYRef.current + ch * 2.2) {
+          floorsRef.current.push(makeC3P2Floor(last.worldY + C3P2_SPACING, cw, floorGroupCx(last), variant === 'hard'))
+        }
+      }
+
+      tick(n => n + 1)
+      rafRef.current = requestAnimationFrame(step)
+    }
+    rafRef.current = requestAnimationFrame(step)
+    return () => { alive = false; if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null } }
+  }, [active])  // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!active) return
+    const onDown = (e: KeyboardEvent) => {
+      if (e.code === 'ArrowLeft')  { e.preventDefault(); startedRef.current = true; leftRef.current  = true }
+      if (e.code === 'ArrowRight') { e.preventDefault(); startedRef.current = true; rightRef.current = true }
+      if (e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); startedRef.current = true }
+    }
+    const onUp = (e: KeyboardEvent) => {
+      if (e.code === 'ArrowLeft')  leftRef.current  = false
+      if (e.code === 'ArrowRight') rightRef.current = false
+    }
+    window.addEventListener('keydown', onDown)
+    window.addEventListener('keyup',   onUp)
+    return () => { window.removeEventListener('keydown', onDown); window.removeEventListener('keyup', onUp) }
+  }, [active])  // eslint-disable-line react-hooks/exhaustive-deps
+
+  function handlePointerDown(e: React.PointerEvent<HTMLDivElement>) {
+    if (deadRef.current) { const { cw, ch } = dimsRef.current; initGame(cw, ch); tick(n => n + 1); return }
+    if (wonRef.current)  return
+    const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect()
+    const goLeft = e.clientX - rect.left < rect.width / 2
+    startedRef.current = true
+    if (goLeft) leftRef.current  = true
+    else        rightRef.current = true
+  }
+  function handlePointerUp(e: React.PointerEvent<HTMLDivElement>) {
+    const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect()
+    if (e.clientX - rect.left < rect.width / 2) leftRef.current  = false
+    else                                         rightRef.current = false
+  }
+  function handlePointerLeave() { leftRef.current = false; rightRef.current = false }
+
+  const { cw, ch } = dimsRef.current
+  const camY       = camYRef.current
+  const dead       = deadRef.current
+  const won        = wonRef.current
+  const cleared    = clearedRef.current
+  const started    = startedRef.current
+
+  const visibleFloors = floorsRef.current.filter(f => {
+    const sy = f.worldY - camY
+    return sy > -C3P2_FLOOR_H - 4 && sy < ch + 20
+  })
+
+  return (
+    <>
+      <div
+        ref={canvasRef}
+        onPointerDown={handlePointerDown}
+        onPointerUp={handlePointerUp}
+        onPointerLeave={handlePointerLeave}
+        style={{ ...canvasStyle, cursor: won ? 'default' : 'pointer', overflow: 'hidden', touchAction: 'none' }}
+      >
+        {/* Thin pill platforms — worldY is the top edge */}
+        {visibleFloors.flatMap(floor => {
+          const screenY = floor.worldY - camY
+          return floor.clouds.map((cloud, ci) => (
+            <div key={`${floor.id}-${ci}`} style={{
+              position: 'absolute',
+              top: screenY,
+              left: cloud.x,
+              width: cloud.w,
+              height: C3P2_FLOOR_H,
+              borderRadius: C3P2_FLOOR_H / 2,
+              background: '#fff',
+              border: '2px solid #1a1a1a',
+              pointerEvents: 'none',
+            }} />
+          ))
+        })}
+
+        {/* Player dot — YELLOW */}
+        <div style={{
+          position: 'absolute',
+          left: pxRef.current,
+          top: pyRef.current - camY,
+          width: C3P2_R * 2, height: C3P2_R * 2,
+          borderRadius: '50%', background: YELLOW,
+          transform: 'translate(-50%, -50%)',
+          boxShadow: dead ? `0 0 0 8px ${YELLOW}55` : 'none',
+          pointerEvents: 'none',
+          zIndex: 2,
+        }} />
+
+        {/* Score: levels descended */}
+        {started && !dead && !won && (
+          <div style={{
+            position: 'absolute', top: 18, right: 18,
+            fontSize: 14, fontWeight: 800, color: '#bbb', fontFamily: 'inherit',
+          }}>
+            {cleared} / {winTarget}
+          </div>
+        )}
+
+        {/* Start hint */}
+        {!started && !dead && !won && (
+          <div style={{
+            position: 'absolute', left: '50%', top: '42%',
+            transform: 'translate(-50%, -50%)',
+            fontSize: 17, fontWeight: 700, color: YELLOW,
+            fontFamily: 'inherit', pointerEvents: 'none',
+          }}>
+            Press or tap to start!
+          </div>
+        )}
+
+        {/* Dead overlay */}
+        {dead && (
+          <div style={{
+            position: 'absolute', left: '50%', top: '42%',
+            transform: 'translate(-50%, -50%)',
+            textAlign: 'center', pointerEvents: 'none',
+          }}>
+            <div style={{ fontSize: 24, fontWeight: 900, color: YELLOW, fontFamily: 'inherit' }}>Oops! 😵</div>
+            <div style={{ fontSize: 14, color: YELLOW, opacity: 0.7, marginTop: 8, fontFamily: 'inherit' }}>Tap to try again</div>
+          </div>
+        )}
+
+        {/* Win overlay */}
+        {won && (
+          <div style={{
+            position: 'absolute', left: '50%', top: '42%',
+            transform: 'translate(-50%, -50%)',
+            textAlign: 'center', pointerEvents: 'none',
+          }}>
+            <div style={{ fontSize: 24, fontWeight: 900, color: YELLOW, fontFamily: 'inherit' }}>You made it! 🎉</div>
+            <button
+              onClick={e => { e.stopPropagation(); const { cw, ch } = dimsRef.current; initGame(cw, ch); tick(n => n + 1) }}
+              style={{
+                pointerEvents: 'auto', marginTop: 12, fontSize: 14, cursor: 'pointer',
+                background: 'none', border: `1.5px solid ${YELLOW}88`, color: YELLOW,
+                fontFamily: 'inherit', padding: '4px 18px', borderRadius: 20,
+              }}
+            >↺ Play again</button>
+          </div>
+        )}
+      </div>
+      <IntroText>Tap left or right to dodge past the platforms!</IntroText>
+      <SetDone done={wonRef.current} />
+    </>
+  )
+}
+
+// ─── Chapter 3 Page 3: Tunnel Dot ────────────────────────────────────────────
+// Terrain is a continuous winding cave drawn on <canvas>.
+// Ceiling and floor are solid black polygons; the passage is the white gap.
+type C3P3Seg = { x: number; topY: number; botY: number }
+
+const C3P3_R         = 22      // dot radius px
+const C3P3_GRAV      = 0.045   // very gentle gravity px/frame²
+const C3P3_FLAP_V    = -1.8    // upward impulse on tap
+const C3P3_MAX_VY    = 2.2     // max fall speed
+const C3P3_SPD       = 1.5     // terrain scroll speed px/frame
+const C3P3_SEG_SP    = 72      // px between terrain sample points
+const C3P3_DRIFT     = 16      // max Y shift between consecutive segments
+const C3P3_MIN_GAP   = 185     // minimum tunnel opening height px
+const C3P3_DOT_X_F   = 0.18   // dot fixed X fraction
+const C3P3_WIN_DIST  = 10 * 60  // frames survived — level 1  (10 s)
+const C3P3_WIN_DIST2 = 25 * 60  // frames survived — level 2  (25 s)
+const C3P3_WIN_DIST3 = 45 * 60  // frames survived — level 3  (45 s, hard)
+
+/** Simple LCG seeded RNG — use a fixed seed in initGame so terrain is identical every run. */
+function makeLCG(seed: number): () => number {
+  let s = seed >>> 0
+  return () => { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296 }
+}
+
+function driftTunnel(topY: number, botY: number, ch: number, rng: () => number = Math.random, minGap = C3P3_MIN_GAP, drift = C3P3_DRIFT): { topY: number; botY: number } {
+  // Gentle pull: nudge the gap centre back toward screen centre each step
+  const gapCentre   = (topY + botY) / 2
+  const pullToCenter = (ch / 2 - gapCentre) * 0.18
+  let t = topY + (rng() - 0.5) * 2 * drift + pullToCenter
+  let b = botY + (rng() - 0.5) * 2 * drift + pullToCenter
+  t = Math.max(14, Math.min(ch - minGap - 14, t))
+  b = Math.max(t + minGap, Math.min(ch - 14, b))
+  return { topY: t, botY: b }
+}
+
+function tunnelAt(segs: C3P3Seg[], x: number, ch: number): { topY: number; botY: number } {
+  for (let i = 0; i < segs.length - 1; i++) {
+    if (segs[i].x <= x && segs[i + 1].x > x) {
+      const t = (x - segs[i].x) / (segs[i + 1].x - segs[i].x)
+      return {
+        topY: segs[i].topY + t * (segs[i + 1].topY - segs[i].topY),
+        botY: segs[i].botY + t * (segs[i + 1].botY - segs[i].botY),
+      }
+    }
+  }
+  const last = segs[segs.length - 1]
+  return last ? { topY: last.topY, botY: last.botY } : { topY: 0, botY: ch }
+}
+
+function Ch3Page3({ winTarget = C3P3_WIN_DIST, variant = 'normal' }: { winTarget?: number; variant?: 'normal' | 'hard' } = {}) {
+  const active   = useContext(PageActiveCtx)
+  const outerRef = useRef<HTMLDivElement>(null)
+  const cvRef    = useRef<HTMLCanvasElement>(null)
+  const dimsRef  = useRef({ cw: 960, ch: 520 })
+  const rafRef   = useRef<number | null>(null)
+  const [, tick] = useState(0)
+
+  const pyRef       = useRef(260)
+  const vyRef       = useRef(0)
+  const segsRef     = useRef<C3P3Seg[]>([])
+  const framesRef   = useRef(0)   // frames survived (for time tracking)
+  const runRef      = useRef(false)
+  const deadRef     = useRef(false)
+  const wonRef      = useRef(false)
+
+  function initGame(cw: number, ch: number) {
+    pyRef.current    = ch / 2
+    vyRef.current    = 0
+    framesRef.current = 0
+    runRef.current   = false
+    deadRef.current = false
+    wonRef.current  = false
+    segsRef.current = []
+    // Random seed each session → fresh terrain every run
+    const rng  = makeLCG((Math.random() * 0xFFFFFFFF) >>> 0)
+    let topY   = ch * 0.22
+    let botY   = ch * 0.78
+    for (let x = -C3P3_SEG_SP; x <= cw + C3P3_SEG_SP * 6; x += C3P3_SEG_SP) {
+      segsRef.current.push({ x, topY, botY })
+      const d = driftTunnel(topY, botY, ch, rng)
+      topY = d.topY; botY = d.botY
+    }
+  }
+
+  // Keep canvas pixel dims in sync with its CSS size
+  useLayoutEffect(() => {
+    const el = outerRef.current; if (!el) return
+    const ro = new ResizeObserver(entries => {
+      const { width: cw, height: ch } = entries[0].contentRect
+      if (cw > 0 && ch > 0) {
+        dimsRef.current = { cw, ch }
+        if (cvRef.current) { cvRef.current.width = Math.round(cw); cvRef.current.height = Math.round(ch) }
+      }
+    })
+    ro.observe(el); return () => ro.disconnect()
+  }, [])
+
+  useEffect(() => {
+    if (!active) {
+      if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null }
+      return
+    }
+    const { cw, ch } = dimsRef.current
+    initGame(cw, ch)
+    if (cvRef.current) { cvRef.current.width = Math.round(cw); cvRef.current.height = Math.round(ch) }
+
+    let alive = true
+    const step = () => {
+      if (!alive) return
+      const { cw, ch } = dimsRef.current
+      const dotX = cw * C3P3_DOT_X_F
+
+      // ── Physics ─────────────────────────────────────────────────────────────
+      if (runRef.current && !wonRef.current && !deadRef.current) {
+        vyRef.current = Math.min(vyRef.current + C3P3_GRAV, C3P3_MAX_VY)
+        pyRef.current += vyRef.current
+        framesRef.current++
+
+        // Hard mode: speed, gap, and jaggedness all increase over time
+        const dynSpd    = variant === 'hard' ? Math.min(C3P3_SPD * 2.5, C3P3_SPD + framesRef.current * 0.001) : C3P3_SPD
+        const dynMinGap = variant === 'hard' ? Math.max(C3P3_MIN_GAP * 0.40, C3P3_MIN_GAP - framesRef.current * 0.04) : C3P3_MIN_GAP
+        const dynDrift  = variant === 'hard' ? Math.min(C3P3_DRIFT * 5, C3P3_DRIFT + framesRef.current * 0.018) : C3P3_DRIFT
+
+        // Scroll terrain left
+        for (const s of segsRef.current) s.x -= dynSpd
+        segsRef.current = segsRef.current.filter(s => s.x > -C3P3_SEG_SP * 2)
+
+        // Generate new segments at the right edge
+        while (segsRef.current[segsRef.current.length - 1].x < cw + C3P3_SEG_SP) {
+          const last = segsRef.current[segsRef.current.length - 1]
+          const d    = driftTunnel(last.topY, last.botY, ch, Math.random, dynMinGap, dynDrift)
+          segsRef.current.push({ x: last.x + C3P3_SEG_SP, ...d })
+        }
+
+        // Collision: dot vs tunnel walls (slightly forgiving hitbox)
+        const { topY, botY } = tunnelAt(segsRef.current, dotX, ch)
+        const r = C3P3_R - 3
+        if (pyRef.current - r < topY || pyRef.current + r > botY) {
+          deadRef.current = true
+        }
+
+        if (framesRef.current >= winTarget) wonRef.current = true
+      }
+
+      // ── Draw ─────────────────────────────────────────────────────────────────
+      const cv = cvRef.current
+      if (cv) {
+        const ctx = cv.getContext('2d')!
+        ctx.fillStyle = '#ffffff'
+        ctx.fillRect(0, 0, cw, ch)
+
+        const segs = segsRef.current
+        if (segs.length >= 2) {
+          ctx.fillStyle = '#1a1a1a'
+
+          // Ceiling polygon: top-left → ceiling line → top-right → close
+          ctx.beginPath()
+          ctx.moveTo(-10, -10)
+          for (const s of segs) ctx.lineTo(s.x, s.topY)
+          ctx.lineTo(cw + 10, -10)
+          ctx.closePath()
+          ctx.fill()
+
+          // Floor polygon: bottom-left → floor line → bottom-right → close
+          ctx.beginPath()
+          ctx.moveTo(-10, ch + 10)
+          for (const s of segs) ctx.lineTo(s.x, s.botY)
+          ctx.lineTo(cw + 10, ch + 10)
+          ctx.closePath()
+          ctx.fill()
+        }
+
+        // Blue dot
+        ctx.beginPath()
+        ctx.arc(dotX, pyRef.current, C3P3_R, 0, Math.PI * 2)
+        ctx.fillStyle = BLUE
+        ctx.fill()
+
+        // Countdown timer (top-right): "MM:SS" counting down to 00:00
+        if (runRef.current && !wonRef.current && !deadRef.current) {
+          const remainSec = Math.max(0, Math.ceil((winTarget - framesRef.current) / 60))
+          const mm = Math.floor(remainSec / 60)
+          const ss = remainSec % 60
+          ctx.fillStyle = '#bbbbbb'
+          ctx.font = '700 13px system-ui, sans-serif'
+          ctx.textAlign = 'right'
+          ctx.textBaseline = 'top'
+          ctx.fillText(`${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`, cw - 18, 16)
+        }
+      }
+
+      tick(n => n + 1)
+      rafRef.current = requestAnimationFrame(step)
+    }
+    rafRef.current = requestAnimationFrame(step)
+    return () => { alive = false; if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null } }
+  }, [active])  // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!active) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); flap() }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [active])  // eslint-disable-line react-hooks/exhaustive-deps
+
+  function flap() {
+    if (wonRef.current) return
+    if (deadRef.current) { const { cw, ch } = dimsRef.current; initGame(cw, ch); return }
+    runRef.current = true
+    vyRef.current  = C3P3_FLAP_V
+  }
+
+  const run  = runRef.current
+  const dead = deadRef.current
+  const won  = wonRef.current
+
+  return (
+    <>
+      {/* Outer div carries the canvasStyle border/radius; canvas fills it absolutely */}
+      <div
+        ref={outerRef}
+        onClick={flap}
+        style={{ ...canvasStyle, cursor: won ? 'default' : 'pointer', padding: 0, background: '#fff' }}
+      >
+        <canvas
+          ref={cvRef}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', display: 'block' }}
+        />
+
+        {/* Start hint */}
+        {!run && !dead && !won && (
+          <div style={{
+            position: 'absolute', left: '50%', top: '42%',
+            transform: 'translate(-50%, -50%)',
+            fontSize: 17, fontWeight: 700, color: BLUE,
+            fontFamily: 'inherit', pointerEvents: 'none', zIndex: 1,
+          }}>
+            Press or tap to start!
+          </div>
+        )}
+
+        {/* Dead */}
+        {dead && (
+          <div style={{
+            position: 'absolute', left: '50%', top: '38%',
+            transform: 'translate(-50%, -50%)',
+            textAlign: 'center', pointerEvents: 'none', zIndex: 1,
+          }}>
+            <div style={{ fontSize: 24, fontWeight: 900, color: BLUE, fontFamily: 'inherit' }}>Oops! 😵</div>
+            <div style={{ fontSize: 14, color: BLUE, opacity: 0.7, marginTop: 8, fontFamily: 'inherit' }}>Tap to try again</div>
+          </div>
+        )}
+
+        {/* Won */}
+        {won && (
+          <div style={{
+            position: 'absolute', left: '50%', top: '38%',
+            transform: 'translate(-50%, -50%)',
+            textAlign: 'center', pointerEvents: 'none', zIndex: 1,
+          }}>
+            <div style={{ fontSize: 24, fontWeight: 900, color: BLUE, fontFamily: 'inherit' }}>You made it! 🎉</div>
+            <button
+              onClick={e => { e.stopPropagation(); const { cw, ch } = dimsRef.current; initGame(cw, ch) }}
+              style={{
+                pointerEvents: 'auto', marginTop: 12, fontSize: 14, cursor: 'pointer',
+                background: 'none', border: `1.5px solid ${BLUE}88`, color: BLUE,
+                fontFamily: 'inherit', padding: '4px 18px', borderRadius: 20,
+              }}
+            >↺ Play again</button>
+          </div>
+        )}
+      </div>
+      <IntroText>Tap to float through the tunnel!</IntroText>
+      <SetDone done={wonRef.current} />
+    </>
+  )
+}
 
 // ─── Shell ────────────────────────────────────────────────────────────────────
 const CHAPTER1_PAGES = [Page1, Page23, Page4, Page56, Page7, Page8, Page9, Page10, Page11]
-const CHAPTER2_PAGES = [
-  Chapter2Page1, Chapter2Page3,
-  Ch2StarPage, Ch2GemPage, Ch2CometPage, Ch2TreePage,
-  Ch2WavePage, Ch2StairPage, Ch2ArchPage,
-]
+const CHAPTER2_PAGES = [Chapter2Page1, Chapter2Page3, ...Ch2DotSlots]
+function Ch3Page1L2() { return <Ch3Page1 winTarget={CH3_WIN2} /> }
+function Ch3Page2L2() { return <Ch3Page2 winTarget={C3P2_WIN2} /> }
+function Ch3Page3L2() { return <Ch3Page3 winTarget={C3P3_WIN_DIST2} /> }
+function Ch3Page1L3() { return <Ch3Page1 winTarget={CH3_WIN3} variant="hard" /> }
+function Ch3Page2L3() { return <Ch3Page2 winTarget={C3P2_WIN3} variant="hard" /> }
+function Ch3Page3L3() { return <Ch3Page3 winTarget={C3P3_WIN_DIST3} variant="hard" /> }
+
+const CHAPTER3_PAGES = [Ch3Page1, Ch3Page1L2, Ch3Page1L3, Ch3Page2, Ch3Page2L2, Ch3Page2L3, Ch3Page3, Ch3Page3L2, Ch3Page3L3]
 
 export default function PressHere() {
-  const [page,      setPage]      = useState(0)
-  const [caption,   setCaption]   = useState<React.ReactNode>('')
-  const [done,      setDone]      = useState(false)
-  const [globalKey, setGlobalKey] = useState(0)
-  const [wellDone,  setWellDone]  = useState(false)
-  const [chapter,   setChapter]   = useState(1)
+  const [page,       setPage]      = useState(0)
+  const [caption,    setCaption]   = useState<React.ReactNode>('')
+  const [done,       setDone]      = useState(false)
+  const [globalKey,  setGlobalKey] = useState(0)
+  const [wellDone,   setWellDone]  = useState(false)
+  const [chapter,    setChapter]   = useState(1)
+  const [ch2Shapes,  setCh2Shapes] = useState<ShapeDef[]>(() => pickRandomShapes(7))
   const handoffRef     = useRef<Handoff>({ page4Dots: null, page5Dots: null, page6Dots: null, ch2p2Dots: null, ch2LatestDots: null })
   const canvasAreaRef  = useRef<HTMLDivElement>(null)
   const firstRenderRef = useRef(true)
 
-  const activePages = chapter === 1 ? CHAPTER1_PAGES : CHAPTER2_PAGES
+  const activePages = chapter === 1 ? CHAPTER1_PAGES : chapter === 2 ? CHAPTER2_PAGES : CHAPTER3_PAGES
   const TOTAL = activePages.length
   const isFirst = page === 0
   const isLast  = page === TOTAL - 1
@@ -2258,11 +3395,27 @@ export default function PressHere() {
   }
 
   function startChapter2() {
+    setCh2Shapes(pickRandomShapes(7))
     setGlobalKey(k => k + 1)
     setPage(0)
     setDone(false)
     setWellDone(false)
     setChapter(2)
+    handoffRef.current = { page4Dots: null, page5Dots: null, page6Dots: null, ch2p2Dots: null, ch2LatestDots: null }
+  }
+
+  function replayChapter() {
+    if (chapter === 2) startChapter2()
+    else if (chapter === 3) startChapter3()
+    else reset()
+  }
+
+  function startChapter3() {
+    setGlobalKey(k => k + 1)
+    setPage(0)
+    setDone(false)
+    setWellDone(false)
+    setChapter(3)
     handoffRef.current = { page4Dots: null, page5Dots: null, page6Dots: null, ch2p2Dots: null, ch2LatestDots: null }
   }
 
@@ -2276,6 +3429,9 @@ export default function PressHere() {
       { duration: 360, easing: 'ease-out' }
     )
   }, [page])
+
+  // Chapter completion sound
+  useEffect(() => { if (wellDone) playChapterComplete() }, [wellDone])
 
   // Spacebar → Next / Done when available
   useEffect(() => {
@@ -2304,10 +3460,12 @@ export default function PressHere() {
     document.body.style.overflow = 'hidden'
   }, [])
 
-  if (wellDone && chapter === 2) return <GreatJob onReset={reset} />
+  if (wellDone && chapter === 3) return <WoohooScreen onReset={startChapter3} />
+  if (wellDone && chapter === 2) return <GreatJob onReset={startChapter2} onNextChapter={startChapter3} />
   if (wellDone) return <WellDone onReset={reset} onNextChapter={startChapter2} />
 
   return (
+    <Ch2ShapesCtx.Provider value={ch2Shapes}>
     <CaptionCtx.Provider value={setCaption}>
       <DoneCtx.Provider value={setDone}>
         <HandoffCtx.Provider value={handoffRef}>
@@ -2320,6 +3478,56 @@ export default function PressHere() {
             WebkitTouchCallout: 'none',
             touchAction: 'manipulation',
           }}>
+
+            {/* ── Header: title + chapter / replay pills ── */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', minWidth: 960, marginBottom: 10 }}>
+              {/* Title with coloured dots */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 22, fontWeight: 600, color: '#222', letterSpacing: -0.3, fontFamily: 'inherit' }}>
+                <span style={{ width: 10, height: 10, borderRadius: '50%', background: RED,    flexShrink: 0, display: 'inline-block' }} />
+                Press
+                <span style={{ width: 10, height: 10, borderRadius: '50%', background: YELLOW, flexShrink: 0, display: 'inline-block' }} />
+                here
+                <span style={{ width: 10, height: 10, borderRadius: '50%', background: BLUE,   flexShrink: 0, display: 'inline-block' }} />
+              </div>
+              {/* Chapter pills + Replay */}
+              <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                {([1, 2, 3] as const).map(ch => (
+                  <button
+                    key={ch}
+                    onClick={() => ch === 1 ? reset() : ch === 2 ? startChapter2() : startChapter3()}
+                    style={{
+                      padding: '4px 14px', borderRadius: 20,
+                      background: chapter === ch ? '#333' : 'transparent',
+                      border: `1.5px solid ${chapter === ch ? '#333' : '#ddd'}`,
+                      fontSize: 12, fontWeight: 700, letterSpacing: '0.02em',
+                      color: chapter === ch ? '#fff' : '#bbb',
+                      fontFamily: 'inherit',
+                      cursor: chapter === ch ? 'default' : 'pointer',
+                      transition: 'all 0.15s ease',
+                    }}
+                    onMouseEnter={e => { if (chapter !== ch) { e.currentTarget.style.borderColor = '#aaa'; e.currentTarget.style.color = '#666' } }}
+                    onMouseLeave={e => { if (chapter !== ch) { e.currentTarget.style.borderColor = '#ddd'; e.currentTarget.style.color = '#bbb' } }}
+                  >
+                    Ch {ch}
+                  </button>
+                ))}
+                <button
+                  onClick={replayChapter}
+                  title="Replay this chapter"
+                  style={{
+                    width: 30, height: 30, borderRadius: 20, padding: 0,
+                    background: 'transparent', border: '1.5px solid #ddd',
+                    color: '#bbb', fontFamily: 'inherit', cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    transition: 'all 0.15s ease', flexShrink: 0,
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = '#aaa'; e.currentTarget.style.color = '#666' }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = '#ddd'; e.currentTarget.style.color = '#bbb' }}
+                >
+                  <RotateCcw size={13} strokeWidth={2.5} />
+                </button>
+              </div>
+            </div>
 
             {/* Canvas area — all pages mounted; opacity+pointer-events for transition */}
             <div ref={canvasAreaRef} key={globalKey} style={{ flex: 1, minHeight: 0, position: 'relative', minWidth: 960 }}>
@@ -2334,14 +3542,15 @@ export default function PressHere() {
               ))}
             </div>
 
-            {/* Caption row — button reserves space via visibility */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', minWidth: 960, marginTop: 14, gap: 16 }}>
-              <div style={{ fontSize: 'clamp(14px,2vw,18px)', fontWeight: 600, color: '#444', lineHeight: 1.4 }}>
+            {/* Caption row — caption left-aligned, Next button pinned to the right */}
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', minWidth: 960, marginTop: 14, minHeight: 46 }}>
+              <div style={{ fontSize: 'clamp(14px,2vw,18px)', fontWeight: 600, color: '#444', lineHeight: 1.4, maxWidth: 'calc(100% - 260px)' }}>
                 {caption}
               </div>
               <button
                 onClick={isLast ? () => setWellDone(true) : () => nav(page + 1)}
                 style={{
+                  position: 'absolute', right: 0,
                   display: 'flex', alignItems: 'center', gap: 8,
                   padding: '10px 28px', borderRadius: 40,
                   background: '#FDD302', border: 'none',
@@ -2359,56 +3568,29 @@ export default function PressHere() {
               </button>
             </div>
 
-            {/* Footer pagination + reset */}
-            <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', minWidth: 960, marginTop: 10, gap: 4 }}>
-              <Pagination className="w-auto mx-0">
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious text="" onClick={() => !isFirst && nav(page - 1)} className={cn(isFirst && 'opacity-30 pointer-events-none')} />
-                  </PaginationItem>
-                  {Array.from({ length: TOTAL }, (_, i) => (
-                    <PaginationItem key={i}>
-                      <PaginationLink isActive={i === page} onClick={() => nav(i)}>{i + 1}</PaginationLink>
-                    </PaginationItem>
-                  ))}
-                  <PaginationItem>
-                    <PaginationNext text="" onClick={() => !isLast && nav(page + 1)} className={cn(isLast && 'opacity-30 pointer-events-none')} />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
-              <Button variant="ghost" size="icon-sm" onClick={reset} className="text-muted-foreground shrink-0" title="Reset">
-                <RotateCcw />
-              </Button>
-
-              {/* Chapter switcher */}
-              <div style={{ position: 'absolute', right: 0, display: 'flex', gap: 3, alignItems: 'center' }}>
-                {([1, 2] as const).map(ch => (
-                  <button
-                    key={ch}
-                    onClick={() => ch === 1 ? reset() : startChapter2()}
-                    style={{
-                      padding: '3px 11px', borderRadius: 12,
-                      background: chapter === ch ? '#555' : 'transparent',
-                      border: '1px solid',
-                      borderColor: chapter === ch ? '#555' : '#ddd',
-                      fontSize: 11, fontWeight: 700, letterSpacing: '0.03em',
-                      color: chapter === ch ? '#fff' : '#bbb',
-                      fontFamily: 'inherit',
-                      cursor: chapter === ch ? 'default' : 'pointer',
-                      transition: 'all 0.15s ease',
-                    }}
-                    onMouseEnter={e => { if (chapter !== ch) { e.currentTarget.style.borderColor = '#aaa'; e.currentTarget.style.color = '#888' } }}
-                    onMouseLeave={e => { if (chapter !== ch) { e.currentTarget.style.borderColor = '#ddd'; e.currentTarget.style.color = '#bbb' } }}
-                  >
-                    Ch {ch}
-                  </button>
-                ))}
-              </div>
+            {/* Footer — dot pagination */}
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minWidth: 960, marginTop: 10, gap: 7 }}>
+              {Array.from({ length: TOTAL }, (_, i) => (
+                <button
+                  key={i}
+                  onClick={() => nav(i)}
+                  style={{
+                    width:  i === page ? 13 : 8,
+                    height: i === page ? 13 : 8,
+                    borderRadius: '50%',
+                    background: i === page ? YELLOW : '#ddd',
+                    border: 'none', padding: 0, cursor: 'pointer',
+                    flexShrink: 0,
+                    transition: 'width 0.2s ease, height 0.2s ease, background 0.2s ease',
+                  }}
+                />
+              ))}
             </div>
 
           </div>
         </HandoffCtx.Provider>
       </DoneCtx.Provider>
     </CaptionCtx.Provider>
+    </Ch2ShapesCtx.Provider>
   )
 }

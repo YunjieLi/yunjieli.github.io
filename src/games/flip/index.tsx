@@ -56,7 +56,8 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 function makeCards(level: Level): Card[] {
-  return shuffle(level.sprites.flatMap((s: Sprite) => [s.id, s.id])).map((spriteId, i) => ({
+  const picked = shuffle(level.sprites).slice(0, level.setSize)
+  return shuffle(picked.flatMap((s: Sprite) => [s.id, s.id])).map((spriteId, i) => ({
     uid: i, spriteId, flipped: false, matched: false,
   }))
 }
@@ -129,7 +130,7 @@ function IconBtn({ onClick, title, color, side, children }: {
 export default function FlipGame() {
   const [levelIdx, setLevelIdx] = useState(0)
   const level = LEVELS[levelIdx]
-  const { cols, rows, size } = useLayout(level.sprites.length * 2)
+  const { cols, rows, size } = useLayout(level.setSize * 2)
 
   const [cards, setCards] = useState<Card[]>(() => makeCards(level))
   const [pending, setPending] = useState<number | null>(null)

@@ -61,7 +61,7 @@ export default function Toc() {
           >
             <div className="absolute inset-0 bg-black/20" />
             <div className="relative z-10 px-5 py-4">
-              <div className="text-2xl mb-1">🃏</div>
+              <div className="text-2xl mb-1">🐞</div>
               <h2 className="text-lg font-semibold leading-snug mb-0.5">Flip Game</h2>
               <p className="text-[12px] opacity-80">Memory card matching</p>
             </div>
