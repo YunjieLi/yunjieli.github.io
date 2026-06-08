@@ -6,11 +6,6 @@ import FlipGame from './games/flip'
 import DinosaurGame from './games/dinosaur'
 import WackAVirus from './games/whack'
 
-function PressHereRedirect() {
-  window.location.replace('https://yunjieli.github.io/press-here/')
-  return null
-}
-
 export default function App() {
   return (
     <BrowserRouter>
@@ -29,8 +24,7 @@ export default function App() {
         <Route path="/chinese-names"   element={<LegacyPage src="/chinese-names/index.html"   title="Chinese Names" />} />
         <Route path="/vanilla-english" element={<LegacyPage src="/vanilla-english/index.html" title="Vanilla English" />} />
         <Route path="/lily"            element={<LegacyPage src="/lily/index.html"            title="Lily" />} />
-        <Route path="/press-here"      element={<PressHereRedirect />} />
-        <Route path="/turbines"        element={<LegacyPage src="/turbines/index.html"        title="Turbines" />} />
+<Route path="/turbines"        element={<LegacyPage src="/turbines/index.html"        title="Turbines" />} />
 
         {/* Games */}
         <Route path="/flip-game"    element={<FlipGame />} />
