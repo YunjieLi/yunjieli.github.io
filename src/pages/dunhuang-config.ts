@@ -1,5 +1,3 @@
-import templatesFile from '@/assets/dunhuang/templates.json'
-
 export const RING_IDS = ['ring1', 'ring2', 'ring3', 'ring4', 'ring5', 'ring6', 'ring7'] as const
 export type RingId = (typeof RING_IDS)[number]
 export type RotationMode = 'none' | 'cw' | 'ccw'
@@ -10,19 +8,19 @@ export interface RingConfig {
   rotationSpeed: number
   scale: ScaleMode
   scaleSpeed: number
+  scaleMinPercent: number
 }
 
-export interface DunhuangTemplate {
-  label: string
-  rings: Partial<Record<RingId, RingConfig>>
+export interface RingAnimationTemplate {
+  rings: Partial<Record<RingId, Partial<RingConfig>>>
 }
 
-export interface DunhuangTemplatesFile {
-  defaultTemplate: string
-  templates: Record<string, DunhuangTemplate>
-}
-
-export const dunhuangTemplates = templatesFile as DunhuangTemplatesFile
+export const ROTATION_SPEED_MIN = 0.1
+export const ROTATION_SPEED_MAX = 100
+export const SCALE_SPEED_MIN = 1
+export const SCALE_SPEED_MAX = 100
+export const SCALE_MIN_PERCENT_MIN = 10
+export const SCALE_MIN_PERCENT_MAX = 99
 
 export function defaultRingConfig(): RingConfig {
   return {
@@ -30,6 +28,7 @@ export function defaultRingConfig(): RingConfig {
     rotationSpeed: 50,
     scale: 'none',
     scaleSpeed: 50,
+    scaleMinPercent: 80,
   }
 }
 
@@ -41,10 +40,44 @@ function isScaleMode(value: unknown): value is ScaleMode {
   return value === 'none' || value === 'pingpong'
 }
 
-function clampSpeed(value: unknown): number {
+function clampRotationSpeed(value: unknown): number {
   const n = typeof value === 'number' ? value : Number(value)
   if (!Number.isFinite(n)) return 50
-  return Math.min(100, Math.max(1, Math.round(n)))
+  const clamped = Math.min(ROTATION_SPEED_MAX, Math.max(ROTATION_SPEED_MIN, n))
+  return Math.round(clamped * 10) / 10
+}
+
+function clampScaleSpeed(value: unknown): number {
+  const n = typeof value === 'number' ? value : Number(value)
+  if (!Number.isFinite(n)) return 50
+  return Math.min(SCALE_SPEED_MAX, Math.max(SCALE_SPEED_MIN, Math.round(n)))
+}
+
+function clampScaleMinPercent(value: unknown): number {
+  const n = typeof value === 'number' ? value : Number(value)
+  if (!Number.isFinite(n)) return 80
+  return Math.min(SCALE_MIN_PERCENT_MAX, Math.max(SCALE_MIN_PERCENT_MIN, Math.round(n)))
+}
+
+export function scaleMinPercentToFactor(percent: number) {
+  return (clampScaleMinPercent(percent) / 100).toFixed(2)
+}
+
+export function rotationSpeedToDuration(speed: number) {
+  const clamped = clampRotationSpeed(speed)
+  const t =
+    (clamped - ROTATION_SPEED_MIN) / (ROTATION_SPEED_MAX - ROTATION_SPEED_MIN)
+  const minSec = 2
+  const maxSec = 120
+  return `${(maxSec - t * (maxSec - minSec)).toFixed(2)}s`
+}
+
+export function scaleSpeedToDuration(speed: number) {
+  const clamped = clampScaleSpeed(speed)
+  const t = (clamped - SCALE_SPEED_MIN) / (SCALE_SPEED_MAX - SCALE_SPEED_MIN)
+  const minSec = 1
+  const maxSec = 12
+  return `${(maxSec - t * (maxSec - minSec)).toFixed(2)}s`
 }
 
 function parseRingConfig(value: unknown): RingConfig {
@@ -52,9 +85,10 @@ function parseRingConfig(value: unknown): RingConfig {
   const v = value as Partial<RingConfig>
   return {
     rotation: isRotationMode(v.rotation) ? v.rotation : 'none',
-    rotationSpeed: clampSpeed(v.rotationSpeed),
+    rotationSpeed: clampRotationSpeed(v.rotationSpeed),
     scale: isScaleMode(v.scale) ? v.scale : 'none',
-    scaleSpeed: clampSpeed(v.scaleSpeed),
+    scaleSpeed: clampScaleSpeed(v.scaleSpeed),
+    scaleMinPercent: clampScaleMinPercent(v.scaleMinPercent),
   }
 }
 
@@ -62,22 +96,13 @@ export function defaultRingConfigs(): Record<RingId, RingConfig> {
   return Object.fromEntries(RING_IDS.map(ring => [ring, defaultRingConfig()])) as Record<RingId, RingConfig>
 }
 
-export function templateToRingConfigs(template: DunhuangTemplate): Record<RingId, RingConfig> {
+export function templateToRingConfigs(template: RingAnimationTemplate): Record<RingId, RingConfig> {
   const configs = defaultRingConfigs()
   for (const ring of RING_IDS) {
-    if (template.rings[ring] !== undefined) {
-      configs[ring] = parseRingConfig(template.rings[ring])
+    const partial = template.rings[ring]
+    if (partial !== undefined) {
+      configs[ring] = parseRingConfig({ ...configs[ring], ...partial })
     }
   }
   return configs
-}
-
-export function loadTemplateConfigs(templateId = dunhuangTemplates.defaultTemplate): Record<RingId, RingConfig> {
-  const template = dunhuangTemplates.templates[templateId]
-  if (!template) return defaultRingConfigs()
-  return templateToRingConfigs(template)
-}
-
-export function listTemplateIds(): string[] {
-  return Object.keys(dunhuangTemplates.templates)
 }
