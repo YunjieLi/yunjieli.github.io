@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import LegacyPage from './pages/LegacyPage'
 import Home from './pages/Home'
+import Dunhuang from './pages/Dunhuang'
 import Toc from './pages/Toc'
 import FlipGame from './games/flip'
 import DinosaurGame from './games/dinosaur'
@@ -12,6 +13,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/toc" element={<Toc />} />
+        <Route path="/dunhuang" element={<Dunhuang />} />
 
         {/* Legacy HTML pages */}
         <Route path="/studio"          element={<LegacyPage src="/studio/index.html"          title="Studio" />} />

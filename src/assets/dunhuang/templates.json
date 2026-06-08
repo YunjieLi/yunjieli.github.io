@@ -1,0 +1,52 @@
+{
+  "defaultTemplate": "template1",
+  "templates": {
+    "template1": {
+      "label": "Template 1",
+      "rings": {
+        "ring1": {
+          "rotation": "none",
+          "rotationSpeed": 50,
+          "scale": "none",
+          "scaleSpeed": 50
+        },
+        "ring2": {
+          "rotation": "ccw",
+          "rotationSpeed": 30,
+          "scale": "none",
+          "scaleSpeed": 50
+        },
+        "ring3": {
+          "rotation": "cw",
+          "rotationSpeed": 18,
+          "scale": "none",
+          "scaleSpeed": 50
+        },
+        "ring4": {
+          "rotation": "none",
+          "rotationSpeed": 50,
+          "scale": "none",
+          "scaleSpeed": 50
+        },
+        "ring5": {
+          "rotation": "none",
+          "rotationSpeed": 50,
+          "scale": "pingpong",
+          "scaleSpeed": 50
+        },
+        "ring6": {
+          "rotation": "none",
+          "rotationSpeed": 50,
+          "scale": "none",
+          "scaleSpeed": 50
+        },
+        "ring7": {
+          "rotation": "cw",
+          "rotationSpeed": 2,
+          "scale": "none",
+          "scaleSpeed": 50
+        }
+      }
+    }
+  }
+}

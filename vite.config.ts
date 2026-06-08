@@ -47,5 +47,7 @@ export default defineConfig({
   base: '/',
   server: {
     host: true,   // bind to 0.0.0.0 — accessible from other devices on the same network
+    port: 5174,
+    strictPort: true,
   },
 })
