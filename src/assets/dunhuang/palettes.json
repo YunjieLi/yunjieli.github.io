@@ -1,0 +1,95 @@
+[
+  {
+    "id": "original-yi",
+    "label": "壹",
+    "swatchOrder": ["color1", "color2", "color3", "color4", "color5", "color6"],
+    "colors": {
+      "color1": "#606d86",
+      "color2": "#845b5e",
+      "color3": "#aa7e73",
+      "color4": "#b8bcad",
+      "color5": "#ded7ca",
+      "color6": "#e7c7af"
+    },
+    "background": "#e7d6bb"
+  },
+  {
+    "id": "original-er",
+    "label": "贰",
+    "swatchOrder": ["color1", "color2", "color3", "color4", "color5"],
+    "colors": {
+      "color1": "#765c5c",
+      "color2": "#8896ad",
+      "color3": "#8a766c",
+      "color4": "#a0b4b4",
+      "color5": "#aa867e"
+    },
+    "background": "#e8dbd4"
+  },
+  {
+    "id": "original-si",
+    "label": "肆",
+    "swatchOrder": ["color1", "color2", "color3", "color4", "color5"],
+    "colors": {
+      "color1": "#78514e",
+      "color2": "#8ab0b0",
+      "color3": "#b7b5c1",
+      "color4": "#c77964",
+      "color5": "#e8dbd4"
+    },
+    "background": "#e8dbd4"
+  },
+  {
+    "id": "palette-2",
+    "label": "Palette 2",
+    "swatchOrder": ["color1", "color2", "color3", "color4", "color5", "color6"],
+    "colors": {
+      "color1": "#365686",
+      "color2": "#57755b",
+      "color3": "#a04530",
+      "color4": "#9d4933",
+      "color5": "#303f52",
+      "color6": "#e7d6bb"
+    },
+    "background": "#e7d6bb"
+  },
+  {
+    "id": "mineral",
+    "label": "矿物颜料",
+    "swatchOrder": [
+      "zhusha",
+      "cihuang",
+      "heshi",
+      "mituoseng",
+      "qingjinshi",
+      "gulan",
+      "kongqing",
+      "songlv",
+      "gefen"
+    ],
+    "colorLabels": {
+      "zhusha": "朱砂",
+      "cihuang": "雌黄",
+      "heshi": "赭石",
+      "mituoseng": "密陀僧",
+      "qingjinshi": "青金石",
+      "gulan": "钴蓝",
+      "kongqing": "空青",
+      "songlv": "松绿",
+      "gefen": "蛤粉",
+      "background": "蛤粉"
+    },
+    "colors": {
+      "zhusha": "#ac5548",
+      "cihuang": "#ead8a0",
+      "heshi": "#60433c",
+      "mituoseng": "#c99c4d",
+      "qingjinshi": "#5f638e",
+      "gulan": "#226b87",
+      "kongqing": "#6c858e",
+      "songlv": "#a9d4c5",
+      "gefen": "#e7ece8"
+    },
+    "background": "#e7ece8"
+  }
+]

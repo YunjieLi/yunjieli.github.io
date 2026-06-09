@@ -1,0 +1,205 @@
+{
+  "template1": {
+    "label": "New template",
+    "colors": {
+      "color1": "#78514e",
+      "color2": "#8ab0b0",
+      "color3": "#b7b5c1",
+      "color4": "#c77964",
+      "color5": "#e8dbd4"
+    },
+    "background": "#e8dbd4",
+    "rings": {
+      "ring1": {
+        "rotation": "none",
+        "rotationSpeed": 50,
+        "scale": "none",
+        "scaleSpeed": 50,
+        "scaleMinPercent": 80
+      },
+      "ring2": {
+        "rotation": "cw",
+        "rotationSpeed": 50,
+        "scale": "pingpong",
+        "scaleSpeed": 50,
+        "scaleMinPercent": 96
+      },
+      "ring3": {
+        "rotation": "none",
+        "rotationSpeed": 50,
+        "scale": "none",
+        "scaleSpeed": 50,
+        "scaleMinPercent": 80
+      },
+      "ring4-A": {
+        "rotation": "cw",
+        "rotationSpeed": 50,
+        "scale": "none",
+        "scaleSpeed": 50,
+        "scaleMinPercent": 80
+      },
+      "ring4-B": {
+        "rotation": "ccw",
+        "rotationSpeed": 50,
+        "scale": "none",
+        "scaleSpeed": 50,
+        "scaleMinPercent": 80
+      },
+      "ring4-C": {
+        "rotation": "none",
+        "rotationSpeed": 50,
+        "scale": "none",
+        "scaleSpeed": 50,
+        "scaleMinPercent": 80
+      },
+      "ring4": {
+        "rotation": "none",
+        "rotationSpeed": 50,
+        "scale": "none",
+        "scaleSpeed": 50,
+        "scaleMinPercent": 80
+      },
+      "ring5": {
+        "rotation": "none",
+        "rotationSpeed": 50,
+        "scale": "none",
+        "scaleSpeed": 50,
+        "scaleMinPercent": 80
+      }
+    }
+  },
+  "template2": {
+    "label": "Palette 2",
+    "colors": {
+      "color1": "#365686",
+      "color2": "#57755b",
+      "color3": "#a04530",
+      "color4": "#9d4933",
+      "color5": "#303f52"
+    },
+    "background": "#e8dbd4",
+    "rings": {
+      "ring1": {
+        "rotation": "cw",
+        "rotationSpeed": 50,
+        "scale": "none",
+        "scaleSpeed": 50
+      },
+      "ring2": {
+        "rotation": "ccw",
+        "rotationSpeed": 68.5,
+        "scale": "none",
+        "scaleSpeed": 50
+      },
+      "ring3": {
+        "rotation": "none",
+        "rotationSpeed": 18,
+        "scale": "none",
+        "scaleSpeed": 50
+      },
+      "ring4-A": {
+        "rotation": "cw",
+        "rotationSpeed": 3.5,
+        "scale": "none",
+        "scaleSpeed": 50
+      },
+      "ring4-B": {
+        "rotation": "ccw",
+        "rotationSpeed": 2.8,
+        "scale": "pingpong",
+        "scaleSpeed": 50,
+        "scaleMinPercent": 93
+      },
+      "ring4-C": {
+        "rotation": "cw",
+        "rotationSpeed": 1.8,
+        "scale": "none",
+        "scaleSpeed": 50
+      },
+      "ring4": {
+        "rotation": "ccw",
+        "rotationSpeed": 2.8,
+        "scale": "none",
+        "scaleSpeed": 50
+      },
+      "ring5": {
+        "rotation": "ccw",
+        "rotationSpeed": 2.3,
+        "scale": "pingpong",
+        "scaleSpeed": 50,
+        "scaleMinPercent": 91
+      }
+    }
+  },
+  "template3": {
+    "label": "矿物颜料",
+    "colorLabels": {
+      "color1": "青金石",
+      "color2": "朱砂",
+      "color3": "赭石",
+      "color4": "松绿",
+      "color5": "雌黄",
+      "background": "蛤粉"
+    },
+    "colors": {
+      "color1": "#5f638e",
+      "color2": "#ac5548",
+      "color3": "#60433c",
+      "color4": "#a9d4c5",
+      "color5": "#ead8a0"
+    },
+    "background": "#e7ece8",
+    "rings": {
+      "ring1": {
+        "rotation": "cw",
+        "rotationSpeed": 50,
+        "scale": "none",
+        "scaleSpeed": 50
+      },
+      "ring2": {
+        "rotation": "ccw",
+        "rotationSpeed": 68.5,
+        "scale": "none",
+        "scaleSpeed": 50
+      },
+      "ring3": {
+        "rotation": "none",
+        "rotationSpeed": 18,
+        "scale": "none",
+        "scaleSpeed": 50
+      },
+      "ring4-A": {
+        "rotation": "cw",
+        "rotationSpeed": 3.5,
+        "scale": "none",
+        "scaleSpeed": 50
+      },
+      "ring4-B": {
+        "rotation": "ccw",
+        "rotationSpeed": 2.8,
+        "scale": "pingpong",
+        "scaleSpeed": 50,
+        "scaleMinPercent": 93
+      },
+      "ring4-C": {
+        "rotation": "cw",
+        "rotationSpeed": 1.8,
+        "scale": "none",
+        "scaleSpeed": 50
+      },
+      "ring4": {
+        "rotation": "ccw",
+        "rotationSpeed": 2.8,
+        "scale": "none",
+        "scaleSpeed": 50
+      },
+      "ring5": {
+        "rotation": "ccw",
+        "rotationSpeed": 2.3,
+        "scale": "pingpong",
+        "scaleSpeed": 50,
+        "scaleMinPercent": 91
+      }
+    }
+  }
+}

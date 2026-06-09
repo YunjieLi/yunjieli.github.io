@@ -2,25 +2,26 @@ import { useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
-import { colorsEqual, formatColorLabel, normalizeSvgColor } from './dunhuang-colors'
+import { colorsEqual, normalizeSvgColor } from './dunhuang-colors'
 import {
-  DUNHUANG_PALETTES,
-  paletteSwatchLabel,
-  paletteSwatchesInOrder,
+  paletteColorKeysInOrder,
+  paletteColorLabel,
+  type DunhuangPalette,
 } from './dunhuang-palettes'
 
 interface DunhuangColorPickerProps {
   label: string
   value: string
+  palettes: DunhuangPalette[]
   onChange: (color: string) => void
 }
 
-function activeSwatchId(value: string) {
-  for (const palette of DUNHUANG_PALETTES) {
-    const swatches = paletteSwatchesInOrder(palette)
+function activeSwatchId(value: string, palettes: DunhuangPalette[]) {
+  for (const palette of palettes) {
+    const colorKeys = paletteColorKeysInOrder(palette)
 
-    for (let index = 0; index < swatches.length; index += 1) {
-      if (colorsEqual(swatches[index], value)) return `${palette.id}-${index}`
+    for (const colorKey of colorKeys) {
+      if (colorsEqual(palette.colors[colorKey], value)) return `${palette.id}-${colorKey}`
     }
 
     if (colorsEqual(palette.background, value)) return `${palette.id}-background`
@@ -29,11 +30,11 @@ function activeSwatchId(value: string) {
   return null
 }
 
-export default function DunhuangColorPicker({ label, value, onChange }: DunhuangColorPickerProps) {
+export default function DunhuangColorPicker({ label, value, palettes, onChange }: DunhuangColorPickerProps) {
   const [open, setOpen] = useState(false)
   const [customMode, setCustomMode] = useState(false)
 
-  const selectedSwatchId = useMemo(() => activeSwatchId(value), [value])
+  const selectedSwatchId = useMemo(() => activeSwatchId(value, palettes), [palettes, value])
 
   const close = () => {
     setOpen(false)
@@ -65,16 +66,16 @@ export default function DunhuangColorPicker({ label, value, onChange }: Dunhuang
         {!customMode ? (
           <>
             <div className="dunhuang-color-picker__palettes">
-              {DUNHUANG_PALETTES.map(palette => {
-                const swatches = paletteSwatchesInOrder(palette)
+              {palettes.map(palette => {
+                const colorKeys = paletteColorKeysInOrder(palette)
                 const backgroundSwatchId = `${palette.id}-background`
 
                 return (
                   <div key={palette.id} className="dunhuang-color-picker__palette">
-                    <span className="dunhuang-color-picker__palette-label">{palette.label}</span>
                     <div className="dunhuang-color-picker__swatches">
-                      {swatches.map((swatch, index) => {
-                        const swatchId = `${palette.id}-${index}`
+                      {colorKeys.map(colorKey => {
+                        const swatch = palette.colors[colorKey]
+                        const swatchId = `${palette.id}-${colorKey}`
                         return (
                           <button
                             key={swatchId}
@@ -84,7 +85,7 @@ export default function DunhuangColorPicker({ label, value, onChange }: Dunhuang
                               selectedSwatchId === swatchId && 'dunhuang-color-picker__swatch--active',
                             )}
                             style={{ backgroundColor: swatch }}
-                            aria-label={paletteSwatchLabel(palette, index)}
+                            aria-label={paletteColorLabel(palette, colorKey)}
                             aria-pressed={selectedSwatchId === swatchId}
                             onClick={() => selectColor(swatch)}
                           />
@@ -122,12 +123,11 @@ export default function DunhuangColorPicker({ label, value, onChange }: Dunhuang
           </>
         ) : (
           <div className="dunhuang-color-picker__custom">
-            <p className="dunhuang-color-picker__custom-label">{label}</p>
             <label className="dunhuang-color-picker__custom-input">
-              <span className="dunhuang-color-picker__custom-value">{formatColorLabel(value)}</span>
               <input
                 type="color"
                 value={value}
+                aria-label={`Custom color for ${label}`}
                 onChange={e => selectColor(e.target.value)}
               />
             </label>

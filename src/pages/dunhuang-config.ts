@@ -1,5 +1,4 @@
-export const RING_IDS = ['ring1', 'ring2', 'ring3', 'ring4', 'ring5', 'ring6', 'ring7'] as const
-export type RingId = (typeof RING_IDS)[number]
+export type RingId = string
 export type RotationMode = 'none' | 'cw' | 'ccw'
 export type ScaleMode = 'none' | 'pingpong'
 
@@ -92,13 +91,16 @@ function parseRingConfig(value: unknown): RingConfig {
   }
 }
 
-export function defaultRingConfigs(): Record<RingId, RingConfig> {
-  return Object.fromEntries(RING_IDS.map(ring => [ring, defaultRingConfig()])) as Record<RingId, RingConfig>
+export function defaultRingConfigs(ringIds: RingId[]): Record<RingId, RingConfig> {
+  return Object.fromEntries(ringIds.map(ring => [ring, defaultRingConfig()])) as Record<RingId, RingConfig>
 }
 
-export function templateToRingConfigs(template: RingAnimationTemplate): Record<RingId, RingConfig> {
-  const configs = defaultRingConfigs()
-  for (const ring of RING_IDS) {
+export function templateToRingConfigs(
+  template: RingAnimationTemplate,
+  ringIds: RingId[],
+): Record<RingId, RingConfig> {
+  const configs = defaultRingConfigs(ringIds)
+  for (const ring of ringIds) {
     const partial = template.rings[ring]
     if (partial !== undefined) {
       configs[ring] = parseRingConfig({ ...configs[ring], ...partial })

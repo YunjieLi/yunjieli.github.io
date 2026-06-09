@@ -1,18 +1,15 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Check, Copy } from 'lucide-react'
-import zaojing1 from '@/assets/dunhuang/zaojing1.svg?raw'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import DunhuangColorPicker from './DunhuangColorPicker'
-import { colorSlotLabel } from './dunhuang-palettes'
-import { useDunhuangColors } from './use-dunhuang-colors'
 import {
   defaultRingConfig,
+  defaultRingConfigs,
   rotationSpeedToDuration,
   ROTATION_SPEED_MAX,
   ROTATION_SPEED_MIN,
-  RING_IDS,
   scaleMinPercentToFactor,
   scaleSpeedToDuration,
   SCALE_MIN_PERCENT_MAX,
@@ -24,15 +21,41 @@ import {
   type RotationMode,
   type ScaleMode,
 } from './dunhuang-config'
-import { buildTemplateFromState, loadTemplateConfigs, templateToJsonSnippet } from './dunhuang-templates'
+import {
+  DUNHUANG_GRAPHICS,
+  defaultGraphicId,
+  discoverPresentRingIds,
+  getGraphicOrThrow,
+  querySvgGroup,
+} from './dunhuang-graphics'
+import { colorSlotLabel, defaultTemplate } from './dunhuang-templates'
+import { DUNHUANG_PALETTES } from './dunhuang-palettes'
+import {
+  buildTemplateFromState,
+  loadTemplateRingConfigs,
+  templateToJsonSnippet,
+} from './dunhuang-templates'
+import {
+  createDefaultColorSession,
+  useDunhuangColors,
+  type DunhuangColorSession,
+} from './use-dunhuang-colors'
 import './dunhuang.css'
 
 const ANIMATION_SETTLE_MS = 600
 
-function discoverRingOrder(svg: SVGSVGElement): RingId[] {
-  return [...svg.querySelectorAll('g[id^="ring"]')]
-    .map(el => el.id)
-    .filter((id): id is RingId => (RING_IDS as readonly string[]).includes(id))
+interface GraphicSession {
+  ringConfigs: Record<RingId, RingConfig>
+  colorSession: DunhuangColorSession
+  animationEnabled: boolean
+}
+
+function createDefaultGraphicSession(graphicId: string): GraphicSession {
+  return {
+    ringConfigs: loadTemplateRingConfigs(graphicId),
+    colorSession: createDefaultColorSession(graphicId),
+    animationEnabled: true,
+  }
 }
 
 function ensureAnimationHooks(group: SVGGElement) {
@@ -156,8 +179,8 @@ function settleRingAnimation(group: SVGGElement) {
 
 function settleAllRingAnimations(svg: SVGSVGElement, ringOrder: RingId[]) {
   const transitions = ringOrder.map(ring => {
-    const group = svg.querySelector(`#${ring}`)
-    if (!(group instanceof SVGGElement)) return Promise.resolve()
+    const group = querySvgGroup(svg, ring)
+    if (!group) return Promise.resolve()
     return settleRingAnimation(group)
   })
 
@@ -166,10 +189,8 @@ function settleAllRingAnimations(svg: SVGSVGElement, ringOrder: RingId[]) {
 
 function clearAllRingAnimations(svg: SVGSVGElement, ringOrder: RingId[]) {
   for (const ring of ringOrder) {
-    const group = svg.querySelector(`#${ring}`)
-    if (group instanceof SVGGElement) {
-      clearRingAnimation(group)
-    }
+    const group = querySvgGroup(svg, ring)
+    if (group) clearRingAnimation(group)
   }
 }
 
@@ -179,54 +200,108 @@ function applyAllRingAnimations(
   configs: Record<RingId, RingConfig>,
 ) {
   for (const ring of ringOrder) {
-    const group = svg.querySelector(`#${ring}`)
-    if (group instanceof SVGGElement) {
+    const group = querySvgGroup(svg, ring)
+    if (group) {
       applyRingAnimation(group, configs[ring] ?? defaultRingConfig())
     }
   }
+}
+
+function mountSvg(host: HTMLDivElement, svgRaw: string) {
+  host.innerHTML = svgRaw
+  const svg = host.querySelector('svg')
+  if (!svg) throw new Error('SVG markup missing root <svg>')
+  svg.classList.add('dunhuang-svg')
+  return svg
 }
 
 export default function Dunhuang() {
   const svgHostRef = useRef<HTMLDivElement>(null)
   const svgReadyRef = useRef(false)
   const prevAnimationEnabledRef = useRef(true)
+  const sessionsRef = useRef<Record<string, GraphicSession>>({})
+  const [activeGraphicId, setActiveGraphicId] = useState(defaultGraphicId)
   const [ringOrder, setRingOrder] = useState<RingId[]>([])
   const [ringConfigs, setRingConfigs] = useState<Record<RingId, RingConfig>>(() =>
-    loadTemplateConfigs(),
+    loadTemplateRingConfigs(defaultGraphicId()),
   )
   const [controlsOpen, setControlsOpen] = useState(false)
   const [animationEnabled, setAnimationEnabled] = useState(true)
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'error'>('idle')
+
+  const activeGraphic = getGraphicOrThrow(activeGraphicId)
+  const palettes = DUNHUANG_PALETTES
+
   const {
     paintColorKeys,
     colorOverrides,
     backgroundColor,
     initFromSvg,
+    loadGraphicColors,
     syncColorsToSvg,
     updateColor,
     updateBackgroundColor,
     resetColors,
-  } = useDunhuangColors(svgHostRef)
+    getColorSession,
+  } = useDunhuangColors(svgHostRef, activeGraphicId)
+
+  const persistActiveSession = () => {
+    sessionsRef.current[activeGraphicId] = {
+      ringConfigs,
+      colorSession: getColorSession(),
+      animationEnabled,
+    }
+  }
+
+  const loadGraphic = (graphicId: string, session = sessionsRef.current[graphicId]) => {
+    const graphic = getGraphicOrThrow(graphicId)
+    const host = svgHostRef.current
+    if (!host) return
+
+    const resolvedSession = session ?? createDefaultGraphicSession(graphicId)
+    const svg = mountSvg(host, graphic.svgRaw)
+    const order = discoverPresentRingIds(svg, graphic.ringIds)
+
+    loadGraphicColors(graphicId, svg, resolvedSession.colorSession)
+    setRingOrder(order)
+    setRingConfigs(resolvedSession.ringConfigs)
+    setAnimationEnabled(resolvedSession.animationEnabled)
+    prevAnimationEnabledRef.current = resolvedSession.animationEnabled
+
+    if (resolvedSession.animationEnabled) {
+      applyAllRingAnimations(svg, order, resolvedSession.ringConfigs)
+    } else {
+      clearAllRingAnimations(svg, order)
+    }
+
+    svgReadyRef.current = true
+  }
+
+  const switchGraphic = (graphicId: string) => {
+    if (graphicId === activeGraphicId) return
+    persistActiveSession()
+    setActiveGraphicId(graphicId)
+    loadGraphic(graphicId)
+  }
 
   useLayoutEffect(() => {
     const host = svgHostRef.current
     if (!host) return
 
-    host.innerHTML = zaojing1
-    const svg = host.querySelector('svg')
-    if (!svg) return
-
-    svg.classList.add('dunhuang-svg')
-    initFromSvg(svg)
-
-    const order = discoverRingOrder(svg)
-    setRingOrder(order)
-    if (animationEnabled) {
-      applyAllRingAnimations(svg, order, ringConfigs)
+    const session = sessionsRef.current[activeGraphicId]
+    if (session) {
+      loadGraphic(activeGraphicId, session)
     } else {
-      clearAllRingAnimations(svg, order)
+      const svg = mountSvg(host, activeGraphic.svgRaw)
+      initFromSvg(svg)
+      const order = discoverPresentRingIds(svg, activeGraphic.ringIds)
+      setRingOrder(order)
+      if (animationEnabled) {
+        applyAllRingAnimations(svg, order, ringConfigs)
+      }
+      svgReadyRef.current = true
     }
-    svgReadyRef.current = true
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
@@ -255,8 +330,18 @@ export default function Dunhuang() {
     }))
   }
 
+  const clearAllAnimations = () => {
+    setRingConfigs(defaultRingConfigs(ringOrder))
+  }
+
   const copyTemplateSnippet = async () => {
-    const template = buildTemplateFromState(ringConfigs, colorOverrides, backgroundColor)
+    const template = buildTemplateFromState(
+      activeGraphic,
+      ringOrder,
+      ringConfigs,
+      colorOverrides,
+      backgroundColor,
+    )
     const snippet = templateToJsonSnippet(template)
     try {
       await navigator.clipboard.writeText(snippet)
@@ -279,193 +364,220 @@ export default function Dunhuang() {
         type="button"
         className="dunhuang-page__controls-toggle"
         aria-expanded={controlsOpen}
-        aria-controls="dunhuang-layer-controls"
+        aria-controls="dunhuang-sidebar"
         onClick={() => setControlsOpen(open => !open)}
       >
-        Layers
+        Controls
       </button>
 
       <button
         type="button"
         className={`dunhuang-page__controls-backdrop${controlsOpen ? ' is-visible' : ''}`}
-        aria-label="Close layer controls"
+        aria-label="Close controls"
         tabIndex={controlsOpen ? 0 : -1}
         onClick={() => setControlsOpen(false)}
       />
 
       <aside
-        id="dunhuang-layer-controls"
-        className={`dunhuang-page__controls${controlsOpen ? ' is-open' : ''}`}
+        id="dunhuang-sidebar"
+        className={`dunhuang-page__sidebar${controlsOpen ? ' is-open' : ''}`}
       >
         <div className="dunhuang-page__controls-handle" aria-hidden="true" />
 
-        <div className="dunhuang-page__controls-header-row">
-          <h2 className="dunhuang-page__controls-header">Layer Controls</h2>
-          <div className="dunhuang-page__controls-header-actions">
-            <button
-              type="button"
-              className="dunhuang-page__controls-copy"
-              aria-label={
-                copyStatus === 'copied'
-                  ? 'Template copied'
-                  : copyStatus === 'error'
-                    ? 'Copy failed'
-                    : 'Copy template'
-              }
-              title={
-                copyStatus === 'copied'
-                  ? 'Copied!'
-                  : copyStatus === 'error'
-                    ? 'Copy failed'
-                    : 'Copy template'
-              }
-              onClick={copyTemplateSnippet}
-            >
-              {copyStatus === 'copied' ? <Check aria-hidden="true" /> : <Copy aria-hidden="true" />}
-            </button>
-            <button
-              type="button"
-              className="dunhuang-page__controls-close"
-              aria-label="Close layer controls"
-              onClick={() => setControlsOpen(false)}
-            >
-              ×
-            </button>
+        <section className="dunhuang-page__gallery">
+          <h2 className="dunhuang-page__panel-header">Gallery</h2>
+          <div className="dunhuang-page__gallery-grid">
+            {DUNHUANG_GRAPHICS.map(graphic => (
+              <button
+                key={graphic.id}
+                type="button"
+                className={`dunhuang-page__gallery-item${graphic.id === activeGraphicId ? ' is-active' : ''}`}
+                aria-pressed={graphic.id === activeGraphicId}
+                onClick={() => switchGraphic(graphic.id)}
+              >
+                <span className="dunhuang-page__gallery-item-label">{graphic.label}</span>
+              </button>
+            ))}
           </div>
-        </div>
+        </section>
 
-        <Tabs defaultValue="color" className="dunhuang-page__controls-tabs-root">
-          <div className="dunhuang-page__controls-tabs-header">
-            <TabsList className="w-full">
-              <TabsTrigger value="color">Color</TabsTrigger>
-              <TabsTrigger value="animation">Animation</TabsTrigger>
-            </TabsList>
+        <section className="dunhuang-page__controls">
+          <div className="dunhuang-page__controls-header-row">
+            <h2 className="dunhuang-page__controls-header">Layer Controls</h2>
+            <div className="dunhuang-page__controls-header-actions">
+              <button
+                type="button"
+                className="dunhuang-page__controls-copy"
+                aria-label={
+                  copyStatus === 'copied'
+                    ? 'Template copied'
+                    : copyStatus === 'error'
+                      ? 'Copy failed'
+                      : 'Copy template'
+                }
+                title={
+                  copyStatus === 'copied'
+                    ? 'Copied!'
+                    : copyStatus === 'error'
+                      ? 'Copy failed'
+                      : 'Copy template'
+                }
+                onClick={copyTemplateSnippet}
+              >
+                {copyStatus === 'copied' ? <Check aria-hidden="true" /> : <Copy aria-hidden="true" />}
+              </button>
+              <button
+                type="button"
+                className="dunhuang-page__controls-close"
+                aria-label="Close controls"
+                onClick={() => setControlsOpen(false)}
+              >
+                ×
+              </button>
+            </div>
           </div>
 
-          <TabsContent value="color" className="dunhuang-page__tab-panel dunhuang-page__tab-panel--color">
-            {paintColorKeys.map((colorKey, index) => {
-              const current = colorOverrides[colorKey] ?? colorKey
-              const slotLabel = colorSlotLabel(index)
-              return (
-                <div key={colorKey} className="dunhuang-color-row">
-                  <span className="dunhuang-color-row__label">{slotLabel}</span>
-                  <DunhuangColorPicker
-                    label={slotLabel}
-                    value={current}
-                    onChange={next => updateColor(colorKey, next)}
-                  />
-                </div>
-              )
-            })}
-
-            <div className="dunhuang-color-row">
-              <span className="dunhuang-color-row__label">background</span>
-              <DunhuangColorPicker
-                label="background"
-                value={backgroundColor}
-                onChange={updateBackgroundColor}
-              />
+          <Tabs defaultValue="color" className="dunhuang-page__controls-tabs-root">
+            <div className="dunhuang-page__controls-tabs-header">
+              <TabsList className="w-full">
+                <TabsTrigger value="color">Color</TabsTrigger>
+                <TabsTrigger value="animation">Animation</TabsTrigger>
+              </TabsList>
             </div>
 
-            <div className="dunhuang-color-actions dunhuang-color-actions--bottom">
-              <Button type="button" variant="outline" size="sm" className="w-full" onClick={resetColors}>
-                Reset
-              </Button>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="animation" className="dunhuang-page__tab-panel dunhuang-page__tab-panel--animation">
-            <div className="dunhuang-animation-toolbar">
-              <label className="dunhuang-animation-toggle">
-                <span>Animation</span>
-                <Switch checked={animationEnabled} onCheckedChange={setAnimationEnabled} />
-              </label>
-            </div>
-
-            {ringOrder.map(ring => {
-            const config = ringConfigs[ring]
-            return (
-              <details key={ring} className="dunhuang-ring-panel">
-                <summary>#{ring}</summary>
-
-                <div className="dunhuang-ring-panel__body">
-                  <label>
-                    <span>Rotation</span>
-                    <select
-                      value={config.rotation}
-                      onChange={e => updateRing(ring, { rotation: e.target.value as RotationMode })}
-                    >
-                      <option value="none">None</option>
-                      <option value="cw">Clockwise</option>
-                      <option value="ccw">Counterclockwise</option>
-                    </select>
-                  </label>
-
-                  <label>
-                    <span>
-                      Rotation speed ({config.rotationSpeed})
-                      {config.rotation === 'none' ? ' (disabled)' : ''}
-                    </span>
-                    <input
-                      type="range"
-                      min={ROTATION_SPEED_MIN}
-                      max={ROTATION_SPEED_MAX}
-                      step={0.1}
-                      value={config.rotationSpeed}
-                      disabled={config.rotation === 'none'}
-                      className="disabled:opacity-40"
-                      onChange={e => updateRing(ring, { rotationSpeed: Number(e.target.value) })}
+            <TabsContent value="color" className="dunhuang-page__tab-panel dunhuang-page__tab-panel--color">
+              {paintColorKeys.map((colorKey, index) => {
+                const current = colorOverrides[colorKey] ?? colorKey
+                const slotLabel = colorSlotLabel(activeGraphicId, index, defaultTemplate(activeGraphicId).colorLabels)
+                return (
+                  <div key={colorKey} className="dunhuang-color-row">
+                    <span className="dunhuang-color-row__label">{slotLabel}</span>
+                    <DunhuangColorPicker
+                      label={slotLabel}
+                      value={current}
+                      palettes={palettes}
+                      onChange={next => updateColor(colorKey, next)}
                     />
-                  </label>
+                  </div>
+                )
+              })}
 
-                  <label>
-                    <span>Scaling</span>
-                    <select
-                      value={config.scale}
-                      onChange={e => updateRing(ring, { scale: e.target.value as ScaleMode })}
-                    >
-                      <option value="none">None</option>
-                      <option value="pingpong">Ping-pong</option>
-                    </select>
-                  </label>
+              <div className="dunhuang-color-row">
+                <span className="dunhuang-color-row__label">background</span>
+                <DunhuangColorPicker
+                  label="background"
+                  value={backgroundColor}
+                  palettes={palettes}
+                  onChange={updateBackgroundColor}
+                />
+              </div>
 
-                  <label>
-                    <span>
-                      Min scale ({config.scaleMinPercent}%)
-                      {config.scale === 'none' ? ' (disabled)' : ''}
-                    </span>
-                    <input
-                      type="range"
-                      min={SCALE_MIN_PERCENT_MIN}
-                      max={SCALE_MIN_PERCENT_MAX}
-                      value={config.scaleMinPercent}
-                      disabled={config.scale === 'none'}
-                      className="disabled:opacity-40"
-                      onChange={e => updateRing(ring, { scaleMinPercent: Number(e.target.value) })}
-                    />
-                  </label>
+              <div className="dunhuang-color-actions dunhuang-color-actions--bottom">
+                <Button type="button" variant="outline" size="sm" className="w-full" onClick={resetColors}>
+                  Reset
+                </Button>
+              </div>
+            </TabsContent>
 
-                  <label>
-                    <span>
-                      Scale speed
-                      {config.scale === 'none' ? ' (disabled)' : ''}
-                    </span>
-                    <input
-                      type="range"
-                      min={SCALE_SPEED_MIN}
-                      max={SCALE_SPEED_MAX}
-                      value={config.scaleSpeed}
-                      disabled={config.scale === 'none'}
-                      className="disabled:opacity-40"
-                      onChange={e => updateRing(ring, { scaleSpeed: Number(e.target.value) })}
-                    />
-                  </label>
-                </div>
-              </details>
-            )
-          })}
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="animation" className="dunhuang-page__tab-panel dunhuang-page__tab-panel--animation">
+              <div className="dunhuang-animation-toolbar">
+                <label className="dunhuang-animation-toggle">
+                  <span>Animation</span>
+                  <Switch checked={animationEnabled} onCheckedChange={setAnimationEnabled} />
+                </label>
+              </div>
+
+              {ringOrder.map(ring => {
+                const config = ringConfigs[ring] ?? defaultRingConfig()
+                return (
+                  <details key={ring} className="dunhuang-ring-panel">
+                    <summary>#{ring}</summary>
+
+                    <div className="dunhuang-ring-panel__body">
+                      <label>
+                        <span>Rotation</span>
+                        <select
+                          value={config.rotation}
+                          onChange={e => updateRing(ring, { rotation: e.target.value as RotationMode })}
+                        >
+                          <option value="none">None</option>
+                          <option value="cw">Clockwise</option>
+                          <option value="ccw">Counterclockwise</option>
+                        </select>
+                      </label>
+
+                      <label>
+                        <span>
+                          Rotation speed ({config.rotationSpeed})
+                          {config.rotation === 'none' ? ' (disabled)' : ''}
+                        </span>
+                        <input
+                          type="range"
+                          min={ROTATION_SPEED_MIN}
+                          max={ROTATION_SPEED_MAX}
+                          step={0.1}
+                          value={config.rotationSpeed}
+                          disabled={config.rotation === 'none'}
+                          className="disabled:opacity-40"
+                          onChange={e => updateRing(ring, { rotationSpeed: Number(e.target.value) })}
+                        />
+                      </label>
+
+                      <label>
+                        <span>Scaling</span>
+                        <select
+                          value={config.scale}
+                          onChange={e => updateRing(ring, { scale: e.target.value as ScaleMode })}
+                        >
+                          <option value="none">None</option>
+                          <option value="pingpong">Ping-pong</option>
+                        </select>
+                      </label>
+
+                      <label>
+                        <span>
+                          Min scale ({config.scaleMinPercent}%)
+                          {config.scale === 'none' ? ' (disabled)' : ''}
+                        </span>
+                        <input
+                          type="range"
+                          min={SCALE_MIN_PERCENT_MIN}
+                          max={SCALE_MIN_PERCENT_MAX}
+                          value={config.scaleMinPercent}
+                          disabled={config.scale === 'none'}
+                          className="disabled:opacity-40"
+                          onChange={e => updateRing(ring, { scaleMinPercent: Number(e.target.value) })}
+                        />
+                      </label>
+
+                      <label>
+                        <span>
+                          Scale speed
+                          {config.scale === 'none' ? ' (disabled)' : ''}
+                        </span>
+                        <input
+                          type="range"
+                          min={SCALE_SPEED_MIN}
+                          max={SCALE_SPEED_MAX}
+                          value={config.scaleSpeed}
+                          disabled={config.scale === 'none'}
+                          className="disabled:opacity-40"
+                          onChange={e => updateRing(ring, { scaleSpeed: Number(e.target.value) })}
+                        />
+                      </label>
+                    </div>
+                  </details>
+                )
+              })}
+
+              <div className="dunhuang-color-actions dunhuang-color-actions--bottom">
+                <Button type="button" variant="outline" size="sm" className="w-full" onClick={clearAllAnimations}>
+                  Clear all
+                </Button>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </section>
       </aside>
     </div>
   )

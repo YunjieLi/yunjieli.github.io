@@ -6,24 +6,37 @@ import {
   tagSvgBackground,
   tagSvgColorOrigins,
 } from './dunhuang-colors'
+import { getGraphicOrThrow } from './dunhuang-graphics'
 import {
   defaultTemplate,
-  DUNHUANG_PAINT_COLOR_KEYS,
   loadDefaultColorState,
+  swatchOrderForGraphic,
   templateToBackgroundColor,
   templateToColorOverrides,
 } from './dunhuang-templates'
 
-export function useDunhuangColors(svgHostRef: RefObject<HTMLDivElement | null>) {
+export interface DunhuangColorSession {
+  colorOverrides: Record<string, string>
+  backgroundColor: string
+}
+
+export function createDefaultColorSession(graphicId: string): DunhuangColorSession {
+  return loadDefaultColorState(graphicId)
+}
+
+export function useDunhuangColors(svgHostRef: RefObject<HTMLDivElement | null>, graphicId: string) {
   const svgReadyRef = useRef(false)
   const colorOverridesRef = useRef<Record<string, string>>({})
   const originalOverridesRef = useRef<Record<string, string>>({})
-  const originalBackgroundRef = useRef(loadDefaultColorState().backgroundColor)
-  const [paintColorKeys] = useState<string[]>(() => [...DUNHUANG_PAINT_COLOR_KEYS])
+  const originalBackgroundRef = useRef(loadDefaultColorState(graphicId).backgroundColor)
+  const graphic = getGraphicOrThrow(graphicId)
+  const [paintColorKeys, setPaintColorKeys] = useState<string[]>(() => [...graphic.paintColorKeys])
   const [colorOverrides, setColorOverrides] = useState<Record<string, string>>(
-    () => loadDefaultColorState().colorOverrides,
+    () => loadDefaultColorState(graphicId).colorOverrides,
   )
-  const [backgroundColor, setBackgroundColor] = useState(() => loadDefaultColorState().backgroundColor)
+  const [backgroundColor, setBackgroundColor] = useState(
+    () => loadDefaultColorState(graphicId).backgroundColor,
+  )
 
   colorOverridesRef.current = colorOverrides
 
@@ -33,25 +46,53 @@ export function useDunhuangColors(svgHostRef: RefObject<HTMLDivElement | null>) 
     applySvgColorOverrides(svg, colorOverridesRef.current)
   }, [svgHostRef])
 
+  const applySession = useCallback(
+    (session: DunhuangColorSession, options?: { rememberOriginal?: boolean }) => {
+      colorOverridesRef.current = session.colorOverrides
+      setColorOverrides(session.colorOverrides)
+      setBackgroundColor(session.backgroundColor)
+
+      if (options?.rememberOriginal) {
+        originalOverridesRef.current = { ...session.colorOverrides }
+        originalBackgroundRef.current = session.backgroundColor
+      }
+    },
+    [],
+  )
+
   const initFromSvg = useCallback(
-    (svg: SVGSVGElement) => {
+    (svg: SVGSVGElement, session?: DunhuangColorSession) => {
+      const keys = getGraphicOrThrow(graphicId).paintColorKeys
+      setPaintColorKeys([...keys])
       tagSvgBackground(svg)
-      tagSvgColorOrigins(svg, paintColorKeys)
+      tagSvgColorOrigins(svg, keys)
 
-      const template = defaultTemplate()
-      const overrides = templateToColorOverrides(template)
+      const nextSession = session ?? createDefaultColorSession(graphicId)
+      applySession(nextSession, { rememberOriginal: true })
 
-      originalOverridesRef.current = { ...overrides }
-      originalBackgroundRef.current = templateToBackgroundColor(template)
-
-      setColorOverrides(overrides)
-      setBackgroundColor(templateToBackgroundColor(template))
-
-      applySvgColorOverrides(svg, overrides)
+      applySvgColorOverrides(svg, nextSession.colorOverrides)
       clearSvgBackgroundRect(svg)
       svgReadyRef.current = true
     },
-    [paintColorKeys],
+    [applySession, graphicId],
+  )
+
+  const loadGraphicColors = useCallback(
+    (nextGraphicId: string, svg: SVGSVGElement, session?: DunhuangColorSession) => {
+      svgReadyRef.current = false
+      const keys = getGraphicOrThrow(nextGraphicId).paintColorKeys
+      setPaintColorKeys([...keys])
+
+      const resolvedSession = session ?? createDefaultColorSession(nextGraphicId)
+      tagSvgBackground(svg)
+      tagSvgColorOrigins(svg, keys)
+      applySession(resolvedSession, { rememberOriginal: !session })
+
+      applySvgColorOverrides(svg, resolvedSession.colorOverrides)
+      clearSvgBackgroundRect(svg)
+      svgReadyRef.current = true
+    },
+    [applySession],
   )
 
   const updateColor = useCallback((originKey: string, next: string) => {
@@ -72,11 +113,16 @@ export function useDunhuangColors(svgHostRef: RefObject<HTMLDivElement | null>) 
   }, [])
 
   const resetColors = useCallback(() => {
-    const overrides = { ...originalOverridesRef.current }
+    const template = defaultTemplate(graphicId)
+    const graphic = getGraphicOrThrow(graphicId)
+    const overrides = templateToColorOverrides(template, graphic.paintColorKeys, swatchOrderForGraphic(graphic))
+    const background = templateToBackgroundColor(template, graphicId)
+    originalOverridesRef.current = { ...overrides }
+    originalBackgroundRef.current = background
     colorOverridesRef.current = overrides
     setColorOverrides(overrides)
-    setBackgroundColor(originalBackgroundRef.current)
-  }, [])
+    setBackgroundColor(background)
+  }, [graphicId])
 
   useEffect(() => {
     if (!svgReadyRef.current) return
@@ -88,9 +134,14 @@ export function useDunhuangColors(svgHostRef: RefObject<HTMLDivElement | null>) 
     colorOverrides,
     backgroundColor,
     initFromSvg,
+    loadGraphicColors,
     syncColorsToSvg,
     updateColor,
     updateBackgroundColor,
     resetColors,
+    getColorSession: (): DunhuangColorSession => ({
+      colorOverrides: { ...colorOverridesRef.current },
+      backgroundColor,
+    }),
   }
 }

@@ -1,10 +1,9 @@
-import templatesFile from '@/assets/dunhuang/templates.json'
 import {
-  RING_IDS,
   templateToRingConfigs,
   type RingConfig,
   type RingId,
 } from './dunhuang-config'
+import { defaultGraphicId, getGraphicOrThrow, type DunhuangGraphic } from './dunhuang-graphics'
 
 function normalizeHexColor(value: string | null | undefined): string | null {
   if (!value || value === 'none' || value.startsWith('url(')) return null
@@ -31,115 +30,83 @@ export interface DunhuangTemplate {
   rings: Partial<Record<RingId, Partial<RingConfig>>>
 }
 
-export interface DunhuangTemplatesFile {
-  swatchOrder: string[]
-  paintColorKeys: string[]
-  templates: Record<string, DunhuangTemplate>
+export function swatchOrderForGraphic(graphic: Pick<DunhuangGraphic, 'paintColorKeys'>): string[] {
+  return graphic.paintColorKeys.map((_, index) => `color${index + 1}`)
 }
 
-export interface DunhuangPalette {
-  id: string
-  label: string
-  colors: Record<string, string>
-  background: string
-  colorLabels?: Record<string, string>
+export function defaultTemplateId(graphicId = defaultGraphicId()): string {
+  const graphic = getGraphicOrThrow(graphicId)
+  return Object.keys(graphic.templates)[0]
 }
 
-export const dunhuangTemplatesFile = templatesFile as DunhuangTemplatesFile
-
-export const DUNHUANG_SWATCH_ORDER = dunhuangTemplatesFile.swatchOrder
-export const DUNHUANG_PAINT_COLOR_KEYS = dunhuangTemplatesFile.paintColorKeys
-
-export function defaultTemplateId(): string {
-  return Object.keys(dunhuangTemplatesFile.templates)[0]
+export function defaultTemplate(graphicId = defaultGraphicId()): DunhuangTemplate {
+  return getGraphicOrThrow(graphicId).templates[defaultTemplateId(graphicId)] as DunhuangTemplate
 }
 
-export function defaultTemplate(): DunhuangTemplate {
-  return dunhuangTemplatesFile.templates[defaultTemplateId()]
+export function defaultBackgroundForGraphic(graphicId = defaultGraphicId()): string {
+  return normalizeHexColor(getGraphicOrThrow(graphicId).defaultBackground) ?? '#e7d6bb'
 }
 
-export const DEFAULT_BACKGROUND = defaultTemplate().background
-
-export const DUNHUANG_PALETTES: DunhuangPalette[] = Object.entries(dunhuangTemplatesFile.templates).map(
-  ([id, template]) => ({
-    id,
-    label: template.label,
-    colors: template.colors,
-    background: template.background,
-    colorLabels: template.colorLabels,
-  }),
-)
-
-export function colorSlotLabel(index: number, labels?: Record<string, string>) {
-  const slot = DUNHUANG_SWATCH_ORDER[index]
+export function colorSlotLabel(graphicId: string, index: number, labels?: Record<string, string>) {
+  const graphic = getGraphicOrThrow(graphicId)
+  const slot = swatchOrderForGraphic(graphic)[index]
   if (slot && labels?.[slot]) return labels[slot]
   return slot ?? `color${index + 1}`
 }
 
-export function paletteSwatchLabel(palette: DunhuangPalette, index: number) {
-  const slot = DUNHUANG_SWATCH_ORDER[index]
-  if (slot && palette.colorLabels?.[slot]) return palette.colorLabels[slot]
-  return colorSlotLabel(index)
-}
-
-export function paletteSwatchesInOrder(palette: DunhuangPalette): string[] {
-  return DUNHUANG_SWATCH_ORDER.map(name => palette.colors[name])
-}
-
-export function paletteColorForPaintKey(palette: DunhuangPalette, paintColorKey: string): string | null {
-  const index = DUNHUANG_PAINT_COLOR_KEYS.indexOf(paintColorKey)
-  if (index === -1) return null
-
-  const swatchName = DUNHUANG_SWATCH_ORDER[index]
-  return palette.colors[swatchName] ?? null
-}
-
-export function templateToColorOverrides(template: DunhuangTemplate): Record<string, string> {
+export function templateToColorOverrides(
+  template: DunhuangTemplate,
+  paintColorKeys: string[],
+  swatchOrder: string[],
+): Record<string, string> {
   return Object.fromEntries(
-    DUNHUANG_PAINT_COLOR_KEYS.map((key, index) => {
-      const slot = DUNHUANG_SWATCH_ORDER[index]
+    paintColorKeys.map((paintKey, index) => {
+      const slot = swatchOrder[index]
       const color = slot ? template.colors[slot] : undefined
-      return [key, normalizeHexColor(color) ?? key]
+      return [paintKey, normalizeHexColor(color) ?? paintKey]
     }),
   )
 }
 
-export function templateToBackgroundColor(template: DunhuangTemplate): string {
-  return normalizeHexColor(template.background) ?? DEFAULT_BACKGROUND
+export function templateToBackgroundColor(template: DunhuangTemplate, graphicId: string): string {
+  return normalizeHexColor(template.background) ?? defaultBackgroundForGraphic(graphicId)
 }
 
-export function loadDefaultRingConfigs(): Record<RingId, RingConfig> {
-  return templateToRingConfigs(defaultTemplate())
+export function loadDefaultRingConfigs(graphicId = defaultGraphicId()): Record<RingId, RingConfig> {
+  const graphic = getGraphicOrThrow(graphicId)
+  return templateToRingConfigs(defaultTemplate(graphicId), graphic.ringIds)
 }
 
-export function loadTemplateConfigs(templateId?: string): Record<RingId, RingConfig> {
-  const id = templateId ?? defaultTemplateId()
-  const template = dunhuangTemplatesFile.templates[id]
-  if (!template) return templateToRingConfigs(defaultTemplate())
-  return templateToRingConfigs(template)
+export function loadTemplateRingConfigs(
+  graphicId: string,
+  templateId?: string,
+): Record<RingId, RingConfig> {
+  const graphic = getGraphicOrThrow(graphicId)
+  const id = templateId ?? defaultTemplateId(graphicId)
+  const template = (graphic.templates[id] ?? defaultTemplate(graphicId)) as DunhuangTemplate
+  return templateToRingConfigs(template, graphic.ringIds)
 }
 
-export function listTemplateIds(): string[] {
-  return Object.keys(dunhuangTemplatesFile.templates)
-}
-
-export function loadDefaultColorState() {
-  const template = defaultTemplate()
+export function loadDefaultColorState(graphicId = defaultGraphicId()) {
+  const graphic = getGraphicOrThrow(graphicId)
+  const template = defaultTemplate(graphicId)
   return {
-    colorOverrides: templateToColorOverrides(template),
-    backgroundColor: templateToBackgroundColor(template),
+    colorOverrides: templateToColorOverrides(template, graphic.paintColorKeys, swatchOrderForGraphic(graphic)),
+    backgroundColor: templateToBackgroundColor(template, graphicId),
   }
 }
 
 export function buildTemplateFromState(
+  graphic: DunhuangGraphic,
+  ringOrder: RingId[],
   ringConfigs: Record<RingId, RingConfig>,
   colorOverrides: Record<string, string>,
   backgroundColor: string,
   label = 'New template',
 ): DunhuangTemplate {
   const colors = Object.fromEntries(
-    DUNHUANG_SWATCH_ORDER.map((slot, index) => {
-      const paintKey = DUNHUANG_PAINT_COLOR_KEYS[index]
+    swatchOrderForGraphic(graphic).map((slot, index) => {
+      const paintKey = graphic.paintColorKeys[index]
       return [slot, colorOverrides[paintKey] ?? paintKey]
     }),
   )
@@ -148,11 +115,15 @@ export function buildTemplateFromState(
     label,
     colors,
     background: backgroundColor,
-    rings: Object.fromEntries(RING_IDS.map(ring => [ring, ringConfigs[ring]])),
+    rings: Object.fromEntries(ringOrder.map(ring => [ring, ringConfigs[ring]])),
   }
 }
 
-export function templateToJsonSnippet(template: DunhuangTemplate, templateId = 'template-new'): string {
+export function templateToJsonSnippet(template: DunhuangTemplate, templateId = 'template'): string {
   const lines = JSON.stringify(template, null, 2).split('\n')
   return [`    "${templateId}": ${lines[0]}`, ...lines.slice(1).map(line => `    ${line}`)].join('\n')
 }
+
+// Backward-compatible exports for default graphic (壹)
+export const DUNHUANG_PAINT_COLOR_KEYS = getGraphicOrThrow(defaultGraphicId()).paintColorKeys
+export const DEFAULT_BACKGROUND = defaultBackgroundForGraphic(defaultGraphicId())
