@@ -29,7 +29,6 @@ export default defineConfig({
         { src: 'src/games/whack/*.svg',        dest: 'src/games/whack' },
         { src: 'src/games/whack/*.png',        dest: 'src/games/whack' },
         { src: 'src/games/press-here',        dest: 'src/games' },
-        { src: 'src/games/dinosaur/game.html',dest: 'src/games/dinosaur' },
         // Maps
         { src: 'src/maps/kings',      dest: 'src/maps' },
         { src: 'src/maps/swordsmen',  dest: 'src/maps' },

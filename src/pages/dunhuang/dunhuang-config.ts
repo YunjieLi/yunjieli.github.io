@@ -79,6 +79,10 @@ export function scaleSpeedToDuration(speed: number) {
   return `${(maxSec - t * (maxSec - minSec)).toFixed(2)}s`
 }
 
+export function resolveRingConfig(value: unknown): RingConfig {
+  return parseRingConfig(value)
+}
+
 function parseRingConfig(value: unknown): RingConfig {
   if (!value || typeof value !== 'object') return defaultRingConfig()
   const v = value as Partial<RingConfig>
@@ -89,6 +93,19 @@ function parseRingConfig(value: unknown): RingConfig {
     scaleSpeed: clampScaleSpeed(v.scaleSpeed),
     scaleMinPercent: clampScaleMinPercent(v.scaleMinPercent),
   }
+}
+
+export function mergeRingConfigs(
+  ringIds: RingId[],
+  base: Record<RingId, RingConfig>,
+  overrides?: Record<RingId, Partial<RingConfig>>,
+): Record<RingId, RingConfig> {
+  return Object.fromEntries(
+    ringIds.map(ring => [
+      ring,
+      parseRingConfig({ ...defaultRingConfig(), ...base[ring], ...overrides?.[ring] }),
+    ]),
+  ) as Record<RingId, RingConfig>
 }
 
 export function defaultRingConfigs(ringIds: RingId[]): Record<RingId, RingConfig> {

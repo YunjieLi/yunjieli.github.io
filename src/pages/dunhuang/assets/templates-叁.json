@@ -1,5 +1,5 @@
 {
-  "template1": {
+  "template": {
     "label": "New template",
     "colors": {
       "color1": "#ac5548",
@@ -38,8 +38,15 @@
         "scaleMinPercent": 93
       },
       "ring5": {
+        "rotation": "none",
+        "rotationSpeed": 50,
+        "scale": "none",
+        "scaleSpeed": 50,
+        "scaleMinPercent": 80
+      },
+      "ring6": {
         "rotation": "ccw",
-        "rotationSpeed": 37.2,
+        "rotationSpeed": 4.6,
         "scale": "none",
         "scaleSpeed": 50,
         "scaleMinPercent": 80
@@ -81,6 +88,12 @@
         "scaleSpeed": 50
       },
       "ring5": {
+        "rotation": "none",
+        "rotationSpeed": 50,
+        "scale": "none",
+        "scaleSpeed": 50
+      },
+      "ring6": {
         "rotation": "ccw",
         "rotationSpeed": 2.3,
         "scale": "pingpong",
@@ -131,6 +144,12 @@
         "scaleSpeed": 50
       },
       "ring5": {
+        "rotation": "none",
+        "rotationSpeed": 50,
+        "scale": "none",
+        "scaleSpeed": 50
+      },
+      "ring6": {
         "rotation": "ccw",
         "rotationSpeed": 2.3,
         "scale": "pingpong",

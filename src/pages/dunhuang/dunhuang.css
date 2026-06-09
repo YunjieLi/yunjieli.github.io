@@ -383,16 +383,27 @@
   50% { transform: scale(var(--dunhuang-scale-min, 0.8)); }
 }
 
+.dunhuang-rot-wrap.dunhuang-rot-cw,
+.dunhuang-rot-wrap.dunhuang-rot-ccw {
+  animation-name: var(--dunhuang-rot-name);
+  animation-duration: var(--dunhuang-rot-duration, 10s);
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
 .dunhuang-rot-wrap.dunhuang-rot-cw {
-  animation: dunhuang-rotate-cw var(--dunhuang-rot-duration, 10s) linear infinite;
+  --dunhuang-rot-name: dunhuang-rotate-cw;
 }
 
 .dunhuang-rot-wrap.dunhuang-rot-ccw {
-  animation: dunhuang-rotate-ccw var(--dunhuang-rot-duration, 10s) linear infinite;
+  --dunhuang-rot-name: dunhuang-rotate-ccw;
 }
 
 .dunhuang-scale-wrap.dunhuang-scale-pingpong {
-  animation: dunhuang-scale-pingpong var(--dunhuang-scale-duration, 6s) ease-in-out infinite;
+  animation-name: dunhuang-scale-pingpong;
+  animation-duration: var(--dunhuang-scale-duration, 6s);
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
 }
 
 @media (max-width: 767px) {

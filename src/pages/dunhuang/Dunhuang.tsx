@@ -7,6 +7,8 @@ import DunhuangColorPicker from './DunhuangColorPicker'
 import {
   defaultRingConfig,
   defaultRingConfigs,
+  mergeRingConfigs,
+  resolveRingConfig,
   rotationSpeedToDuration,
   ROTATION_SPEED_MAX,
   ROTATION_SPEED_MIN,
@@ -59,7 +61,7 @@ function createDefaultGraphicSession(graphicId: string): GraphicSession {
 }
 
 function ensureAnimationHooks(group: SVGGElement) {
-  if (group.querySelector('.dunhuang-rot-wrap')) return
+  if (group.querySelector('.dunhuang-scale-wrap')) return
 
   const rotWrap = document.createElementNS('http://www.w3.org/2000/svg', 'g')
   rotWrap.setAttribute('class', 'dunhuang-rot-wrap')
@@ -68,16 +70,22 @@ function ensureAnimationHooks(group: SVGGElement) {
   scaleWrap.setAttribute('class', 'dunhuang-scale-wrap')
 
   while (group.firstChild) {
-    scaleWrap.appendChild(group.firstChild)
+    rotWrap.appendChild(group.firstChild)
   }
 
-  rotWrap.appendChild(scaleWrap)
-  group.appendChild(rotWrap)
+  scaleWrap.appendChild(rotWrap)
+  group.appendChild(scaleWrap)
 }
 
 function resetWrapTransformState(wrap: SVGGElement) {
   wrap.style.transform = ''
   wrap.classList.remove('dunhuang-transform-settling')
+}
+
+function restartWrapAnimation(wrap: SVGGElement) {
+  wrap.style.animation = 'none'
+  wrap.getBBox()
+  wrap.style.removeProperty('animation')
 }
 
 function applyRingAnimation(group: SVGGElement, config: RingConfig) {
@@ -91,24 +99,21 @@ function applyRingAnimation(group: SVGGElement, config: RingConfig) {
 
   rotWrap.classList.remove('dunhuang-rot-cw', 'dunhuang-rot-ccw')
   scaleWrap.classList.remove('dunhuang-scale-pingpong')
+  rotWrap.style.removeProperty('--dunhuang-rot-duration')
+  scaleWrap.style.removeProperty('--dunhuang-scale-duration')
+  scaleWrap.style.removeProperty('--dunhuang-scale-min')
 
-  if (config.rotation === 'cw') {
-    rotWrap.classList.add('dunhuang-rot-cw')
+  if (config.rotation === 'cw' || config.rotation === 'ccw') {
     rotWrap.style.setProperty('--dunhuang-rot-duration', rotationSpeedToDuration(config.rotationSpeed))
-  } else if (config.rotation === 'ccw') {
-    rotWrap.classList.add('dunhuang-rot-ccw')
-    rotWrap.style.setProperty('--dunhuang-rot-duration', rotationSpeedToDuration(config.rotationSpeed))
-  } else {
-    rotWrap.style.removeProperty('--dunhuang-rot-duration')
+    rotWrap.classList.add(config.rotation === 'cw' ? 'dunhuang-rot-cw' : 'dunhuang-rot-ccw')
+    restartWrapAnimation(rotWrap)
   }
 
   if (config.scale === 'pingpong') {
-    scaleWrap.classList.add('dunhuang-scale-pingpong')
     scaleWrap.style.setProperty('--dunhuang-scale-duration', scaleSpeedToDuration(config.scaleSpeed))
     scaleWrap.style.setProperty('--dunhuang-scale-min', scaleMinPercentToFactor(config.scaleMinPercent))
-  } else {
-    scaleWrap.style.removeProperty('--dunhuang-scale-duration')
-    scaleWrap.style.removeProperty('--dunhuang-scale-min')
+    scaleWrap.classList.add('dunhuang-scale-pingpong')
+    restartWrapAnimation(scaleWrap)
   }
 }
 
@@ -202,7 +207,7 @@ function applyAllRingAnimations(
   for (const ring of ringOrder) {
     const group = querySvgGroup(svg, ring)
     if (group) {
-      applyRingAnimation(group, configs[ring] ?? defaultRingConfig())
+      applyRingAnimation(group, resolveRingConfig(configs[ring]))
     }
   }
 }
@@ -261,15 +266,17 @@ export default function Dunhuang() {
     const resolvedSession = session ?? createDefaultGraphicSession(graphicId)
     const svg = mountSvg(host, graphic.svgRaw)
     const order = discoverPresentRingIds(svg, graphic.ringIds)
+    const templateConfigs = loadTemplateRingConfigs(graphicId)
+    const mergedRingConfigs = mergeRingConfigs(order, templateConfigs, resolvedSession.ringConfigs)
 
     loadGraphicColors(graphicId, svg, resolvedSession.colorSession)
     setRingOrder(order)
-    setRingConfigs(resolvedSession.ringConfigs)
+    setRingConfigs(mergedRingConfigs)
     setAnimationEnabled(resolvedSession.animationEnabled)
     prevAnimationEnabledRef.current = resolvedSession.animationEnabled
 
     if (resolvedSession.animationEnabled) {
-      applyAllRingAnimations(svg, order, resolvedSession.ringConfigs)
+      applyAllRingAnimations(svg, order, mergedRingConfigs)
     } else {
       clearAllRingAnimations(svg, order)
     }
@@ -326,7 +333,7 @@ export default function Dunhuang() {
   const updateRing = (ring: RingId, patch: Partial<RingConfig>) => {
     setRingConfigs(prev => ({
       ...prev,
-      [ring]: { ...prev[ring], ...patch },
+      [ring]: resolveRingConfig({ ...defaultRingConfig(), ...prev[ring], ...patch }),
     }))
   }
 
@@ -488,7 +495,7 @@ export default function Dunhuang() {
               </div>
 
               {ringOrder.map(ring => {
-                const config = ringConfigs[ring] ?? defaultRingConfig()
+                const config = resolveRingConfig(ringConfigs[ring])
                 return (
                   <details key={ring} className="dunhuang-ring-panel">
                     <summary>#{ring}</summary>

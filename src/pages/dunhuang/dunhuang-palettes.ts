@@ -1,4 +1,4 @@
-import palettesFile from '@/assets/dunhuang/palettes.json'
+import palettesFile from './assets/palettes.json'
 
 function normalizeHexColor(value: string | null | undefined): string | null {
   if (!value || value === 'none' || value.startsWith('url(')) return null

@@ -1,11 +1,11 @@
-import yi from '@/assets/dunhuang/壹.svg?raw'
-import er from '@/assets/dunhuang/贰.svg?raw'
-import san from '@/assets/dunhuang/叁.svg?raw'
-import si from '@/assets/dunhuang/肆.svg?raw'
-import templatesYi from '@/assets/dunhuang/templates-壹.json'
-import templatesEr from '@/assets/dunhuang/templates-贰.json'
-import templatesSan from '@/assets/dunhuang/templates-叁.json'
-import templatesSi from '@/assets/dunhuang/templates-肆.json'
+import yi from './assets/壹.svg?raw'
+import er from './assets/贰.svg?raw'
+import san from './assets/叁.svg?raw'
+import si from './assets/肆.svg?raw'
+import templatesYi from './assets/templates-壹.json'
+import templatesEr from './assets/templates-贰.json'
+import templatesSan from './assets/templates-叁.json'
+import templatesSi from './assets/templates-肆.json'
 import type { DunhuangTemplate } from './dunhuang-templates'
 
 export interface DunhuangGraphic {
@@ -28,7 +28,7 @@ const SVG_BY_ID: Record<string, string> = {
 const RING_IDS_BY_GRAPHIC: Record<string, string[]> = {
   壹: ['ring1', 'ring2', 'ring3', 'ring4', 'ring5', 'ring6', 'ring7'],
   贰: ['ring1', 'ring2', 'ring3', 'ring4', 'ring5', 'ring6', 'ring7'],
-  叁: ['ring1', 'ring2', 'ring3', 'ring4', 'ring5'],
+  叁: ['ring1', 'ring2', 'ring3', 'ring4', 'ring5', 'ring6'],
   肆: ['ring1', 'ring2', 'ring3', 'ring4-A', 'ring4-B', 'ring4-C', 'ring4', 'ring5'],
 }
 

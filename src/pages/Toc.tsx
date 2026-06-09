@@ -9,12 +9,12 @@ const maps = [
 
 const games = [
   { href: '/flip-game',    label: 'Flip Game' },
-  { href: '/dinosaur-game',label: 'Dinosaur Game' },
   { href: '/wack-a-virus', label: 'Whack-a-Virus' },
   { href: '/press-here',   label: 'Press Here' },
 ]
 
-const otherPages = [
+const otherPages: { href: string; label: string; sub?: string }[] = [
+  { href: '/dunhuang',       label: 'Dunhuang',            sub: 'Interactive mural coloring' },
   { href: '/studio',         label: 'Upstream.land Studio' },
   { href: '/chinese-names',  label: 'Chinese Name Guide' },
   { href: '/lily',           label: '子豪+筠洁' },
@@ -39,6 +39,20 @@ export default function Toc() {
         <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3.5">Featured</p>
 
         <div className="grid grid-cols-2 gap-2.5">
+          {/* Dunhuang */}
+          <Link
+            to="/dunhuang"
+            className="relative rounded-md overflow-hidden no-underline text-white flex flex-col justify-end min-h-[160px] hover:opacity-90 transition-opacity"
+            style={{ background: 'linear-gradient(135deg, #60433c 0%, #ac5548 35%, #226b87 70%, #e7d6bb 100%)' }}
+          >
+            <div className="absolute inset-0 bg-black/25" />
+            <div className="relative z-10 px-5 py-4">
+              <div className="text-2xl mb-1">🏺</div>
+              <h2 className="text-lg font-semibold leading-snug mb-0.5">Dunhuang</h2>
+              <p className="text-[12px] opacity-80">Color & animate mural rings</p>
+            </div>
+          </Link>
+
           {/* Press Here */}
           <Link
             to="/press-here"
@@ -64,6 +78,20 @@ export default function Toc() {
               <div className="text-2xl mb-1">🐞</div>
               <h2 className="text-lg font-semibold leading-snug mb-0.5">Flip Game</h2>
               <p className="text-[12px] opacity-80">Memory card matching</p>
+            </div>
+          </Link>
+
+          {/* Whack-a-Virus */}
+          <Link
+            to="/wack-a-virus"
+            className="relative rounded-md overflow-hidden no-underline text-white flex flex-col justify-end min-h-[160px] hover:opacity-90 transition-opacity"
+            style={{ background: 'linear-gradient(135deg, #1b4332 0%, #40916c 40%, #95d5b2 70%, #d8f3dc 100%)' }}
+          >
+            <div className="absolute inset-0 bg-black/20" />
+            <div className="relative z-10 px-5 py-4">
+              <div className="text-2xl mb-1">🦠</div>
+              <h2 className="text-lg font-semibold leading-snug mb-0.5">Whack-a-Virus</h2>
+              <p className="text-[12px] opacity-80">Whack viruses, feed the good guys</p>
             </div>
           </Link>
         </div>
@@ -111,9 +139,12 @@ export default function Toc() {
               <li key={p.href}>
                 <Link
                   to={p.href}
-                  className="block px-4 py-3 rounded-md border border-border text-foreground text-[15px] no-underline hover:bg-muted transition-colors"
+                  className="flex items-baseline justify-between px-4 py-3 rounded-md border border-border text-foreground text-[15px] no-underline hover:bg-muted transition-colors"
                 >
-                  {p.label}
+                  <span>{p.label}</span>
+                  {p.sub ? (
+                    <span className="text-xs text-muted-foreground ml-3 shrink-0">{p.sub}</span>
+                  ) : null}
                 </Link>
               </li>
             ))}
