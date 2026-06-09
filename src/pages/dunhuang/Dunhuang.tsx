@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { Check, Copy } from 'lucide-react'
+import { Check, ChevronLeft, ChevronRight, Copy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -45,6 +45,13 @@ import {
 import './dunhuang.css'
 
 const ANIMATION_SETTLE_MS = 600
+const SWIPE_THRESHOLD_PX = 50
+
+function isEditableEventTarget(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) return false
+  const tag = target.tagName
+  return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target.isContentEditable
+}
 
 interface GraphicSession {
   ringConfigs: Record<RingId, RingConfig>
@@ -222,6 +229,9 @@ function mountSvg(host: HTMLDivElement, svgRaw: string) {
 
 export default function Dunhuang() {
   const svgHostRef = useRef<HTMLDivElement>(null)
+  const canvasRef = useRef<HTMLDivElement>(null)
+  const navigationRef = useRef({ goPrev: () => {}, goNext: () => {} })
+  const controlsOpenRef = useRef(false)
   const svgReadyRef = useRef(false)
   const prevAnimationEnabledRef = useRef(true)
   const sessionsRef = useRef<Record<string, GraphicSession>>({})
@@ -341,6 +351,83 @@ export default function Dunhuang() {
     setRingConfigs(defaultRingConfigs(ringOrder))
   }
 
+  const activeGraphicIndex = DUNHUANG_GRAPHICS.findIndex(graphic => graphic.id === activeGraphicId)
+
+  const goToGraphicIndex = (index: number) => {
+    const graphic = DUNHUANG_GRAPHICS[index]
+    if (graphic) switchGraphic(graphic.id)
+  }
+
+  const goToPrevGraphic = () => {
+    const index = (activeGraphicIndex - 1 + DUNHUANG_GRAPHICS.length) % DUNHUANG_GRAPHICS.length
+    goToGraphicIndex(index)
+  }
+
+  const goToNextGraphic = () => {
+    const index = (activeGraphicIndex + 1) % DUNHUANG_GRAPHICS.length
+    goToGraphicIndex(index)
+  }
+
+  navigationRef.current.goPrev = goToPrevGraphic
+  navigationRef.current.goNext = goToNextGraphic
+  controlsOpenRef.current = controlsOpen
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return
+      if (isEditableEventTarget(event.target)) return
+      event.preventDefault()
+      if (event.key === 'ArrowLeft') navigationRef.current.goPrev()
+      else navigationRef.current.goNext()
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [])
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    let startX = 0
+    let startY = 0
+    let tracking = false
+
+    const onTouchStart = (event: TouchEvent) => {
+      if (controlsOpenRef.current) return
+      if (event.touches.length !== 1) return
+      startX = event.touches[0].clientX
+      startY = event.touches[0].clientY
+      tracking = true
+    }
+
+    const onTouchEnd = (event: TouchEvent) => {
+      if (!tracking) return
+      tracking = false
+      const touch = event.changedTouches[0]
+      const deltaX = touch.clientX - startX
+      const deltaY = touch.clientY - startY
+      const absX = Math.abs(deltaX)
+      const absY = Math.abs(deltaY)
+      if (absX < SWIPE_THRESHOLD_PX || absX <= absY) return
+      if (deltaX < 0) navigationRef.current.goNext()
+      else navigationRef.current.goPrev()
+    }
+
+    const onTouchCancel = () => {
+      tracking = false
+    }
+
+    canvas.addEventListener('touchstart', onTouchStart, { passive: true })
+    canvas.addEventListener('touchend', onTouchEnd, { passive: true })
+    canvas.addEventListener('touchcancel', onTouchCancel, { passive: true })
+    return () => {
+      canvas.removeEventListener('touchstart', onTouchStart)
+      canvas.removeEventListener('touchend', onTouchEnd)
+      canvas.removeEventListener('touchcancel', onTouchCancel)
+    }
+  }, [])
+
   const copyTemplateSnippet = async () => {
     const template = buildTemplateFromState(
       activeGraphic,
@@ -361,11 +448,45 @@ export default function Dunhuang() {
 
   return (
     <div className="dunhuang-page">
-      <div
-        ref={svgHostRef}
-        className="dunhuang-page__canvas"
-        style={{ backgroundColor }}
-      />
+      <div className="dunhuang-page__main">
+        <div ref={canvasRef} className="dunhuang-page__canvas" style={{ backgroundColor }}>
+          <div ref={svgHostRef} className="dunhuang-page__svg-host" />
+
+          <nav className="dunhuang-page__pagination" aria-label="Graphic gallery">
+            <button
+              type="button"
+              className="dunhuang-page__pagination-btn"
+              aria-label="Previous graphic"
+              onClick={goToPrevGraphic}
+            >
+              <ChevronLeft aria-hidden="true" />
+            </button>
+
+            <div className="dunhuang-page__pagination-track" role="tablist" aria-label="Graphics">
+              {DUNHUANG_GRAPHICS.map((graphic, index) => (
+                <button
+                  key={graphic.id}
+                  type="button"
+                  role="tab"
+                  className={`dunhuang-page__pagination-dot${graphic.id === activeGraphicId ? ' is-active' : ''}`}
+                  aria-label={graphic.label}
+                  aria-selected={graphic.id === activeGraphicId}
+                  onClick={() => goToGraphicIndex(index)}
+                />
+              ))}
+            </div>
+
+            <button
+              type="button"
+              className="dunhuang-page__pagination-btn"
+              aria-label="Next graphic"
+              onClick={goToNextGraphic}
+            >
+              <ChevronRight aria-hidden="true" />
+            </button>
+          </nav>
+        </div>
+      </div>
 
       <button
         type="button"
@@ -390,23 +511,6 @@ export default function Dunhuang() {
         className={`dunhuang-page__sidebar${controlsOpen ? ' is-open' : ''}`}
       >
         <div className="dunhuang-page__controls-handle" aria-hidden="true" />
-
-        <section className="dunhuang-page__gallery">
-          <h2 className="dunhuang-page__panel-header">Gallery</h2>
-          <div className="dunhuang-page__gallery-grid">
-            {DUNHUANG_GRAPHICS.map(graphic => (
-              <button
-                key={graphic.id}
-                type="button"
-                className={`dunhuang-page__gallery-item${graphic.id === activeGraphicId ? ' is-active' : ''}`}
-                aria-pressed={graphic.id === activeGraphicId}
-                onClick={() => switchGraphic(graphic.id)}
-              >
-                <span className="dunhuang-page__gallery-item-label">{graphic.label}</span>
-              </button>
-            ))}
-          </div>
-        </section>
 
         <section className="dunhuang-page__controls">
           <div className="dunhuang-page__controls-header-row">

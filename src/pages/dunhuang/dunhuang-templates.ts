@@ -124,6 +124,6 @@ export function templateToJsonSnippet(template: DunhuangTemplate, templateId = '
   return [`    "${templateId}": ${lines[0]}`, ...lines.slice(1).map(line => `    ${line}`)].join('\n')
 }
 
-// Backward-compatible exports for default graphic (壹)
+// Backward-compatible exports for default graphic (贰)
 export const DUNHUANG_PAINT_COLOR_KEYS = getGraphicOrThrow(defaultGraphicId()).paintColorKeys
 export const DEFAULT_BACKGROUND = defaultBackgroundForGraphic(defaultGraphicId())

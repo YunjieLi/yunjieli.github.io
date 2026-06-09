@@ -46,7 +46,7 @@ const TEMPLATES_BY_ID: Record<string, Record<string, DunhuangTemplate>> = {
   肆: templatesSi as Record<string, DunhuangTemplate>,
 }
 
-const GRAPHIC_ORDER = ['壹', '贰', '叁', '肆'] as const
+const GRAPHIC_ORDER = ['贰', '壹', '叁', '肆'] as const
 
 function buildGraphic(id: string): DunhuangGraphic | null {
   const templates = TEMPLATES_BY_ID[id]
@@ -75,7 +75,7 @@ export const DUNHUANG_GRAPHICS: DunhuangGraphic[] = GRAPHIC_ORDER.map(buildGraph
 export const DUNHUANG_GRAPHIC_IDS = DUNHUANG_GRAPHICS.map(graphic => graphic.id)
 
 export function defaultGraphicId(): string {
-  return DUNHUANG_GRAPHIC_IDS[0]
+  return '贰'
 }
 
 export function getGraphic(graphicId: string): DunhuangGraphic | undefined {
