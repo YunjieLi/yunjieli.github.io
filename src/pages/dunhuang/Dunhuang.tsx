@@ -240,7 +240,9 @@ export default function Dunhuang() {
   const [ringConfigs, setRingConfigs] = useState<Record<RingId, RingConfig>>(() =>
     loadTemplateRingConfigs(defaultGraphicId()),
   )
-  const [controlsOpen, setControlsOpen] = useState(false)
+  const [controlsOpen, setControlsOpen] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches,
+  )
   const [animationEnabled, setAnimationEnabled] = useState(true)
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'error'>('idle')
 
@@ -447,7 +449,7 @@ export default function Dunhuang() {
   }
 
   return (
-    <div className="dunhuang-page">
+    <div className={`dunhuang-page${controlsOpen ? ' dunhuang-page--controls-open' : ''}`}>
       <div className="dunhuang-page__main">
         <div ref={canvasRef} className="dunhuang-page__canvas" style={{ backgroundColor }}>
           <div ref={svgHostRef} className="dunhuang-page__svg-host" />
@@ -509,10 +511,12 @@ export default function Dunhuang() {
       <aside
         id="dunhuang-sidebar"
         className={`dunhuang-page__sidebar${controlsOpen ? ' is-open' : ''}`}
+        aria-hidden={!controlsOpen}
       >
-        <div className="dunhuang-page__controls-handle" aria-hidden="true" />
+        <div className="dunhuang-page__sidebar-inner">
+          <div className="dunhuang-page__controls-handle" aria-hidden="true" />
 
-        <section className="dunhuang-page__controls">
+          <section className="dunhuang-page__controls">
           <div className="dunhuang-page__controls-header-row">
             <h2 className="dunhuang-page__controls-header">Layer Controls</h2>
             <div className="dunhuang-page__controls-header-actions">
@@ -689,6 +693,7 @@ export default function Dunhuang() {
             </TabsContent>
           </Tabs>
         </section>
+        </div>
       </aside>
     </div>
   )

@@ -17,8 +17,8 @@
         "scaleMinPercent": 80
       },
       "ring2": {
-        "rotation": "cw",
-        "rotationSpeed": 50,
+        "rotation": "ccw",
+        "rotationSpeed": 6.9,
         "scale": "none",
         "scaleSpeed": 50,
         "scaleMinPercent": 80
@@ -31,7 +31,7 @@
         "scaleMinPercent": 80
       },
       "ring4": {
-        "rotation": "none",
+        "rotation": "cw",
         "rotationSpeed": 50,
         "scale": "pingpong",
         "scaleSpeed": 50,
@@ -45,11 +45,11 @@
         "scaleMinPercent": 80
       },
       "ring6": {
-        "rotation": "ccw",
+        "rotation": "none",
         "rotationSpeed": 4.6,
-        "scale": "none",
+        "scale": "pingpong",
         "scaleSpeed": 50,
-        "scaleMinPercent": 80
+        "scaleMinPercent": 93
       }
     }
   },

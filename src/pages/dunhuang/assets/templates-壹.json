@@ -1,59 +1,63 @@
 {
-  "template1": {
-    "label": "Original",
+  "template": {
+    "label": "New template",
     "colors": {
-      "color1": "#606d86",
-      "color2": "#845b5e",
-      "color3": "#aa7e73",
-      "color4": "#b8bcad",
-      "color5": "#ded7ca",
-      "color6": "#e7c7af"
+      "color1": "#765c5c",
+      "color2": "#8896ad",
+      "color3": "#8a766c",
+      "color4": "#a0b4b4",
+      "color5": "#aa867e"
     },
-    "background": "#e7d6bb",
+    "background": "#a0b4b4",
     "rings": {
       "ring1": {
+        "rotation": "none",
+        "rotationSpeed": 50,
+        "scale": "none",
+        "scaleSpeed": 50,
+        "scaleMinPercent": 80
+      },
+      "ring2": {
         "rotation": "cw",
         "rotationSpeed": 50,
         "scale": "none",
-        "scaleSpeed": 50
-      },
-      "ring2": {
-        "rotation": "ccw",
-        "rotationSpeed": 68.5,
-        "scale": "none",
-        "scaleSpeed": 50
+        "scaleSpeed": 50,
+        "scaleMinPercent": 80
       },
       "ring3": {
-        "rotation": "none",
-        "rotationSpeed": 18,
+        "rotation": "ccw",
+        "rotationSpeed": 50,
         "scale": "none",
-        "scaleSpeed": 50
+        "scaleSpeed": 50,
+        "scaleMinPercent": 80
       },
       "ring4": {
-        "rotation": "ccw",
-        "rotationSpeed": 2.8,
-        "scale": "none",
-        "scaleSpeed": 50
-      },
-      "ring5": {
-        "rotation": "ccw",
-        "rotationSpeed": 2.3,
+        "rotation": "none",
+        "rotationSpeed": 50,
         "scale": "pingpong",
         "scaleSpeed": 50,
-        "scaleMinPercent": 91
+        "scaleMinPercent": 93
       },
-      "ring6": {
+      "ring5": {
         "rotation": "none",
         "rotationSpeed": 50,
         "scale": "none",
-        "scaleSpeed": 50
+        "scaleSpeed": 50,
+        "scaleMinPercent": 80
       },
-      "ring7": {
-        "rotation": "none",
-        "rotationSpeed": 0.1,
+      "ring6": {
+        "rotation": "cw",
+        "rotationSpeed": 50,
         "scale": "pingpong",
         "scaleSpeed": 50,
         "scaleMinPercent": 96
+      },
+      "ring7": {
+        "rotation": "ccw",
+        "rotationSpeed": 5.7,
+        "scale": "none",
+        "scaleSpeed": 50,
+        "scaleMinPercent": 80
       }
     }
   },
