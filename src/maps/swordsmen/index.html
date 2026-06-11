@@ -179,45 +179,43 @@
 
         .event-item__people {
             display: flex;
-            align-items: center;
+            align-items: flex-end;
+            justify-content: flex-start;
             margin-top: 0.5rem;
         }
 
         .event-item__avatar {
-            width: 2rem;
-            height: 2rem;
-            border-radius: 9999px;
-            object-fit: cover;
+            height: 4rem;
+            width: auto;
+            object-fit: contain;
+            object-position: center bottom;
             flex-shrink: 0;
-            background: #f0f0f0;
-            border: 2px solid #fff;
-            box-shadow: 0 1px 3px rgb(0 0 0 / 12%);
+            background: transparent;
         }
 
         .event-item__avatar + .event-item__avatar {
-            margin-left: -0.5rem;
+            margin-left: -1rem;
         }
 
         .event-character-marker {
             display: flex;
-            align-items: center;
+            align-items: flex-end;
+            justify-content: center;
             pointer-events: none;
         }
 
         .event-character-marker__avatar {
             display: block;
-            width: 3rem;
-            height: 3rem;
-            border-radius: 9999px;
-            object-fit: cover;
+            height: 6rem;
+            width: auto;
+            object-fit: contain;
+            object-position: center bottom;
             flex-shrink: 0;
-            background: #fff;
-            border: 3px solid #fff;
-            box-shadow: 0 2px 12px rgb(0 0 0 / 28%);
+            background: transparent;
         }
 
         .event-character-marker__avatar + .event-character-marker__avatar {
-            margin-left: -0.75rem;
+            margin-left: -1.5rem;
         }
 
         .event-path-tip {

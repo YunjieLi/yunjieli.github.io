@@ -703,22 +703,33 @@ function formatEventPeople(peopleProp) {
 	}).join('、');
 }
 
-function peopleAvatarSrc(key) {
-	if (key === 'Narrator') return './assets/people_narrator.svg';
-	return './assets/people_' + key + '.svg';
+function hasPeopleAvatar(key) {
+	if (key === 'Narrator') return false;
+	return !!(people[key] && people[key].name);
+}
+
+function filterPeopleAvatarKeys(keys) {
+	return keys.filter(hasPeopleAvatar);
+}
+
+function peopleAvatarSrc(key, format) {
+	if (!hasPeopleAvatar(key)) return null;
+	var name = people[key].name;
+	if (format === 'gif') return './assets/' + name + '.gif';
+	return './assets/' + name + '.png';
 }
 
 function buildEventPeopleAvatarsHtml(peopleProp) {
-	var keys = parseEventPeopleKeys(peopleProp);
+	var keys = filterPeopleAvatarKeys(parseEventPeopleKeys(peopleProp));
 	if (!keys.length) return '';
 
 	return (
 		'<div class="event-item__people">' +
 			keys.map(function(key) {
-				var name = (people[key] && people[key].name) || key;
+				var name = people[key].name;
 				return (
-					'<img class="event-item__avatar" src="' + peopleAvatarSrc(key) + '" ' +
-						'alt="' + name + '" title="' + name + '" width="32" height="32" />'
+					'<img class="event-item__avatar" src="' + peopleAvatarSrc(key, 'png') + '" ' +
+						'alt="' + name + '" title="' + name + '" />'
 				);
 			}).join('') +
 		'</div>'
@@ -901,15 +912,16 @@ function ensurePathTipMarker(coords) {
 		.addTo(map);
 }
 
-function buildEventMarkerElement(keys) {
+function buildEventMarkerElement(keys, animated) {
 	var el = document.createElement('div');
 	el.className = 'event-character-marker';
+	var format = animated ? 'gif' : 'png';
 
-	keys.forEach(function(key) {
+	filterPeopleAvatarKeys(keys).forEach(function(key) {
 		var name = (people[key] && people[key].name) || key;
 		var img = document.createElement('img');
 		img.className = 'event-character-marker__avatar';
-		img.src = peopleAvatarSrc(key);
+		img.src = peopleAvatarSrc(key, format);
 		img.alt = name;
 		img.title = name;
 		el.appendChild(img);
@@ -1146,7 +1158,7 @@ function getPathAnimationDuration(pathCoords) {
 }
 
 function ensureEventMarker(feature, coords) {
-	var keys = getEventPeopleKeys(feature);
+	var keys = filterPeopleAvatarKeys(getEventPeopleKeys(feature));
 	if (!keys.length) {
 		clearEventMarkers();
 		return;
@@ -1154,15 +1166,15 @@ function ensureEventMarker(feature, coords) {
 
 	clearEventMarkers();
 	selectedEventMarker = new mapboxgl.Marker({
-		element: buildEventMarkerElement(keys),
-		anchor: 'center',
+		element: buildEventMarkerElement(keys, false),
+		anchor: 'bottom',
 	})
 		.setLngLat(coords || feature.geometry.coordinates)
 		.addTo(map);
 }
 
 function ensureTripMarker(tripSegID, coords) {
-	var keys = getTripPeopleKeys(tripSegID);
+	var keys = filterPeopleAvatarKeys(getTripPeopleKeys(tripSegID));
 	if (!keys.length) {
 		clearEventMarkers();
 		return;
@@ -1170,8 +1182,8 @@ function ensureTripMarker(tripSegID, coords) {
 
 	clearEventMarkers();
 	selectedEventMarker = new mapboxgl.Marker({
-		element: buildEventMarkerElement(keys),
-		anchor: 'center',
+		element: buildEventMarkerElement(keys, true),
+		anchor: 'bottom',
 	})
 		.setLngLat(coords)
 		.addTo(map);
@@ -1311,7 +1323,7 @@ function playNextEvent() {
 	panelScrollFlyLocked = true;
 	updatePlayButtonState();
 
-	var hasAvatar = getTripPeopleKeys(tripSegID).length > 0;
+	var hasAvatar = filterPeopleAvatarKeys(getTripPeopleKeys(tripSegID)).length > 0;
 	if (hasAvatar) {
 		ensureTripMarker(tripSegID, currentFeature.geometry.coordinates);
 	} else {
