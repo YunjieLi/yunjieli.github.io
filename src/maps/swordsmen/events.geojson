@@ -1,0 +1,1203 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "bd08c70d464cb7770d87e54988eb5b19",
+      "properties": {
+        "name": "福威镖局",
+        "event": "林平之出门打猎。",
+        "chapter": "1",
+        "segID": "seg0",
+        "people": [
+          "Pingzhi"
+        ],
+        "pointID": 14
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          119.286966,
+          26.072734
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "c0016fcb85b1942b99f88cbacf750b45",
+      "properties": {
+        "name": "乡间茶肆",
+        "event": "林平之乡间遇偶遇岳灵珊，误杀余沧海之子。",
+        "chapter": "1",
+        "segID": "seg1",
+        "people": [
+          "Pingzhi",
+          "Lingshan"
+        ],
+        "pointID": 31
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          119.271268,
+          26.08554
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "b4ddbc5f06ee963e4c1c919856e3f13e",
+      "properties": {
+        "name": "福威镖局",
+        "event": "福威镖局中人接连离奇死亡。林振南全家出逃，被青城派所擒。",
+        "chapter": "1",
+        "segID": "seg2",
+        "people": [
+          "Pingzhi"
+        ],
+        "pointID": 14
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          119.286966,
+          26.072734
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "205be0641a2aa1ea90d0a8e29fddcdad",
+      "properties": {
+        "name": "乡间饭铺",
+        "event": "林平之得以逃跑。",
+        "chapter": "1",
+        "segID": "seg3",
+        "people": [
+          "Pingzhi"
+        ],
+        "pointID": 5
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          119.223289,
+          25.967304
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "f5d9cb43b5a993e9d220a35fcff65e70",
+      "properties": {
+        "name": "福威镖局南昌分局",
+        "event": "平之转至南昌，福威镖局南昌分局已毁。",
+        "chapter": "2",
+        "segID": "seg4",
+        "people": [
+          "Pingzhi"
+        ],
+        "pointID": 38
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          115.89992,
+          28.675991
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "17d29974164b2677c65a2d6b258182b7",
+      "properties": {
+        "name": "福威镖局长沙分局",
+        "event": "平之转至长沙，福威镖局长沙镖局已毁。折而赴衡山刘正风金盆洗手大会。",
+        "chapter": "2",
+        "segID": "seg5",
+        "people": [
+          "Pingzhi"
+        ],
+        "pointID": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.98127,
+          28.200824
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "bda7c6388edf660057f130f34fc39d5b",
+      "properties": {
+        "name": "衡山城",
+        "event": "刘正风宅中，仪琳回忆被田伯光所擒，蒙令狐冲相救经过。",
+        "chapter": "2",
+        "segID": "seg6",
+        "people": [
+          "Yilin",
+          "Pingzhi"
+        ],
+        "pointID": 20
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.868268,
+          27.230291
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "734571a72f13fba733285d5d06f005d5",
+      "properties": {
+        "name": "城外荒山",
+        "event": "令狐冲重伤，由仪琳陪伴城外荒山养伤。",
+        "chapter": "5",
+        "segID": "seg9",
+        "people": [
+          "Yilin",
+          "Chong"
+        ],
+        "pointID": 21
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.86169,
+          27.231737
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "6f96ecc65ffb4d2cf10e040e3481bf1f",
+      "properties": {
+        "name": "衡山城",
+        "event": "刘正风金盆洗手大会。嵩山派对其发难。",
+        "chapter": "6",
+        "segID": "seg10",
+        "people": [
+          "Pingzhi"
+        ],
+        "pointID": 20
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.868268,
+          27.230291
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "f242205c43dbd8c63f31cba3f4561a4a",
+      "properties": {
+        "name": "城外荒山",
+        "event": "刘正风、曲洋死于城外荒山，临终前将《笑傲江湖之曲》托付于令狐冲。同日，林振南夫妇托令狐冲向林平之转告遗言。",
+        "chapter": "7",
+        "segID": "seg11",
+        "people": [
+          "Chong",
+          "Yilin"
+        ],
+        "pointID": 21
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.86169,
+          27.231737
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "586ab8dfe48e61c2307c88008084e71a",
+      "properties": {
+        "name": "华山",
+        "event": "岳不群收林平之为徒，众人回归华山。",
+        "chapter": "7",
+        "segID": "seg12",
+        "people": [
+          "Chong",
+          "Lingshan",
+          "Pingzhi"
+        ],
+        "pointID": 4
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.069444,
+          34.478889
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "0799138fc1312e1dd26f51b3e7858762",
+      "properties": {
+        "name": "华山思过崖",
+        "event": "令狐冲思过于崖思过。蒙风清扬授独孤九剑。",
+        "chapter": "8",
+        "segID": "seg13",
+        "people": [
+          "Chong"
+        ],
+        "pointID": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.074081,
+          34.470901
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "a741ebd7f0b137b544a13b5a78309317",
+      "properties": {
+        "name": "华山",
+        "event": "华山剑宗重现江湖，华山派外出避乱。令狐冲受桃谷六仙传授内力，伤势日重。",
+        "chapter": "10",
+        "segID": "seg14",
+        "people": [
+          "Chong",
+          "Lingshan",
+          "PIngzhi"
+        ],
+        "pointID": 4
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.069444,
+          34.478889
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "1cdc34d44f7a95d5ec82defb346ee58c",
+      "properties": {
+        "name": "华山脚下",
+        "event": "华山脚下，令狐冲再受不戒和尚传授内力，伤势愈重。",
+        "chapter": "12",
+        "segID": "seg15",
+        "people": [
+          "Chong"
+        ],
+        "pointID": 3
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.057945,
+          34.519851
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "221b2bcc8ad459df2b203da0270aab2e",
+      "properties": {
+        "name": "药王庙",
+        "event": "药王庙中，令狐冲以独孤九剑破华山剑宗高手、十五蒙面客。",
+        "chapter": "12",
+        "segID": "seg16",
+        "people": [
+          "Chong",
+          "Lingshan",
+          "Pingzhi"
+        ],
+        "pointID": 6
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.083007,
+          34.704929
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "89b9a5279e3202aeefcb934ce1e7338d",
+      "properties": {
+        "name": "洛阳",
+        "event": "华山派拜访洛阳金刀王元霸。令狐冲于绿竹巷重闻笑傲江湖曲，向绿竹翁及婆婆学琴。",
+        "chapter": "13",
+        "segID": "seg17",
+        "people": [
+          "Chong",
+          "Yingying",
+          "Lingshan",
+          "Pingzhi"
+        ],
+        "pointID": 24
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.45404,
+          34.624343
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "566bec5f3e286fdda81ad4da54229c94",
+      "properties": {
+        "name": "朱仙镇",
+        "event": "华山派由黄河而下，在朱仙镇平一指居再遇桃谷六仙。",
+        "chapter": "14",
+        "segID": "seg19",
+        "people": [
+          "Chong",
+          "Lingshan",
+          "Pingzhi"
+        ],
+        "pointID": 15
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          114.267054,
+          34.615253
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "3f13074dbd44ee91d6ecd73f39eea1d0",
+      "properties": {
+        "name": "黄河舟中",
+        "event": "祖千秋与令狐冲在黄河舟中论杯。",
+        "chapter": "14",
+        "segID": "seg20",
+        "people": [
+          "Chong",
+          "Lingshan",
+          "Pingzhi"
+        ],
+        "pointID": 12
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          114.528696,
+          34.910373
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "df6b669cbbf33aff5c0a4ed40f0f5d92",
+      "properties": {
+        "name": "老头子居",
+        "event": "令狐冲被绑至老头子居，放血救治其女老不死。",
+        "chapter": "15",
+        "segID": "seg21",
+        "people": [
+          "Chong"
+        ],
+        "pointID": 35
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          114.600067,
+          34.964412
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "cb33895d1478b2bc901088cfa7976b28",
+      "properties": {
+        "name": "黄河舟中续",
+        "event": "黄河舟中，蓝凤凰以药酒相赠令狐冲，以水蛭取血为其疗伤。",
+        "chapter": "16",
+        "segID": "seg22",
+        "people": [
+          "Chong",
+          "Lingshan",
+          "Pingzhi"
+        ],
+        "pointID": 32
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          114.864132,
+          35.11972
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "66999b91bc3f5238df47d39a1e4785db",
+      "properties": {
+        "name": "五霸岗",
+        "event": "武林群豪聚会五霸岗为令狐冲治伤。令狐冲又见婆婆，得悉任盈盈真容。",
+        "chapter": "17",
+        "segID": "seg23",
+        "people": [
+          "Chong",
+          "Yingying",
+          "Lingshan",
+          "Pingzhi"
+        ],
+        "pointID": 18
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          115.20401,
+          35.405002
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "6c69cf330ea4129654d255bd64d54116",
+      "properties": {
+        "name": "少林寺",
+        "event": "任盈盈负令狐冲上少林。令狐冲得悉自己已为华山逐出门墙，因不愿改投他派拜别少林方丈。",
+        "chapter": "18",
+        "segID": "seg24",
+        "people": [
+          "Chong",
+          "Yingying"
+        ],
+        "pointID": 19
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.942068,
+          34.506546
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "f78a54f1ce69d7ee6335b73fe46ca50e",
+      "properties": {
+        "name": "山下凉亭",
+        "event": "少林寺山下凉亭，向问天受武林群豪围攻，令狐冲出手相助。",
+        "chapter": "18",
+        "segID": "seg25",
+        "people": [
+          "Chong"
+        ],
+        "pointID": 39
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.98726,
+          34.493469
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "f37862013772e75437a637321575cec0",
+      "properties": {
+        "name": "仙愁峡",
+        "event": "向问天与令狐冲退至仙愁峡，向问天以计摆脱追击。",
+        "chapter": "18",
+        "segID": "seg26",
+        "people": [
+          "Chong"
+        ],
+        "pointID": 37
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          113.040561,
+          34.552658
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "877622c5deca76083d9c4de7be2230dd",
+      "properties": {
+        "name": "西湖梅庄",
+        "event": "向问天与令狐冲来到西湖，与梅庄四友打赌比剑。",
+        "chapter": "19",
+        "segID": "seg27",
+        "people": [
+          "Chong"
+        ],
+        "pointID": 10
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.122151,
+          30.23623
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "04a9920736328116f4e12fed4dacf1ae",
+      "properties": {
+        "name": "西湖牢底",
+        "event": "令狐冲被困西湖牢底，无意中习得吸星大法。",
+        "chapter": "20",
+        "segID": "seg28",
+        "people": [
+          "Chong"
+        ],
+        "pointID": 0
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.129103,
+          30.24016
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "3b4d32589419c4598b10f67ac4aafcc2",
+      "properties": {
+        "name": "西湖梅庄",
+        "event": "任我行重出江湖，令狐冲婉拒任我行入教邀请，出发前往福州寻找华山派。",
+        "chapter": "21",
+        "segID": "seg29",
+        "people": [
+          "Chong"
+        ],
+        "pointID": 10
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.122151,
+          30.23623
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "9559efe9702b26a5e7ee79ae48108bf5",
+      "properties": {
+        "name": "仙霞岭",
+        "event": "令狐冲化装吴天德将军，在仙霞岭出手助恒山弟子脱困。",
+        "chapter": "22",
+        "segID": "seg30",
+        "people": [
+          "Chong",
+          "Yilin"
+        ],
+        "pointID": 27
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          118.506495,
+          28.355562
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "47a2e9032bec72561c9f8b2e89bb8b64",
+      "properties": {
+        "name": "廿八铺",
+        "event": "恒山派在廿八铺再遭突袭，蒙令狐冲相助。",
+        "chapter": "23",
+        "segID": "seg31",
+        "people": [
+          "Chong",
+          "Yilin"
+        ],
+        "pointID": 13
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          118.481034,
+          28.295297
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "df0854ece5d27879b67d1394a4b3bf7a",
+      "properties": {
+        "name": "福州向阳巷老宅",
+        "event": "福州向阳巷老宅中，林家辟邪剑谱重现江湖。令狐冲获得剑谱后伤重昏迷。",
+        "chapter": "24",
+        "segID": "seg32",
+        "people": [
+          "Chong",
+          "Pingzhi",
+          "Lingshan"
+        ],
+        "pointID": 34
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          119.29882,
+          26.07097
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "4d08ad375c9b03b7b4263d3790658ab2",
+      "properties": {
+        "name": "福威镖局",
+        "event": "令狐冲在华山派养伤时辟邪剑谱不翼而飞，令狐冲与华山派嫌隙日深。",
+        "chapter": "24",
+        "segID": "seg33",
+        "people": [
+          "Chong",
+          "Pingzhi",
+          "Lingshan"
+        ],
+        "pointID": 14
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          119.286966,
+          26.072734
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "915ac2623a2c3c683811a69fdc74ba4c",
+      "properties": {
+        "name": "龙泉铸剑谷",
+        "event": "恒山派在龙泉铸剑谷遭到重挫，令狐冲率恒山弟子前往救援。",
+        "chapter": "25",
+        "segID": "seg34",
+        "people": [
+          "Chong",
+          "Yilin"
+        ],
+        "pointID": 26
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          119.076004,
+          28.082582
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "eb465fd418d367fbc4f44f14a31bcc60",
+      "properties": {
+        "name": "九江",
+        "event": "令狐冲率恒山派行至九江，得知任盈盈为相救自己现被困少林，遂转赴少林。",
+        "chapter": "25",
+        "segID": "seg35",
+        "people": [
+          "Chong",
+          "Yilin"
+        ],
+        "pointID": 36
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          115.980949,
+          29.726818
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "b07a9583ce4b8a4b010ee54361a6873b",
+      "properties": {
+        "name": "鸡鸣渡",
+        "event": "令狐冲在长江鸡鸣渡遇莫大。恒山派转由莫大护送，令狐冲独自前往少林。",
+        "chapter": "25",
+        "segID": "seg36",
+        "people": [
+          "Chong",
+          "Yilin"
+        ],
+        "pointID": 28
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.615356,
+          30.730032
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "595ed9e22b40a4eb6b80ecf5ba96a4e6",
+      "properties": {
+        "name": "黄保坪",
+        "event": "武林群豪在黄保坪聚会，推举令狐冲为武林盟主，率领众人前往少林相救圣姑。",
+        "chapter": "26",
+        "segID": "seg37",
+        "people": [
+          "Chong"
+        ],
+        "pointID": 16
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          111.805114,
+          31.961483
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "310c8ac1029df057ab319c2e9d22eb1e",
+      "properties": {
+        "name": "武当山脚",
+        "event": "令狐冲一行在武当山脚路遇化装成农人的掌门冲虚，令狐冲破武当太极剑。",
+        "chapter": "26",
+        "segID": "seg38",
+        "people": [
+          "Chong"
+        ],
+        "pointID": 8
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          111.248931,
+          32.420543
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "7b86e102c0965d180e9d573cbd2c2e8a",
+      "properties": {
+        "name": "少林寺",
+        "event": "令狐冲来到少林，得知任盈盈早已离开。令狐冲助任我行一方与正派高手三战得胜。",
+        "chapter": "26",
+        "segID": "seg39",
+        "people": [
+          "Chong",
+          "Yingying",
+          "Lingshan",
+          "Pingzhi"
+        ],
+        "pointID": 19
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.942068,
+          34.506546
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "62340fafc48b1f59fc1e90d4da01454f",
+      "properties": {
+        "name": "恒山",
+        "event": "令狐冲受定逸师太临终嘱托，接任恒山掌门。",
+        "chapter": "29",
+        "segID": "seg40",
+        "people": [
+          "Chong",
+          "Yilin"
+        ],
+        "pointID": 11
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          113.714675,
+          39.663127
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "cea2c08805493e8a81cb71ec1d9285d8",
+      "properties": {
+        "name": "恒山悬空寺",
+        "event": "方正、冲虚前往恒山道贺，在悬空寺向令狐冲讲述辟邪剑谱来历。",
+        "chapter": "30",
+        "segID": "seg41",
+        "people": [
+          "Chong",
+          "Yilin",
+          "Yingying"
+        ],
+        "pointID": 33
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          113.712312,
+          39.658172
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "bff61120edae0c219480204745deb4ed",
+      "properties": {
+        "name": "平定州",
+        "event": "令狐冲加入任我行、向问天、任盈盈，谋划重返黑木崖。",
+        "chapter": "30",
+        "segID": "seg42",
+        "people": [
+          "Chong",
+          "Yingying"
+        ],
+        "pointID": 30
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          113.657841,
+          37.786651
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "5b7bc22f94a2c4a8bb2a8e7ae9fb98c5",
+      "properties": {
+        "name": "黑木崖",
+        "event": "任我行、令狐冲一行重返黑木崖，恶斗东方不败。任我行重夺日月神教教主之位。",
+        "chapter": "31",
+        "segID": "seg43",
+        "people": [
+          "Chong",
+          "Yingying"
+        ],
+        "pointID": 17
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          113.809433,
+          37.908992
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "3dc783c94f637b0496934cd2b3f5b60f",
+      "properties": {
+        "name": "恒山",
+        "event": "令狐冲率恒山派前往嵩山，商议五岳并派事宜。",
+        "chapter": "32",
+        "segID": "seg44",
+        "people": [
+          "Chong"
+        ],
+        "pointID": 11
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          113.714675,
+          39.663127
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "2eb1e601e6b3d1542028e986b7e12146",
+      "properties": {
+        "name": "嵩山",
+        "event": "五岳剑派合并，在嵩山封禅台比剑夺帅。令狐冲为岳灵珊所伤，岳不群夺得五岳盟主。",
+        "chapter": "32",
+        "segID": "seg45",
+        "people": [
+          "Chong",
+          "Lingshan",
+          "Pingzhi",
+          "Yilin",
+          "Yingying"
+        ],
+        "pointID": 7
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          113.003943,
+          34.519649
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "be447bca9f0a211b302bd9cda4e6609b",
+      "properties": {
+        "name": "山下小镇",
+        "event": "嵩山脚下小镇上，林平之挑衅余沧海。令狐冲与恒山派冷眼旁观。",
+        "chapter": "35",
+        "segID": "seg46",
+        "people": [
+          "Chong",
+          "Lingshan",
+          "Pingzhi",
+          "Yilin",
+          "Yingying"
+        ],
+        "pointID": 29
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.990183,
+          34.517234
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "87a71b91a440c975cf74a93db3e53b71",
+      "properties": {
+        "name": "江边市镇",
+        "event": "一行人行至江边，余沧海再遭林平之挑衅。",
+        "chapter": "35",
+        "segID": "seg47",
+        "people": [
+          "Chong",
+          "Lingshan",
+          "Pingzhi",
+          "Yingying"
+        ],
+        "pointID": 23
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.97327,
+          34.514267
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "7f5cfd50ec7843f026fbbac3d65d8632",
+      "properties": {
+        "name": "路边草棚",
+        "event": "林平之杀余沧海、木高峰于路边草棚，报得林家灭门之仇。",
+        "chapter": "35",
+        "segID": "seg48",
+        "people": [
+          "Chong",
+          "Lingshan",
+          "Pingzhi",
+          "Yingying"
+        ],
+        "pointID": 22
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.955932,
+          34.515537
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "3625d275108fae95a51e38334eada7fa",
+      "properties": {
+        "name": "官道上",
+        "event": "官道上，任盈盈听到林平之与岳灵珊车中对话。林平之详述岳不群处心积虑盗取辟邪剑谱始末，令狐冲沉冤得雪。",
+        "chapter": "35",
+        "segID": "seg49",
+        "people": [
+          "Chong",
+          "Lingshan",
+          "Pingzhi",
+          "Yingying"
+        ],
+        "pointID": 9
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.949409,
+          34.517234
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "89bf155dddf1d41b3543be5f3d8919dc",
+      "properties": {
+        "name": "无名荒谷",
+        "event": "一处无名荒谷中，岳灵珊为林平之所杀。宁中则自尽。令狐冲、任盈盈为其安葬。",
+        "chapter": "36",
+        "segID": "seg50",
+        "people": [
+          "Chong",
+          "Lingshan",
+          "Yingying"
+        ],
+        "pointID": 25
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.946233,
+          34.522113
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "784cf46d92f91665961b771f31ca78bd",
+      "properties": {
+        "name": "恒山",
+        "event": "恒山上，仪琳向哑婆婆吐露对令狐冲一片痴情，而不知对方正是令狐冲。",
+        "chapter": "37",
+        "segID": "seg51",
+        "people": [
+          "Yilin",
+          "Chong"
+        ],
+        "pointID": 11
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          113.714675,
+          39.663127
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "999c5f435d9432b4897ff35ce66bacd5",
+      "properties": {
+        "name": "华山思过崖",
+        "event": "群雄应邀请前往华山，被困思过崖。令狐冲脱险，岳不群被仪琳所杀，恒山派大仇得报。",
+        "chapter": "38",
+        "segID": "seg52",
+        "people": [
+          "Chong",
+          "Yingying"
+        ],
+        "pointID": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.074081,
+          34.470901
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "1eaf169f827c1cb50b3fd1876fd54a21",
+      "properties": {
+        "name": "华山",
+        "event": "任我行驾临华山，五岳剑派高手凋零，更无对抗之力。",
+        "chapter": "39",
+        "segID": "seg53",
+        "people": [
+          "Chong"
+        ],
+        "pointID": 4
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.069444,
+          34.478889
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "7955307e262ee6ac4e0cd44f757e5c57",
+      "properties": {
+        "name": "恒山",
+        "event": "任我行逝世，任盈盈代父前往恒山赴约，日月神教与武林正教尽释前嫌。",
+        "chapter": "40",
+        "segID": "seg54",
+        "people": [
+          "Chong",
+          "Yingying"
+        ],
+        "pointID": 11
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          113.714675,
+          39.663127
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "73fb4e663bc392a32406e0a23b573172",
+      "properties": {
+        "name": "西湖梅庄",
+        "event": "三年后，令狐冲、任盈盈在西湖梅庄成婚，琴瑟和鸣。",
+        "chapter": "40",
+        "segID": "seg55",
+        "people": [
+          "Chong",
+          "Yingying"
+        ],
+        "pointID": 10
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.122151,
+          30.23623
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "559d6c3cd47831e3eeab123cf15a2c58",
+      "properties": {
+        "name": "华山",
+        "event": "令狐冲携任盈盈同游华山，《笑傲江湖》全书完。",
+        "chapter": "40",
+        "segID": "seg56",
+        "people": [
+          "Chong",
+          "Yingying"
+        ],
+        "pointID": 4
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.069444,
+          34.478889
+        ]
+      }
+    }
+  ]
+}

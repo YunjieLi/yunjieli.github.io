@@ -85,6 +85,29 @@
             cursor: default;
         }
 
+        .event-panel__icon-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.75rem;
+            height: 1.75rem;
+            padding: 0;
+            border: 1px solid #ddd;
+            border-radius: 0.25rem;
+            background: #fff;
+            color: #555;
+            cursor: pointer;
+        }
+
+        .event-panel__icon-btn:hover {
+            background: #f7f7f7;
+            border-color: #ccc;
+        }
+
+        .event-panel__icon-btn svg {
+            display: block;
+        }
+
         #event-list {
             flex: 1;
             min-height: 0;
@@ -176,21 +199,35 @@
         }
 
         .event-character-marker {
-            width: 3rem;
-            height: 3rem;
-            border-radius: 9999px;
-            background: #fff;
-            border: 3px solid #fff;
-            box-shadow: 0 2px 12px rgb(0 0 0 / 28%);
-            overflow: hidden;
+            display: flex;
+            align-items: center;
             pointer-events: none;
         }
 
         .event-character-marker__avatar {
             display: block;
-            width: 100%;
-            height: 100%;
+            width: 3rem;
+            height: 3rem;
+            border-radius: 9999px;
             object-fit: cover;
+            flex-shrink: 0;
+            background: #fff;
+            border: 3px solid #fff;
+            box-shadow: 0 2px 12px rgb(0 0 0 / 28%);
+        }
+
+        .event-character-marker__avatar + .event-character-marker__avatar {
+            margin-left: -0.75rem;
+        }
+
+        .event-path-tip {
+            width: 0.625rem;
+            height: 0.625rem;
+            border-radius: 9999px;
+            background: #ab8;
+            border: 2px solid #fff;
+            box-shadow: 0 1px 6px rgb(0 0 0 / 25%);
+            pointer-events: none;
         }
 
         #sidebar {
@@ -246,6 +283,189 @@
             color: #666;
         }
 
+        .events-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            background: #fff;
+        }
+
+        .events-modal.is-open {
+            display: flex;
+        }
+
+        .events-modal__header {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.875rem 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .events-modal__title {
+            margin: 0;
+            font: 700 0.875rem/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            letter-spacing: 0.04em;
+            color: #444;
+        }
+
+        .events-modal__close {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            padding: 0;
+            border: 1px solid #ddd;
+            border-radius: 0.25rem;
+            background: #fff;
+            font: 600 1.125rem/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            color: #555;
+            cursor: pointer;
+        }
+
+        .events-modal__close:hover {
+            background: #f7f7f7;
+            border-color: #ccc;
+        }
+
+        .events-modal__tabs {
+            flex-shrink: 0;
+            display: flex;
+            gap: 0.375rem;
+            padding: 0.625rem 1rem 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .events-modal__tab {
+            padding: 0.4375rem 0.75rem;
+            border: 1px solid transparent;
+            border-bottom: none;
+            border-radius: 0.25rem 0.25rem 0 0;
+            background: transparent;
+            font: 600 0.6875rem/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: #777;
+            cursor: pointer;
+        }
+
+        .events-modal__tab:hover {
+            color: #444;
+            background: #fafafa;
+        }
+
+        .events-modal__tab.is-active {
+            color: #444;
+            background: #fff;
+            border-color: #eee;
+            margin-bottom: -1px;
+        }
+
+        .events-modal__panel {
+            display: none;
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .events-modal__panel.is-active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .events-modal__panel-scroll {
+            flex: 1;
+            min-height: 0;
+            overflow: auto;
+        }
+
+        .events-modal__footer {
+            flex-shrink: 0;
+            padding: 0.75rem 1rem;
+            border-top: 1px solid #eee;
+        }
+
+        .events-modal__export-btn {
+            padding: 0.4375rem 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 0.25rem;
+            background: #fff;
+            font: 600 0.6875rem/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: #555;
+            cursor: pointer;
+        }
+
+        .events-modal__export-btn:hover {
+            background: #f7f7f7;
+            border-color: #ccc;
+        }
+
+        .events-table__cell--editable:focus {
+            outline: none;
+            background: #fffde7;
+            box-shadow: inset 0 0 0 1px #e6c200;
+        }
+
+        .events-table__cell--readonly {
+            color: #666;
+            background: #fafafa;
+        }
+
+        .events-table {
+            width: 100%;
+            border-collapse: collapse;
+            font: 0.8125rem/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            color: #333;
+        }
+
+        .events-table th,
+        .events-table td {
+            padding: 0.625rem 0.75rem;
+            border-bottom: 1px solid #eee;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .events-table th {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            font: 600 0.6875rem/1.2 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: #666;
+            background: #f7f7f7;
+            border-bottom: 1px solid #ddd;
+            white-space: nowrap;
+        }
+
+        .events-table tbody tr:hover {
+            background: #fafafa;
+        }
+
+        .events-table td.events-table__event,
+        .events-table td.events-table__coordinates {
+            min-width: 16rem;
+            max-width: 28rem;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: 0.75rem;
+            word-break: break-all;
+        }
+
+        .events-table td.events-table__id {
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: 0.75rem;
+            color: #666;
+            word-break: break-all;
+        }
+
         #footer { background-color: #ddd; }
         #footer p { font-size: 12px; color: #666; line-height:16px; padding: 10px 20px; text-indent: 1em; margin-bottom: 0 }
 
@@ -294,10 +514,95 @@
                 <div id="event-panel__controls">
                     <button type="button" id="event-play-btn">Play</button>
                     <button type="button" id="event-reset-btn">Reset</button>
+                    <button type="button" id="event-menu-btn" class="event-panel__icon-btn" aria-label="查看事件数据" title="查看事件数据">
+                        <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+                            <circle cx="2.5" cy="7" r="1.25" fill="currentColor"/>
+                            <circle cx="7" cy="7" r="1.25" fill="currentColor"/>
+                            <circle cx="11.5" cy="7" r="1.25" fill="currentColor"/>
+                        </svg>
+                    </button>
                 </div>
             </div>
             <div id="event-list"></div>
         </aside>
+    </div>
+    <div id="events-modal" class="events-modal" aria-hidden="true">
+        <header class="events-modal__header">
+            <h2 id="events-modal__title" class="events-modal__title">事件数据</h2>
+            <button type="button" id="events-modal__close" class="events-modal__close" aria-label="关闭">&times;</button>
+        </header>
+        <div class="events-modal__tabs" role="tablist">
+            <button type="button" id="events-modal__tab-events" class="events-modal__tab is-active" role="tab" aria-selected="true" aria-controls="events-modal__panel-events">全部事件</button>
+            <button type="button" id="events-modal__tab-locations" class="events-modal__tab" role="tab" aria-selected="false" aria-controls="events-modal__panel-locations">地点</button>
+            <button type="button" id="events-modal__tab-trips" class="events-modal__tab" role="tab" aria-selected="false" aria-controls="events-modal__panel-trips">移动路线</button>
+        </div>
+        <div id="events-modal__panel-events" class="events-modal__panel is-active" role="tabpanel">
+            <div class="events-modal__panel-scroll">
+                <table id="events-table" class="events-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">章</th>
+                            <th scope="col">地点</th>
+                            <th scope="col">事件</th>
+                            <th scope="col">人物</th>
+                            <th scope="col">segID</th>
+                            <th scope="col">pointID</th>
+                            <th scope="col">经度</th>
+                            <th scope="col">纬度</th>
+                            <th scope="col">id</th>
+                        </tr>
+                    </thead>
+                    <tbody id="events-table__body"></tbody>
+                </table>
+            </div>
+            <div class="events-modal__footer">
+                <button type="button" id="events-export-btn" class="events-modal__export-btn">复制 events.geojson</button>
+            </div>
+        </div>
+        <div id="events-modal__panel-locations" class="events-modal__panel" role="tabpanel" hidden>
+            <div class="events-modal__panel-scroll">
+                <table id="locations-table" class="events-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">pointID</th>
+                            <th scope="col">地点</th>
+                            <th scope="col">经度</th>
+                            <th scope="col">纬度</th>
+                            <th scope="col">置信度</th>
+                            <th scope="col">school</th>
+                            <th scope="col">type</th>
+                            <th scope="col">事件数</th>
+                        </tr>
+                    </thead>
+                    <tbody id="locations-table__body"></tbody>
+                </table>
+            </div>
+            <div class="events-modal__footer">
+                <button type="button" id="locations-export-btn" class="events-modal__export-btn">复制 locations.geojson</button>
+            </div>
+        </div>
+        <div id="events-modal__panel-trips" class="events-modal__panel" role="tabpanel" hidden>
+            <div class="events-modal__panel-scroll">
+                <table id="trips-table" class="events-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">segID</th>
+                            <th scope="col">起点</th>
+                            <th scope="col">终点</th>
+                            <th scope="col">章</th>
+                            <th scope="col">人物</th>
+                            <th scope="col">vehicle</th>
+                            <th scope="col">点数</th>
+                            <th scope="col">coordinates</th>
+                        </tr>
+                    </thead>
+                    <tbody id="trips-table__body"></tbody>
+                </table>
+            </div>
+            <div class="events-modal__footer">
+                <button type="button" id="trips-export-btn" class="events-modal__export-btn">复制 trips.geojson</button>
+            </div>
+        </div>
     </div>
 </body>
 <script src='./mapbox-config.js'></script>

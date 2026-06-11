@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "mapbox:config": "node scripts/generate-mapbox-config.mjs",
+    "swordsmen:sync-geojson": "node scripts/sync-swordsmen-geojson.mjs --write",
     "dev": "npm run mapbox:config && vite",
     "build": "npm run mapbox:config && tsc && vite build",
     "preview": "vite preview"

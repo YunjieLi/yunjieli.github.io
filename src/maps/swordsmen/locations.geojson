@@ -1,0 +1,771 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "西湖牢底",
+        "confidence": "1",
+        "pointID": 0,
+        "type": "牢房"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.129103,
+          30.24016
+        ]
+      },
+      "id": "04a9920736328116f4e12fed4dacf1ae"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "华山思过崖",
+        "confidence": "2",
+        "pointID": 1,
+        "type": "山洞"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.074081,
+          34.470901
+        ]
+      },
+      "id": "0799138fc1312e1dd26f51b3e7858762"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "福威镖局长沙分局",
+        "confidence": "1",
+        "pointID": 2,
+        "type": "宅院"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.98127,
+          28.200824
+        ]
+      },
+      "id": "17d29974164b2677c65a2d6b258182b7"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "华山脚下",
+        "confidence": "2",
+        "pointID": 3,
+        "type": "乡间"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.057945,
+          34.519851
+        ]
+      },
+      "id": "1cdc34d44f7a95d5ec82defb346ee58c"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "华山",
+        "confidence": "1",
+        "pointID": 4,
+        "school": true,
+        "type": "豪华门派"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.069444,
+          34.478889
+        ]
+      },
+      "id": "1eaf169f827c1cb50b3fd1876fd54a21"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "乡间饭铺",
+        "confidence": "3",
+        "pointID": 5,
+        "type": "乡间"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          119.223289,
+          25.967304
+        ]
+      },
+      "id": "205be0641a2aa1ea90d0a8e29fddcdad"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "药王庙",
+        "confidence": "2",
+        "pointID": 6,
+        "type": "小庙"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.083007,
+          34.704929
+        ]
+      },
+      "id": "221b2bcc8ad459df2b203da0270aab2e"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "嵩山",
+        "confidence": "1",
+        "pointID": 7,
+        "school": true,
+        "type": "豪华门派"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          113.003943,
+          34.519649
+        ]
+      },
+      "id": "2eb1e601e6b3d1542028e986b7e12146"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "武当山脚",
+        "confidence": "2",
+        "pointID": 8,
+        "type": "乡间"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          111.248931,
+          32.420543
+        ]
+      },
+      "id": "310c8ac1029df057ab319c2e9d22eb1e"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "官道上",
+        "confidence": "3",
+        "pointID": 9,
+        "type": "乡间"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.949409,
+          34.517234
+        ]
+      },
+      "id": "3625d275108fae95a51e38334eada7fa"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "西湖梅庄",
+        "confidence": "1",
+        "pointID": 10,
+        "type": "宅院"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.122151,
+          30.23623
+        ]
+      },
+      "id": "3b4d32589419c4598b10f67ac4aafcc2"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "恒山",
+        "confidence": "1",
+        "pointID": 11,
+        "school": true,
+        "type": "豪华门派"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          113.714675,
+          39.663127
+        ]
+      },
+      "id": "3dc783c94f637b0496934cd2b3f5b60f"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "黄河舟中",
+        "confidence": "2",
+        "pointID": 12,
+        "type": "船上"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          114.528696,
+          34.910373
+        ]
+      },
+      "id": "3f13074dbd44ee91d6ecd73f39eea1d0"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "廿八铺",
+        "confidence": "1",
+        "pointID": 13,
+        "type": "市镇"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          118.481034,
+          28.295297
+        ]
+      },
+      "id": "47a2e9032bec72561c9f8b2e89bb8b64"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "福威镖局",
+        "confidence": "1",
+        "pointID": 14,
+        "type": "宅院"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          119.286966,
+          26.072734
+        ]
+      },
+      "id": "4d08ad375c9b03b7b4263d3790658ab2"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "朱仙镇",
+        "confidence": "1",
+        "pointID": 15,
+        "type": "市镇"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          114.267054,
+          34.615253
+        ]
+      },
+      "id": "566bec5f3e286fdda81ad4da54229c94"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "黄保坪",
+        "confidence": "2",
+        "pointID": 16,
+        "type": "小庙"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          111.805114,
+          31.961483
+        ]
+      },
+      "id": "595ed9e22b40a4eb6b80ecf5ba96a4e6"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "黑木崖",
+        "confidence": "3",
+        "pointID": 17,
+        "school": true,
+        "type": "豪华门派"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          113.809433,
+          37.908992
+        ]
+      },
+      "id": "5b7bc22f94a2c4a8bb2a8e7ae9fb98c5"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "五霸岗",
+        "confidence": "2",
+        "pointID": 18,
+        "type": "小庙"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          115.20401,
+          35.405002
+        ]
+      },
+      "id": "66999b91bc3f5238df47d39a1e4785db"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "少林寺",
+        "confidence": "1",
+        "pointID": 19,
+        "school": true,
+        "type": "豪华门派"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.942068,
+          34.506546
+        ]
+      },
+      "id": "6c69cf330ea4129654d255bd64d54116"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "衡山城",
+        "confidence": "1",
+        "pointID": 20,
+        "type": "市镇"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.868268,
+          27.230291
+        ]
+      },
+      "id": "6f96ecc65ffb4d2cf10e040e3481bf1f"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "城外荒山",
+        "confidence": "2",
+        "pointID": 21,
+        "type": "乡间"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.86169,
+          27.231737
+        ]
+      },
+      "id": "734571a72f13fba733285d5d06f005d5"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "路边草棚",
+        "confidence": "3",
+        "pointID": 22,
+        "type": "乡间"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.955932,
+          34.515537
+        ]
+      },
+      "id": "7f5cfd50ec7843f026fbbac3d65d8632"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "江边市镇",
+        "confidence": "3",
+        "pointID": 23,
+        "type": "市镇"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.97327,
+          34.514267
+        ]
+      },
+      "id": "87a71b91a440c975cf74a93db3e53b71"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "洛阳",
+        "confidence": "1",
+        "pointID": 24,
+        "school": true,
+        "type": "城市"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.45404,
+          34.624343
+        ]
+      },
+      "id": "89b9a5279e3202aeefcb934ce1e7338d"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "无名荒谷",
+        "confidence": "3",
+        "pointID": 25,
+        "type": "乡间"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.946233,
+          34.522113
+        ]
+      },
+      "id": "89bf155dddf1d41b3543be5f3d8919dc"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "龙泉铸剑谷",
+        "confidence": "1",
+        "pointID": 26,
+        "type": "小庙"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          119.076004,
+          28.082582
+        ]
+      },
+      "id": "915ac2623a2c3c683811a69fdc74ba4c"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "仙霞岭",
+        "confidence": "1",
+        "pointID": 27,
+        "type": "小庙"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          118.506495,
+          28.355562
+        ]
+      },
+      "id": "9559efe9702b26a5e7ee79ae48108bf5"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "鸡鸣渡",
+        "confidence": "2",
+        "pointID": 28,
+        "type": "小庙"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.615356,
+          30.730032
+        ]
+      },
+      "id": "b07a9583ce4b8a4b010ee54361a6873b"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "山下小镇",
+        "confidence": "2",
+        "pointID": 29,
+        "type": "小庙"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.990183,
+          34.517234
+        ]
+      },
+      "id": "be447bca9f0a211b302bd9cda4e6609b"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "平定州",
+        "confidence": "1",
+        "pointID": 30,
+        "type": "市镇"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          113.657841,
+          37.786651
+        ]
+      },
+      "id": "bff61120edae0c219480204745deb4ed"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "乡间茶肆",
+        "confidence": "2",
+        "pointID": 31,
+        "type": "乡间"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          119.271268,
+          26.08554
+        ]
+      },
+      "id": "c0016fcb85b1942b99f88cbacf750b45"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "黄河舟中续",
+        "confidence": "3",
+        "pointID": 32,
+        "type": "船上"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          114.864132,
+          35.11972
+        ]
+      },
+      "id": "cb33895d1478b2bc901088cfa7976b28"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "恒山悬空寺",
+        "confidence": "1",
+        "pointID": 33,
+        "type": "小庙"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          113.712312,
+          39.658172
+        ]
+      },
+      "id": "cea2c08805493e8a81cb71ec1d9285d8"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "福州向阳巷老宅",
+        "confidence": "1",
+        "pointID": 34,
+        "type": "宅院"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          119.29882,
+          26.07097
+        ]
+      },
+      "id": "df0854ece5d27879b67d1394a4b3bf7a"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "老头子居",
+        "confidence": "2",
+        "pointID": 35,
+        "type": "宅院"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          114.600067,
+          34.964412
+        ]
+      },
+      "id": "df6b669cbbf33aff5c0a4ed40f0f5d92"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "九江",
+        "confidence": "1",
+        "pointID": 36,
+        "type": "市镇"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          115.980949,
+          29.726818
+        ]
+      },
+      "id": "eb465fd418d367fbc4f44f14a31bcc60"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "仙愁峡",
+        "confidence": "3",
+        "pointID": 37,
+        "type": "乡间"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          113.040561,
+          34.552658
+        ]
+      },
+      "id": "f37862013772e75437a637321575cec0"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "福威镖局南昌分局",
+        "confidence": "1",
+        "pointID": 38,
+        "type": "宅院"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          115.89992,
+          28.675991
+        ]
+      },
+      "id": "f5d9cb43b5a993e9d220a35fcff65e70"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "山下凉亭",
+        "confidence": "2",
+        "pointID": 39,
+        "type": "乡间"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.98726,
+          34.493469
+        ]
+      },
+      "id": "f78a54f1ce69d7ee6335b73fe46ca50e"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "东岳泰山",
+        "school": true,
+        "type": "豪华门派"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          117.104015,
+          36.25607
+        ]
+      },
+      "id": "ec2f67c6cbc4cd2fc3479ac89364af1c"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "福州",
+        "school": true,
+        "type": "城市"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          119.292081,
+          26.077731
+        ]
+      },
+      "id": "b95aab5d916d976ff1e0bfba6b3ca918"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "杭州",
+        "school": true,
+        "type": "城市"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.152353,
+          30.276471
+        ]
+      },
+      "id": "d1e03a79ab0f08fee323b4d1512fd62c"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "南岳衡山",
+        "school": true,
+        "type": "豪华门派"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.719912,
+          27.251833
+        ]
+      },
+      "id": "d2cd8cc66f2ff81577e8311c81b342ad"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "武当山",
+        "school": true,
+        "type": "豪华门派"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          111.029267,
+          32.423668
+        ]
+      },
+      "id": "c7b281fde5a3bea0a5012b8ec773108c"
+    }
+  ]
+}

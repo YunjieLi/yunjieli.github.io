@@ -1,0 +1,1728 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              119.29882,
+              26.07097
+            ],
+            [
+              119.286966,
+              26.072734
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "long"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              119.286967,
+              26.072735
+            ],
+            [
+              119.271269,
+              26.08554
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "short",
+        "people": [
+          "Pingzhi"
+        ],
+        "segID": 1
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              119.271269,
+              26.08554
+            ],
+            [
+              119.286967,
+              26.072735
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "long",
+        "people": [
+          "Pingzhi"
+        ],
+        "segID": 2
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              119.286967,
+              26.072735
+            ],
+            [
+              119.298727,
+              26.046117
+            ],
+            [
+              119.267211,
+              25.998551
+            ],
+            [
+              119.22329,
+              25.967305
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "long",
+        "people": [
+          "Pingzhi"
+        ],
+        "segID": 3
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              119.22329,
+              25.967305
+            ],
+            [
+              119.063543,
+              26.17953
+            ],
+            [
+              118.071021,
+              26.706971
+            ],
+            [
+              117.471421,
+              27.334287
+            ],
+            [
+              117.023216,
+              27.84305
+            ],
+            [
+              116.410913,
+              28.11399
+            ],
+            [
+              115.89992,
+              28.675991
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "long",
+        "people": [
+          "Pingzhi"
+        ],
+        "segID": 4
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              115.89992,
+              28.675991
+            ],
+            [
+              114.133766,
+              27.690196
+            ],
+            [
+              112.98127,
+              28.200825
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "long",
+        "people": [
+          "Pingzhi"
+        ],
+        "segID": 5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              112.98127,
+              28.200825
+            ],
+            [
+              112.868268,
+              27.230291
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "walk",
+        "people": [
+          "Pingzhi"
+        ],
+        "segID": 6
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              112.868268,
+              27.230291
+            ],
+            [
+              112.861691,
+              27.231737
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "walk",
+        "segID": 9
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              112.861691,
+              27.231737
+            ],
+            [
+              112.868268,
+              27.230291
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "abrupt",
+        "segID": 10
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              112.868268,
+              27.230291
+            ],
+            [
+              112.861691,
+              27.231737
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "walk",
+        "people": [
+          "Pingzhi"
+        ],
+        "segID": 11
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              112.861691,
+              27.231737
+            ],
+            [
+              112.868268,
+              27.230291
+            ],
+            [
+              112.293999,
+              31.176358
+            ],
+            [
+              111.517537,
+              32.993652
+            ],
+            [
+              109.798293,
+              33.935174
+            ],
+            [
+              109.463262,
+              34.34733
+            ],
+            [
+              110.069444,
+              34.478889
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "long",
+        "people": [
+          "Chong",
+          "Yilin",
+          "Lingshan",
+          "Pingzhi"
+        ],
+        "segID": 12
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              110.06944,
+              34.47888
+            ],
+            [
+              110.074081,
+              34.470901
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "walk",
+        "people": [
+          "Chong"
+        ],
+        "segID": 13
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              110.074081,
+              34.470901
+            ],
+            [
+              110.06944,
+              34.47888
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "walk",
+        "people": [
+          "Chong"
+        ],
+        "segID": 14
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              110.069444,
+              34.478889
+            ],
+            [
+              110.057945,
+              34.519853
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "walk",
+        "people": [
+          "Chong"
+        ],
+        "segID": 15
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              110.057945,
+              34.519853
+            ],
+            [
+              110.083008,
+              34.704929
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "long",
+        "people": [
+          "Chong"
+        ],
+        "segID": 16
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              110.083008,
+              34.704929
+            ],
+            [
+              110.619463,
+              34.573679
+            ],
+            [
+              111.882388,
+              35.082022
+            ],
+            [
+              112.45404,
+              34.624345
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "long",
+        "people": [
+          "Chong",
+          "Lingshan",
+          "Pingzhi",
+          "Yingying"
+        ],
+        "segID": 17
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              112.45404,
+              34.624345
+            ],
+            [
+              113.041595,
+              34.904935
+            ],
+            [
+              114.339859,
+              34.897159
+            ],
+            [
+              114.267054,
+              34.615252
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "water",
+        "people": [
+          "Chong",
+          "Lingshan",
+          "Pingzhi"
+        ],
+        "segID": 19
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              114.267054,
+              34.615252
+            ],
+            [
+              114.339859,
+              34.897159
+            ],
+            [
+              114.528697,
+              34.910374
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "water",
+        "people": [
+          "Chong",
+          "Lingshan",
+          "Pingzhi"
+        ],
+        "segID": 20
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              114.528697,
+              34.910374
+            ],
+            [
+              114.594871,
+              34.903727
+            ],
+            [
+              114.600067,
+              34.964414
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "walk",
+        "people": [
+          "Chong",
+          "Lingshan",
+          "Pingzhi"
+        ],
+        "segID": 21
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              114.600067,
+              34.964414
+            ],
+            [
+              114.594871,
+              34.903727
+            ],
+            [
+              114.795777,
+              34.970413
+            ],
+            [
+              114.864133,
+              35.119721
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "water",
+        "people": [
+          "Chong",
+          "Lingshan",
+          "Pingzhi"
+        ],
+        "segID": 22
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              114.864133,
+              35.119721
+            ],
+            [
+              115.20401,
+              35.405002
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "water",
+        "people": [
+          "Chong",
+          "Lingshan",
+          "Pingzhi",
+          "Yingying"
+        ],
+        "segID": 23
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              115.20401,
+              35.405002
+            ],
+            [
+              114.339859,
+              34.897159
+            ],
+            [
+              113.041595,
+              34.904935
+            ],
+            [
+              112.942068,
+              34.506545
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "walk",
+        "people": [
+          "Chong",
+          "Yingying"
+        ],
+        "segID": 24
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              112.94206,
+              34.50654
+            ],
+            [
+              112.968838,
+              34.512619
+            ],
+            [
+              112.987261,
+              34.493471
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "walk",
+        "people": [
+          "Chong",
+          "Yingying"
+        ],
+        "segID": 25
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              112.987261,
+              34.493471
+            ],
+            [
+              112.990588,
+              34.522993
+            ],
+            [
+              113.040562,
+              34.55266
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "walk",
+        "people": [
+          "Chong"
+        ],
+        "segID": 26
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              113.040562,
+              34.55266
+            ],
+            [
+              113.066689,
+              34.534022
+            ],
+            [
+              118.748727,
+              32.07073
+            ],
+            [
+              119.85287,
+              31.32565
+            ],
+            [
+              120.122151,
+              30.23623
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "long",
+        "people": [
+          "Chong"
+        ],
+        "segID": 27
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              120.122151,
+              30.23623
+            ],
+            [
+              120.129104,
+              30.240161
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "walk",
+        "people": [
+          "Chong"
+        ],
+        "segID": 28
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              120.129104,
+              30.240161
+            ],
+            [
+              120.122151,
+              30.23623
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "long",
+        "people": [
+          "Chong"
+        ],
+        "segID": 29
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              120.122228,
+              30.236455
+            ],
+            [
+              119.046205,
+              29.070925
+            ],
+            [
+              118.506495,
+              28.355562
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "short",
+        "people": [
+          "Chong"
+        ],
+        "segID": 30
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              118.506495,
+              28.355562
+            ],
+            [
+              118.481034,
+              28.295298
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "short",
+        "people": [
+          "Chong",
+          "Yilin"
+        ],
+        "segID": 31
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              118.481034,
+              28.295298
+            ],
+            [
+              118.176882,
+              26.651553
+            ],
+            [
+              119.286967,
+              26.072735
+            ],
+            [
+              119.298821,
+              26.07097
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "long",
+        "people": [
+          "Chong"
+        ],
+        "segID": 32
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              119.286967,
+              26.072735
+            ],
+            [
+              119.298821,
+              26.07097
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "short",
+        "people": [
+          "Chong"
+        ],
+        "segID": 33
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              119.286967,
+              26.072735
+            ],
+            [
+              118.176882,
+              26.651553
+            ],
+            [
+              118.378079,
+              27.746084
+            ],
+            [
+              119.076004,
+              28.082582
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "water",
+        "people": [
+          "Chong"
+        ],
+        "segID": 34
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              119.076004,
+              28.082582
+            ],
+            [
+              118.143537,
+              28.399168
+            ],
+            [
+              116.902902,
+              28.339239
+            ],
+            [
+              115.980949,
+              29.726819
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "long",
+        "people": [
+          "Chong",
+          "Yilin"
+        ],
+        "segID": 35
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              115.980949,
+              29.726819
+            ],
+            [
+              114.534126,
+              30.455827
+            ],
+            [
+              113.368512,
+              30.426226
+            ],
+            [
+              112.615356,
+              30.730032
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "long",
+        "people": [
+          "Chong",
+          "Yilin"
+        ],
+        "segID": 36
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              112.615356,
+              30.730032
+            ],
+            [
+              111.805115,
+              31.961484
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "long",
+        "people": [
+          "Chong"
+        ],
+        "segID": 37
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              111.805115,
+              31.961484
+            ],
+            [
+              111.248932,
+              32.420543
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "long",
+        "people": [
+          "Chong"
+        ],
+        "segID": 38
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              111.248932,
+              32.420543
+            ],
+            [
+              113.285964,
+              33.491343
+            ],
+            [
+              112.987261,
+              34.493471
+            ],
+            [
+              112.968838,
+              34.512619
+            ],
+            [
+              112.942068,
+              34.506545
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "long",
+        "people": [
+          "Chong"
+        ],
+        "segID": 39
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              112.942068,
+              34.506545
+            ],
+            [
+              111.37426,
+              35.595414
+            ],
+            [
+              112.564063,
+              37.873871
+            ],
+            [
+              112.809679,
+              39.434672
+            ],
+            [
+              113.672837,
+              39.683697
+            ],
+            [
+              113.714676,
+              39.66313
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "walk",
+        "people": [
+          "Chong",
+          "Yilin"
+        ],
+        "segID": 40
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              113.714676,
+              39.66313
+            ],
+            [
+              113.712312,
+              39.658174
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "long",
+        "people": [
+          "Chong"
+        ],
+        "segID": 41
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              113.712312,
+              39.658174
+            ],
+            [
+              113.714676,
+              39.66313
+            ],
+            [
+              113.672837,
+              39.683697
+            ],
+            [
+              112.809679,
+              39.434672
+            ],
+            [
+              112.564063,
+              37.873871
+            ],
+            [
+              113.657841,
+              37.786653
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "walk",
+        "people": [
+          "Chong",
+          "Yingying"
+        ],
+        "segID": 42
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              113.657841,
+              37.786653
+            ],
+            [
+              113.809433,
+              37.908992
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "long",
+        "people": [
+          "Chong",
+          "Yingying"
+        ],
+        "segID": 43
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              113.809433,
+              37.908992
+            ],
+            [
+              113.657841,
+              37.786653
+            ],
+            [
+              112.564063,
+              37.873871
+            ],
+            [
+              112.809679,
+              39.434672
+            ],
+            [
+              113.672837,
+              39.683697
+            ],
+            [
+              113.714676,
+              39.66313
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "long",
+        "people": [
+          "Chong"
+        ],
+        "segID": 44
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              113.714676,
+              39.66313
+            ],
+            [
+              113.672837,
+              39.683697
+            ],
+            [
+              112.809679,
+              39.434672
+            ],
+            [
+              112.564063,
+              37.873871
+            ],
+            [
+              111.37426,
+              35.595414
+            ],
+            [
+              112.94941,
+              34.517236
+            ],
+            [
+              112.955933,
+              34.515539
+            ],
+            [
+              112.97327,
+              34.514266
+            ],
+            [
+              113.003943,
+              34.519651
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "walk",
+        "people": [
+          "Chong",
+          "Yilin"
+        ],
+        "segID": 45
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              113.003943,
+              34.519651
+            ],
+            [
+              112.990183,
+              34.517236
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "walk",
+        "people": [
+          "Chong",
+          "Lingshan",
+          "Pingzhi",
+          "Yilin",
+          "Yingying"
+        ],
+        "segID": 46
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              112.990183,
+              34.517236
+            ],
+            [
+              112.97327,
+              34.514266
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "walk",
+        "people": [
+          "Chong",
+          "Lingshan",
+          "Pingzhi",
+          "Yilin",
+          "Yingying"
+        ],
+        "segID": 47
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              112.97327,
+              34.514266
+            ],
+            [
+              112.955933,
+              34.515539
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "walk",
+        "people": [
+          "Chong",
+          "Lingshan",
+          "Pingzhi",
+          "Yingying"
+        ],
+        "segID": 48
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              112.955933,
+              34.515539
+            ],
+            [
+              112.94941,
+              34.517236
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "short",
+        "people": [
+          "Chong",
+          "Yingying"
+        ],
+        "segID": 49
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              112.949315,
+              34.517189
+            ],
+            [
+              112.946234,
+              34.522116
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "long",
+        "people": [
+          "Chong",
+          "Yingying"
+        ],
+        "segID": 50
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              112.946234,
+              34.522116
+            ],
+            [
+              112.934498,
+              34.526225
+            ],
+            [
+              111.37426,
+              35.595414
+            ],
+            [
+              112.564063,
+              37.873871
+            ],
+            [
+              112.809679,
+              39.434672
+            ],
+            [
+              113.672837,
+              39.683697
+            ],
+            [
+              113.714676,
+              39.66313
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "long",
+        "people": [
+          "Chong"
+        ],
+        "segID": 51
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              113.714676,
+              39.66313
+            ],
+            [
+              113.672837,
+              39.683697
+            ],
+            [
+              112.809679,
+              39.434672
+            ],
+            [
+              112.564063,
+              37.873871
+            ],
+            [
+              111.37426,
+              35.595414
+            ],
+            [
+              110.083008,
+              34.704929
+            ],
+            [
+              110.074081,
+              34.470901
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "walk",
+        "people": [
+          "Chong",
+          "Yilin"
+        ],
+        "segID": 52
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              110.074081,
+              34.470901
+            ],
+            [
+              110.069444,
+              34.478889
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "long",
+        "people": [
+          "Chong",
+          "Yingying"
+        ],
+        "segID": 53
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              110.069444,
+              34.478889
+            ],
+            [
+              110.083008,
+              34.704929
+            ],
+            [
+              111.37426,
+              35.595414
+            ],
+            [
+              112.564063,
+              37.873871
+            ],
+            [
+              112.809679,
+              39.434672
+            ],
+            [
+              113.672837,
+              39.683697
+            ],
+            [
+              113.714676,
+              39.66313
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "abrupt",
+        "people": [
+          "Chong"
+        ],
+        "segID": 54
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              113.714676,
+              39.66313
+            ],
+            [
+              114.400467,
+              39.275425
+            ],
+            [
+              115.526195,
+              38.823448
+            ],
+            [
+              117.261489,
+              34.270475
+            ],
+            [
+              118.748727,
+              32.07073
+            ],
+            [
+              119.85287,
+              31.32565
+            ],
+            [
+              120.122151,
+              30.23623
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "abrupt",
+        "segID": 55
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              120.129104,
+              30.240161
+            ],
+            [
+              119.85287,
+              31.32565
+            ],
+            [
+              118.748727,
+              32.07073
+            ],
+            [
+              117.261489,
+              34.270475
+            ],
+            [
+              114.344302,
+              34.912212
+            ],
+            [
+              112.453345,
+              34.623609
+            ],
+            [
+              111.882388,
+              35.082022
+            ],
+            [
+              110.619463,
+              34.573679
+            ],
+            [
+              110.083008,
+              34.704929
+            ],
+            [
+              110.074081,
+              34.470901
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "vehicle": "abrupt",
+        "segID": 56
+      }
+    }
+  ]
+}
