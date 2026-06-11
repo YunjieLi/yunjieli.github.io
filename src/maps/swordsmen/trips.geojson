@@ -223,6 +223,10 @@
       },
       "properties": {
         "vehicle": "walk",
+        "people": [
+          "Yilin",
+          "Chong"
+        ],
         "segID": 9
       }
     },
@@ -245,6 +249,11 @@
       },
       "properties": {
         "vehicle": "abrupt",
+        "people": [
+          "Yilin",
+          "Chong",
+          "Pingzhi"
+        ],
         "segID": 10
       }
     },
@@ -314,7 +323,6 @@
         "vehicle": "long",
         "people": [
           "Chong",
-          "Yilin",
           "Lingshan",
           "Pingzhi"
         ],
@@ -451,8 +459,7 @@
         "people": [
           "Chong",
           "Lingshan",
-          "Pingzhi",
-          "Yingying"
+          "Pingzhi"
         ],
         "segID": 17
       }
@@ -611,8 +618,7 @@
         "people": [
           "Chong",
           "Lingshan",
-          "Pingzhi",
-          "Yingying"
+          "Pingzhi"
         ],
         "segID": 23
       }
@@ -675,8 +681,7 @@
       "properties": {
         "vehicle": "walk",
         "people": [
-          "Chong",
-          "Yingying"
+          "Chong"
         ],
         "segID": 25
       }
@@ -1667,6 +1672,10 @@
       },
       "properties": {
         "vehicle": "abrupt",
+        "people": [
+          "Chong",
+          "Yingying"
+        ],
         "segID": 55
       }
     },
@@ -1721,6 +1730,10 @@
       },
       "properties": {
         "vehicle": "abrupt",
+        "people": [
+          "Chong",
+          "Yingying"
+        ],
         "segID": 56
       }
     }

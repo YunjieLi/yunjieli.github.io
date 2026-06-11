@@ -468,7 +468,7 @@
       "type": "Feature",
       "id": "6c69cf330ea4129654d255bd64d54116",
       "properties": {
-        "name": "少林寺",
+        "name": "少林",
         "event": "任盈盈负令狐冲上少林。令狐冲得悉自己已为华山逐出门墙，因不愿改投他派拜别少林方丈。",
         "chapter": "18",
         "segID": "seg24",
@@ -532,7 +532,7 @@
       "type": "Feature",
       "id": "877622c5deca76083d9c4de7be2230dd",
       "properties": {
-        "name": "西湖梅庄",
+        "name": "梅庄",
         "event": "向问天与令狐冲来到西湖，与梅庄四友打赌比剑。",
         "chapter": "19",
         "segID": "seg27",
@@ -574,7 +574,7 @@
       "type": "Feature",
       "id": "3b4d32589419c4598b10f67ac4aafcc2",
       "properties": {
-        "name": "西湖梅庄",
+        "name": "梅庄",
         "event": "任我行重出江湖，令狐冲婉拒任我行入教邀请，出发前往福州寻找华山派。",
         "chapter": "21",
         "segID": "seg29",
@@ -793,7 +793,7 @@
       "type": "Feature",
       "id": "7b86e102c0965d180e9d573cbd2c2e8a",
       "properties": {
-        "name": "少林寺",
+        "name": "少林",
         "event": "令狐冲来到少林，得知任盈盈早已离开。令狐冲助任我行一方与正派高手三战得胜。",
         "chapter": "26",
         "segID": "seg39",
@@ -845,7 +845,6 @@
         "segID": "seg41",
         "people": [
           "Chong",
-          "Yilin",
           "Yingying"
         ],
         "pointID": 33
@@ -1159,7 +1158,7 @@
       "type": "Feature",
       "id": "73fb4e663bc392a32406e0a23b573172",
       "properties": {
-        "name": "西湖梅庄",
+        "name": "梅庄",
         "event": "三年后，令狐冲、任盈盈在西湖梅庄成婚，琴瑟和鸣。",
         "chapter": "40",
         "segID": "seg55",

@@ -464,9 +464,8 @@ function getNonKeyLocationLayerLayout() {
 function ensureLocationLayersOnTop() {
 	if (!map.getLayer('schools') || !map.getLayer('locations-non-key')) return;
 
-	var beforeId = map.getLayer('play-event-labels') ? 'play-event-labels' : undefined;
-	map.moveLayer('locations-non-key', beforeId);
-	map.moveLayer('schools', beforeId);
+	map.moveLayer('locations-non-key');
+	map.moveLayer('schools');
 }
 
 function syncEventsWithLocations() {
@@ -624,6 +623,8 @@ function initMap() {
 			"layout": getKeyLocationLayerLayout(),
 			"paint": {
 				"text-color": keyLocationLabelColor,
+				"text-halo-color": "#fff",
+				"text-halo-width": 2,
 			}
 		});
 		map.addLayer({
@@ -634,47 +635,8 @@ function initMap() {
 			"paint": {
 				"icon-opacity": 0.85,
 				"text-color": nonKeyLocationLabelColor,
-			}
-		});
-		map.addSource("play-event-labels", {
-			"type": "geojson",
-			"data": empty
-		});
-		map.addLayer({
-			"id": "play-event-labels",
-			"type": "symbol",
-			"source": "play-event-labels",
-			"layout": {
-				"visibility": "none",
-				"text-field": ["get", "name"],
-				"text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
-				"text-size": 14,
-				"text-offset": [
-					"case",
-					["==", ["get", "role"], "next"],
-					["literal", [0, 2.4]],
-					["literal", [0, 1.2]]
-				],
-				"text-anchor": "top",
-				"text-allow-overlap": true,
-				"text-ignore-placement": true,
-				"text-optional": false,
-				"symbol-sort-key": [
-					"case",
-					["==", ["get", "role"], "next"],
-					2,
-					1
-				]
-			},
-			"paint": {
-				"text-color": [
-					"case",
-					["==", ["get", "role"], "next"],
-					"#333",
-					"#c45"
-				],
 				"text-halo-color": "#fff",
-				"text-halo-width": 2.5
+				"text-halo-width": 2,
 			}
 		});
 
@@ -1077,52 +1039,6 @@ function clearUpcomingTripPath() {
 	clearPathTipMarker();
 }
 
-function buildPlayEventLabelsGeoJSON(currentFeature, nextFeature) {
-	return {
-		type: 'FeatureCollection',
-		features: [
-			{
-				type: 'Feature',
-				geometry: {
-					type: 'Point',
-					coordinates: currentFeature.geometry.coordinates,
-				},
-				properties: {
-					name: currentFeature.properties.name,
-					role: 'current',
-				},
-			},
-			{
-				type: 'Feature',
-				geometry: {
-					type: 'Point',
-					coordinates: nextFeature.geometry.coordinates,
-				},
-				properties: {
-					name: nextFeature.properties.name,
-					role: 'next',
-				},
-			},
-		],
-	};
-}
-
-function showPlayEventLabels(currentFeature, nextFeature) {
-	if (!map.getSource('play-event-labels')) return;
-
-	map.getSource('play-event-labels').setData(
-		buildPlayEventLabelsGeoJSON(currentFeature, nextFeature)
-	);
-	map.setLayoutProperty('play-event-labels', 'visibility', 'visible');
-}
-
-function clearPlayEventLabels() {
-	if (!map.getSource('play-event-labels')) return;
-
-	map.getSource('play-event-labels').setData(empty);
-	map.setLayoutProperty('play-event-labels', 'visibility', 'none');
-}
-
 function waitForUpcomingPathRender(callback) {
 	if (!callback) return;
 
@@ -1353,7 +1269,6 @@ function finishPlayAdvance(currentFeature, nextFeature) {
 	updateLocationMarkersVisibility();
 	playAnimationInProgress = false;
 	panelScrollFlyLocked = false;
-	clearPlayEventLabels();
 	updatePlayButtonState();
 }
 
@@ -1371,7 +1286,6 @@ function setActivePanelEvent(eventId) {
 
 	updateSelectedEventMarker(feature);
 	clearUpcomingTripPath();
-	clearPlayEventLabels();
 	if (!playAnimationInProgress) {
 		restoreTripsStaticForActiveEvent();
 	}
@@ -1405,7 +1319,6 @@ function playNextEvent() {
 	}
 
 	beginPlayTripAnimation(currentFeature);
-	showPlayEventLabels(currentFeature, nextFeature);
 
 	flyToEventPair(currentFeature, nextFeature, function() {
 		waitForUpcomingPathRender(function() {
@@ -1444,7 +1357,6 @@ function resetEventPanel() {
 
 	setActivePanelEvent(firstFeature.id);
 	clearUpcomingTripPath();
-	clearPlayEventLabels();
 	map.flyTo({
 		center: firstFeature.geometry.coordinates,
 		zoom: isMobile ? 5.5 : 6,
