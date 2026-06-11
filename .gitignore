@@ -4,3 +4,10 @@ ttam-nav-app/
 node_modules/
 dist/
 .claude/
+
+.env
+.env.*
+!.env.example
+
+src/maps/swordsmen/mapbox-config.js
+src/maps/swordsmen/archive/mapbox-config.js

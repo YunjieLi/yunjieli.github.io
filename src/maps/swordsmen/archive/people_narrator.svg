@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="20" height="20" viewBox="0 0 20 20">
+  <defs>
+    <clipPath id="a">
+      <circle cx="10" cy="10" r="10" fill="none"/>
+    </clipPath>
+  </defs>
+  <title>people</title>
+  <g clip-path="url(#a)">
+    <rect width="20" height="20" fill="#9cada3"/>
+    <path d="M14,5H6A2.006,2.006,0,0,0,4,7v5a2.006,2.006,0,0,0,2,2h5l2,3,1-3a2.006,2.006,0,0,0,2-2V7A2.006,2.006,0,0,0,14,5Z" fill="#e3e5e4"/>
+    <rect x="6" y="7" width="8" height="1" fill="#9cada3"/>
+    <rect x="6" y="9" width="8" height="1" fill="#9cada3"/>
+    <rect x="6" y="11" width="6.222" height="1" fill="#9cada3"/>
+  </g>
+</svg>

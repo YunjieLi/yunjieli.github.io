@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="20" height="20" viewBox="0 0 20 20">
+  <defs>
+    <clipPath id="a">
+      <circle cx="10" cy="10" r="10" fill="none"/>
+    </clipPath>
+  </defs>
+  <title>people</title>
+  <g clip-path="url(#a)">
+    <rect width="20" height="20" fill="#998a76"/>
+    <polygon points="4 16 3 17 3 18 4 19 5 19 6 18 6 17 5 16 6 15 5 14 5 13 4 13 4 14 4 14 3 15 4 16" fill="#fbb03b"/>
+    <polygon points="14 16 16 17 15.917 20 4.042 20 4 17 6 16 14 16" fill="#8baec1"/>
+    <polygon points="10 6 6 8 6 10 5 9 5 10 6 11 7 14 8 15 10 15 10 6" fill="#e5cab1"/>
+    <polygon points="10 15 12 15 13 14 14 11 15 10 15 9 14 10 14 8 13 8 12 6 10 6 10 15" fill="#ead5c1"/>
+    <polygon points="8 15 9 15 10 16 11 15 12 15 10.031 17 8 15" fill="#bcc3ba"/>
+    <polygon points="9 15 10 16 11 15 9 15" fill="#c9b29f"/>
+    <polygon points="7.042 20 9 20 13 16 12 15 10.016 16.984 8 15 7 16 9 18 7.042 20" fill="#83919b"/>
+    <polygon points="14 4 12 3.333 12 2 11 1 8.938 1 8 2 8 3.333 6 4 5 7 5 9 6 10 6 8 10 8 12 6 13 8 14 8 14 10 15 9 15 7 14 4" fill="#33312e"/>
+  </g>
+</svg>

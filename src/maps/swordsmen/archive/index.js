@@ -1,7 +1,7 @@
 mapboxgl.accessToken = window.MAPBOX_ACCESS_TOKEN || '';
 var map = new mapboxgl.Map({
 	container: 'map', // container id
-	style: 'mapbox://styles/mapbox/light-v11', //stylesheet location
+	style: 'mapbox://styles/yunjie/cir1qbfwe002absnhsjpoimct', //stylesheet location
 	center: [111.87163056653998, 33.76161539482898], // starting position
 	zoom: 4.14 // starting zoom
 });
@@ -2395,10 +2395,6 @@ var trips = {
 	"type": "FeatureCollection",
 	"features": []
 };
-var eventArcs = {
-	"type": "FeatureCollection",
-	"features": []
-};
 var tripActive = {};
 
 var idActive;
@@ -2406,115 +2402,60 @@ var animationID;
 
 var segmentNumber = 10;
 
-function eventChapterSegSortKey(feature) {
-	var props = feature.properties;
-	var chapter = parseInt(props.chapter, 10) || 0;
-	var seg = props.segIndex;
-	if (seg == null && props.segID) {
-		seg = parseInt(String(props.segID).replace('seg', ''), 10);
-	}
-	if (isNaN(seg)) seg = 0;
-	return chapter * 1000 + seg;
-}
+window.onload = function() {
 
-function buildEventArcCoords(from, to) {
-	var line = turf.lineString([from, to]);
-	var distance = turf.length(line, { units: 'kilometers' });
-	if (distance < 0.5) return null;
+	createArcs();
 
-	var midPoint = turf.along(line, distance / 2, { units: 'kilometers' });
-	var bearing = turf.bearing(turf.point(from), turf.point(to));
-	var curveOffset = Math.min(Math.max(distance * 0.12, 8), 100);
-	var control = turf.destination(midPoint, curveOffset, bearing + 90, { units: 'kilometers' });
-	var curved = turf.bezierSpline(
-		turf.lineString([from, control.geometry.coordinates, to]),
-		{ sharpness: 0.85, resolution: 10000 }
-	);
+	function createArcs() {
+		// start over drawing all arcs
 
-	return curved.geometry.coordinates;
-}
+		trips_straight.features.forEach(function(trip) {
+			trip.properties.segIndex = trip.properties.segID;
+			trip.properties.segID = 'seg' + trip.properties.segID;
 
-function buildEventArcs() {
-	if (eventArcs.features.length) return;
+			// A simple line from origin to destination.
+			var route = {
+				"type": "FeatureCollection",
+				"features": [{
+					"type": "Feature",
+					"geometry": {
+						"type": "LineString",
+						"coordinates": trip.geometry.coordinates[0]
+					},
+					"properties": trip.properties
+				}]
+			};
 
-	var sortedEvents = events.features.slice().sort(function(a, b) {
-		return eventChapterSegSortKey(a) - eventChapterSegSortKey(b);
-	});
+			// Calculate the distance in kilometers between route start/end point.
+			var lineDistance = turf.lineDistance(route.features[0], 'kilometers');
 
-	for (var i = 0; i < sortedEvents.length - 1; i++) {
-		var fromFeature = sortedEvents[i];
-		var toFeature = sortedEvents[i + 1];
-		var arcCoords = buildEventArcCoords(
-			fromFeature.geometry.coordinates,
-			toFeature.geometry.coordinates
-		);
-		if (!arcCoords) continue;
+			var arc = [];
 
-		eventArcs.features.push({
-			type: 'Feature',
-			geometry: {
-				type: 'LineString',
-				coordinates: arcCoords,
-			},
-			properties: {
-				fromEventId: fromFeature.id,
-				toEventId: toFeature.id,
-				segIndex: fromFeature.properties.segIndex,
-			},
+			// Draw an arc between the `origin` & `destination` of the two points
+			for (var i = 0; i <= segmentNumber; i++) {
+				var segment = turf.along(route.features[0], i * lineDistance / segmentNumber, 'kilometers');
+				arc.push(segment.geometry.coordinates);
+			}
+
+			// Update the route with calculated arc coordinates
+			route.features[0].geometry.coordinates = arc;
+
+			// Add the route to paths
+			trips.features.push(route.features[0]);
 		});
-	}
-}
 
-function createTripArcs() {
-	if (trips.features.length) return;
+		//btw... convert segID for events
+		events.features.forEach(function(event) {
+			event.properties.segIndex = parseInt( event.properties.segID.slice(3) ) ;
+		});
+	};
 
-	trips_straight.features.forEach(function(trip) {
-		trip.properties.segIndex = trip.properties.segID;
-		trip.properties.segID = 'seg' + trip.properties.segID;
+	console.log(JSON.stringify(trips));
+	// console.log(JSON.stringify(events));
 
-		var route = {
-			type: 'FeatureCollection',
-			features: [{
-				type: 'Feature',
-				geometry: {
-					type: 'LineString',
-					coordinates: trip.geometry.coordinates[0],
-				},
-				properties: trip.properties,
-			}],
-		};
-
-		var lineLength = turf.length(route.features[0], { units: 'kilometers' });
-		var arc = [];
-
-		for (var i = 0; i <= segmentNumber; i++) {
-			var segment = turf.along(route.features[0], i * lineLength / segmentNumber, { units: 'kilometers' });
-			arc.push(segment.geometry.coordinates);
-		}
-
-		route.features[0].geometry.coordinates = arc;
-		trips.features.push(route.features[0]);
-	});
-
-	events.features.forEach(function(event) {
-		event.properties.segIndex = parseInt(event.properties.segID.slice(3), 10);
-	});
-}
-
-function filterBasemapLabels() {
-	var keepPattern = /^(settlement-major-label|settlement-minor-label|state-label)/;
-
-	map.getStyle().layers.forEach(function(layer) {
-		if (layer.type !== 'symbol') return;
-		if (keepPattern.test(layer.id)) return;
-		map.setLayoutProperty(layer.id, 'visibility', 'none');
-	});
-}
+};
 
 map.on('load', function() {
-	filterBasemapLabels();
-	createTripArcs();
-	buildEventArcs();
 
 	addLayers();
 
@@ -2544,10 +2485,6 @@ map.on('load', function() {
 			"type": "geojson",
 			"data": empty
 		});
-		map.addSource("event-arcs", {
-			"type": "geojson",
-			"data": eventArcs
-		});
 		map.addSource("events", {
 			"type": "geojson",
 			"data": events
@@ -2570,7 +2507,6 @@ map.on('load', function() {
 			"type": "line",
 			"source": "trips-active",
 			"layout": {
-				"visibility": "none",
 				"line-cap": "round",
 				"line-join": "round"
 			},
@@ -2580,22 +2516,6 @@ map.on('load', function() {
 				"line-width": 3
 			}
 		});
-		// arcs between consecutive events
-		map.addLayer({
-			"id": "event-arcs",
-			"type": "line",
-			"source": "event-arcs",
-			"layout": {
-				"visibility": "none",
-				"line-cap": "round",
-				"line-join": "round"
-			},
-			"paint": {
-				"line-color": "#d68",
-				"line-opacity": 0.45,
-				"line-width": 2
-			}
-		});
 		//event points
 		map.addLayer({
 			"id": "events",
@@ -2603,19 +2523,7 @@ map.on('load', function() {
 			"source": "events",
 			"paint": {
 				"circle-color": "#d68",
-				"circle-opacity": 0.4,
-				"circle-radius": 5
-			}
-		});
-		map.addLayer({
-			"id": "schools-dot",
-			"type": "circle",
-			"source": "schools",
-			"paint": {
-				"circle-color": "#ab8",
-				"circle-radius": 5,
-				"circle-stroke-width": 1,
-				"circle-stroke-color": "#fff"
+				"circle-opacity": .4,
 			}
 		});
 		//schools
@@ -2624,61 +2532,19 @@ map.on('load', function() {
 			"type": "symbol",
 			"source": "schools",
 			"layout": {
-				"text-field": ["get", "name"],
+				"icon-image": "castle-15",
+				"icon-allow-overlap": true,
+				"icon-ignore-placement": true,
+				"text-field": "{name}",
 				"text-size": 11,
 				"text-offset": [0, 1],
-				"text-anchor": "top",
-				"text-font": ["Open Sans Regular", "Arial Unicode MS Regular"]
+				"text-anchor": "top"
 			},
 			"paint": {
 				"text-color": "#ab8"
 			}
 		});
-		map.addSource("play-event-labels", {
-			"type": "geojson",
-			"data": empty
-		});
-		map.addLayer({
-			"id": "play-event-labels",
-			"type": "symbol",
-			"source": "play-event-labels",
-			"layout": {
-				"visibility": "none",
-				"text-field": ["get", "name"],
-				"text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
-				"text-size": 14,
-				"text-offset": [
-					"case",
-					["==", ["get", "role"], "next"],
-					["literal", [0, 2.4]],
-					["literal", [0, 1.2]]
-				],
-				"text-anchor": "top",
-				"text-allow-overlap": true,
-				"text-ignore-placement": true,
-				"text-optional": false,
-				"symbol-sort-key": [
-					"case",
-					["==", ["get", "role"], "next"],
-					2,
-					1
-				]
-			},
-			"paint": {
-				"text-color": [
-					"case",
-					["==", ["get", "role"], "next"],
-					"#333",
-					"#c45"
-				],
-				"text-halo-color": "#fff",
-				"text-halo-width": 2.5
-			}
-		});
 	};
-
-	setupEventTooltips();
-	setupEventPanel();
 
 	$(".slide").hover(function() {
 		if (this.id !== idActive) {
@@ -2687,662 +2553,6 @@ map.on('load', function() {
 		}
 	});
 });
-
-function parseEventPeopleKeys(peopleProp) {
-	var keys = peopleProp;
-	if (typeof peopleProp === 'string') {
-		try {
-			keys = JSON.parse(peopleProp);
-		} catch (error) {
-			keys = [];
-		}
-	}
-	return Array.isArray(keys) ? keys : [];
-}
-
-function formatEventPeople(peopleProp) {
-	return parseEventPeopleKeys(peopleProp).map(function(key) {
-		return (people[key] && people[key].name) || key;
-	}).join('、');
-}
-
-function peopleAvatarSrc(key) {
-	if (key === 'Narrator') return './people_narrator.svg';
-	return './people_' + key + '.svg';
-}
-
-function buildEventPeopleAvatarsHtml(peopleProp) {
-	var keys = parseEventPeopleKeys(peopleProp);
-	if (!keys.length) return '';
-
-	return (
-		'<div class="event-item__people">' +
-			keys.map(function(key) {
-				var name = (people[key] && people[key].name) || key;
-				return (
-					'<img class="event-item__avatar" src="' + peopleAvatarSrc(key) + '" ' +
-						'alt="' + name + '" title="' + name + '" width="32" height="32" />'
-				);
-			}).join('') +
-		'</div>'
-	);
-}
-
-function buildEventTooltipHtml(props) {
-	var peopleLabel = formatEventPeople(props.people);
-	return (
-		'<div class="event-tooltip__inner">' +
-			'<div class="event-tooltip__name">' + props.name + '</div>' +
-			'<div class="event-tooltip__event">' + props.event + '</div>' +
-			'<div class="event-tooltip__meta">第' + props.chapter + '回' +
-				(peopleLabel ? ' · ' + peopleLabel : '') +
-			'</div>' +
-		'</div>'
-	);
-}
-
-function buildEventListItemHtml(props) {
-	return (
-		'<div class="event-item__name">' + props.name + '</div>' +
-		'<div class="event-item__event">' + props.event + '</div>' +
-		buildEventPeopleAvatarsHtml(props.people)
-	);
-}
-
-function groupEventsByChapter(sortedEvents) {
-	var groups = [];
-	var groupByChapter = {};
-
-	sortedEvents.forEach(function(feature) {
-		var chapter = String(feature.properties.chapter);
-		if (!groupByChapter[chapter]) {
-			groupByChapter[chapter] = [];
-		}
-		groupByChapter[chapter].push(feature);
-	});
-
-	Object.keys(groupByChapter).sort(function(a, b) {
-		return (parseInt(a, 10) || 0) - (parseInt(b, 10) || 0);
-	}).forEach(function(chapter) {
-		groups.push({
-			chapter: chapter,
-			features: groupByChapter[chapter],
-		});
-	});
-
-	return groups;
-}
-
-function appendEventItem(listEl, feature) {
-	var item = document.createElement('article');
-	item.className = 'event-item';
-	item.dataset.eventId = feature.id;
-	item.innerHTML = buildEventListItemHtml(feature.properties);
-
-	item.addEventListener('click', function() {
-		panelScrollFlyLocked = true;
-		item.scrollIntoView({ block: 'center', behavior: 'smooth' });
-		flyToEvent(feature.id, { force: true });
-		window.setTimeout(function() {
-			panelScrollFlyLocked = false;
-		}, 700);
-	});
-
-	listEl.appendChild(item);
-	return item;
-}
-
-function eventSortKey(feature) {
-	return eventChapterSegSortKey(feature);
-}
-
-var activePanelEventId = null;
-var panelScrollFlyLocked = false;
-var selectedEventMarker = null;
-var sortedPanelEvents = [];
-var playAnimationInProgress = false;
-var playAnimationId = null;
-
-function getEventFeatureById(eventId) {
-	return events.features.find(function(item) {
-		return item.id === eventId;
-	});
-}
-
-function getActivePanelEventIndex() {
-	if (!activePanelEventId) return -1;
-	return sortedPanelEvents.findIndex(function(feature) {
-		return feature.id === activePanelEventId;
-	});
-}
-
-function getPrimaryPersonKey(feature) {
-	var keys = parseEventPeopleKeys(feature.properties.people);
-	return keys.length ? keys[0] : null;
-}
-
-function cancelPlayAnimation() {
-	if (playAnimationId) {
-		cancelAnimationFrame(playAnimationId);
-		playAnimationId = null;
-	}
-	playAnimationInProgress = false;
-}
-
-function updatePlayButtonState() {
-	var playBtn = document.getElementById('event-play-btn');
-	if (!playBtn) return;
-	var activeIndex = getActivePanelEventIndex();
-	playBtn.disabled = playAnimationInProgress || activeIndex < 0 || activeIndex >= sortedPanelEvents.length - 1;
-}
-
-function updateCompletedTripsForEvent(feature) {
-	var segIndex = feature.properties.segIndex;
-	if (segIndex == null || isNaN(segIndex) || segIndex <= 0) {
-		map.setFilter('trips-static', ['==', 'segIndex', -1]);
-		return;
-	}
-	map.setFilter('trips-static', ['<=', 'segIndex', segIndex]);
-}
-
-function getTripsBetweenEvents(fromFeature, toFeature) {
-	var fromSeg = fromFeature.properties.segIndex;
-	var toSeg = toFeature.properties.segIndex;
-	return trips.features.filter(function(trip) {
-		var seg = trip.properties.segIndex;
-		return seg > fromSeg && seg <= toSeg;
-	}).sort(function(a, b) {
-		return a.properties.segIndex - b.properties.segIndex;
-	});
-}
-
-function showUpcomingTripPath(fromFeature, toFeature) {
-	var segments = getTripsBetweenEvents(fromFeature, toFeature);
-	var features;
-
-	if (segments.length) {
-		features = segments.map(function(trip) {
-			return JSON.parse(JSON.stringify(trip));
-		});
-	} else {
-		var pathCoords = buildTripPathBetweenEvents(fromFeature, toFeature);
-		if (pathCoords.length < 2) {
-			clearUpcomingTripPath();
-			return false;
-		}
-		features = [{
-			type: 'Feature',
-			geometry: {
-				type: 'LineString',
-				coordinates: pathCoords,
-			},
-			properties: {},
-		}];
-	}
-
-	map.setPaintProperty('trips-active', 'line-opacity', 0.75);
-	map.setLayoutProperty('trips-active', 'visibility', 'visible');
-	map.getSource('trips-active').setData({
-		type: 'FeatureCollection',
-		features: features,
-	});
-	return true;
-}
-
-function clearUpcomingTripPath() {
-	map.getSource('trips-active').setData(empty);
-	map.setLayoutProperty('trips-active', 'visibility', 'none');
-	map.setPaintProperty('trips-active', 'line-opacity', 0.4);
-}
-
-function buildPlayEventLabelsGeoJSON(currentFeature, nextFeature) {
-	return {
-		type: 'FeatureCollection',
-		features: [
-			{
-				type: 'Feature',
-				geometry: {
-					type: 'Point',
-					coordinates: currentFeature.geometry.coordinates,
-				},
-				properties: {
-					name: currentFeature.properties.name,
-					role: 'current',
-				},
-			},
-			{
-				type: 'Feature',
-				geometry: {
-					type: 'Point',
-					coordinates: nextFeature.geometry.coordinates,
-				},
-				properties: {
-					name: nextFeature.properties.name,
-					role: 'next',
-				},
-			},
-		],
-	};
-}
-
-function showPlayEventLabels(currentFeature, nextFeature) {
-	if (!map.getSource('play-event-labels')) return;
-
-	map.getSource('play-event-labels').setData(
-		buildPlayEventLabelsGeoJSON(currentFeature, nextFeature)
-	);
-	map.setLayoutProperty('play-event-labels', 'visibility', 'visible');
-}
-
-function clearPlayEventLabels() {
-	if (!map.getSource('play-event-labels')) return;
-
-	map.getSource('play-event-labels').setData(empty);
-	map.setLayoutProperty('play-event-labels', 'visibility', 'none');
-}
-
-function waitForUpcomingPathRender(callback) {
-	if (!callback) return;
-
-	var finished = false;
-	function finish() {
-		if (finished) return;
-		finished = true;
-		callback();
-	}
-
-	map.once('idle', function() {
-		window.setTimeout(finish, 400);
-	});
-	window.setTimeout(finish, 1200);
-}
-
-function flyToEventPair(fromFeature, toFeature, callback) {
-	var from = fromFeature.geometry.coordinates;
-	var to = toFeature.geometry.coordinates;
-	var moveDuration = 1200;
-	var finished = false;
-
-	function finish() {
-		if (finished) return;
-		finished = true;
-		if (callback) callback();
-	}
-
-	map.once('moveend', finish);
-	window.setTimeout(finish, moveDuration + 150);
-
-	if (from[0] === to[0] && from[1] === to[1]) {
-		map.flyTo({
-			center: to,
-			zoom: isMobile ? 5.5 : 6.5,
-			duration: moveDuration,
-			essential: true,
-		});
-		return;
-	}
-
-	var pair = turf.featureCollection([
-		turf.point(from),
-		turf.point(to),
-	]);
-	var bbox = turf.bbox(pair);
-
-	map.fitBounds([[bbox[0], bbox[1]], [bbox[2], bbox[3]]], {
-		padding: isMobile ? 30 : 60,
-		duration: moveDuration,
-		essential: true,
-	});
-}
-
-function buildTripPathBetweenEvents(fromFeature, toFeature) {
-	var segments = getTripsBetweenEvents(fromFeature, toFeature);
-	var coords = [fromFeature.geometry.coordinates.slice()];
-
-	segments.forEach(function(trip, i) {
-		var tripCoords = trip.geometry.coordinates;
-		var start = i === 0 ? 1 : 1;
-		for (var j = start; j < tripCoords.length; j++) {
-			coords.push(tripCoords[j]);
-		}
-	});
-
-	var end = toFeature.geometry.coordinates;
-	var last = coords[coords.length - 1];
-	if (!last || last[0] !== end[0] || last[1] !== end[1]) {
-		coords.push(end.slice());
-	}
-
-	if (segments.length === 0 && coords.length < 2) {
-		var from = fromFeature.geometry.coordinates;
-		if (from[0] !== end[0] || from[1] !== end[1]) {
-			return [from.slice(), end.slice()];
-		}
-	}
-
-	return coords;
-}
-
-function getPathAnimationDuration(pathCoords) {
-	if (pathCoords.length < 2) return 0;
-	var line = turf.lineString(pathCoords);
-	var km = turf.length(line, { units: 'kilometers' });
-	return Math.min(Math.max(km * 600, 1500), 5000);
-}
-
-function ensureEventMarker(feature) {
-	var keys = parseEventPeopleKeys(feature.properties.people);
-	if (!keys.length) {
-		if (selectedEventMarker) {
-			selectedEventMarker.remove();
-			selectedEventMarker = null;
-		}
-		return;
-	}
-
-	var key = keys[0];
-	var name = (people[key] && people[key].name) || key;
-	var src = peopleAvatarSrc(key);
-
-	if (!selectedEventMarker) {
-		var el = document.createElement('div');
-		el.className = 'event-character-marker';
-		var img = document.createElement('img');
-		img.className = 'event-character-marker__avatar';
-		el.appendChild(img);
-		selectedEventMarker = new mapboxgl.Marker({
-			element: el,
-			anchor: 'center',
-		});
-	}
-
-	var markerImg = selectedEventMarker.getElement().querySelector('img');
-	markerImg.src = src;
-	markerImg.alt = name;
-	markerImg.title = name;
-
-	selectedEventMarker
-		.setLngLat(feature.geometry.coordinates)
-		.addTo(map);
-}
-
-function setMarkerLngLat(coords) {
-	if (selectedEventMarker) {
-		selectedEventMarker.setLngLat(coords);
-	}
-}
-
-function animateMarkerAlongPath(pathCoords, duration, onComplete) {
-	if (!selectedEventMarker || pathCoords.length === 0) {
-		if (onComplete) onComplete();
-		return;
-	}
-
-	if (pathCoords.length === 1 || duration === 0) {
-		setMarkerLngLat(pathCoords[pathCoords.length - 1]);
-		if (onComplete) onComplete();
-		return;
-	}
-
-	setMarkerLngLat(pathCoords[0]);
-
-	var line = turf.lineString(pathCoords);
-	var totalLength = turf.length(line, { units: 'kilometers' });
-	var startTime = null;
-
-	function frame(timestamp) {
-		if (!startTime) startTime = timestamp;
-		var progress = Math.min((timestamp - startTime) / duration, 1);
-		var point = turf.along(line, progress * totalLength, { units: 'kilometers' });
-		setMarkerLngLat(point.geometry.coordinates);
-
-		if (progress < 1) {
-			playAnimationId = requestAnimationFrame(frame);
-		} else {
-			playAnimationId = null;
-			if (onComplete) onComplete();
-		}
-	}
-
-	playAnimationId = requestAnimationFrame(frame);
-}
-
-function finishPlayAdvance(currentFeature, nextFeature) {
-	var nextItem = document.querySelector('.event-item[data-event-id="' + nextFeature.id + '"]');
-	var currentKey = getPrimaryPersonKey(currentFeature);
-	var nextKey = getPrimaryPersonKey(nextFeature);
-
-	if (!nextKey) {
-		if (selectedEventMarker) {
-			selectedEventMarker.remove();
-			selectedEventMarker = null;
-		}
-	} else if (nextKey !== currentKey || !selectedEventMarker) {
-		ensureEventMarker(nextFeature);
-	} else {
-		setMarkerLngLat(nextFeature.geometry.coordinates);
-	}
-
-	activePanelEventId = nextFeature.id;
-	document.querySelectorAll('.event-item').forEach(function(item) {
-		item.classList.toggle('is-active', item.dataset.eventId === nextFeature.id);
-	});
-
-	updateCompletedTripsForEvent(nextFeature);
-
-	if (nextItem) {
-		nextItem.scrollIntoView({ block: 'center', behavior: 'smooth' });
-	}
-
-	playAnimationInProgress = false;
-	panelScrollFlyLocked = false;
-	clearPlayEventLabels();
-	updatePlayButtonState();
-}
-
-function setActivePanelEvent(eventId) {
-	if (!eventId) return;
-
-	var feature = getEventFeatureById(eventId);
-	if (!feature) return;
-
-	activePanelEventId = eventId;
-
-	document.querySelectorAll('.event-item').forEach(function(item) {
-		item.classList.toggle('is-active', item.dataset.eventId === eventId);
-	});
-
-	updateSelectedEventMarker(feature);
-	clearUpcomingTripPath();
-	clearPlayEventLabels();
-	updateCompletedTripsForEvent(feature);
-	updatePlayButtonState();
-}
-
-function playNextEvent() {
-	if (playAnimationInProgress) return;
-
-	var activeIndex = getActivePanelEventIndex();
-	if (activeIndex < 0 || activeIndex >= sortedPanelEvents.length - 1) return;
-
-	var currentFeature = sortedPanelEvents[activeIndex];
-	var nextFeature = sortedPanelEvents[activeIndex + 1];
-
-	playAnimationInProgress = true;
-	panelScrollFlyLocked = true;
-	updatePlayButtonState();
-
-	ensureEventMarker(currentFeature);
-	showUpcomingTripPath(currentFeature, nextFeature);
-	showPlayEventLabels(currentFeature, nextFeature);
-
-	flyToEventPair(currentFeature, nextFeature, function() {
-		waitForUpcomingPathRender(function() {
-			if (!selectedEventMarker) {
-				clearUpcomingTripPath();
-				finishPlayAdvance(currentFeature, nextFeature);
-				return;
-			}
-
-			var pathCoords = buildTripPathBetweenEvents(currentFeature, nextFeature);
-			var duration = getPathAnimationDuration(pathCoords);
-
-			animateMarkerAlongPath(pathCoords, duration, function() {
-				clearUpcomingTripPath();
-				finishPlayAdvance(currentFeature, nextFeature);
-			});
-		});
-	});
-}
-
-function resetEventPanel() {
-	if (!sortedPanelEvents.length) return;
-
-	cancelPlayAnimation();
-
-	var listEl = document.getElementById('event-list');
-	var firstFeature = sortedPanelEvents[0];
-	var firstItem = document.querySelector('.event-item[data-event-id="' + firstFeature.id + '"]');
-
-	panelScrollFlyLocked = true;
-	if (listEl) listEl.scrollTop = 0;
-	if (firstItem) {
-		firstItem.scrollIntoView({ block: 'center', behavior: 'auto' });
-	}
-
-	setActivePanelEvent(firstFeature.id);
-	clearUpcomingTripPath();
-	clearPlayEventLabels();
-	map.flyTo({
-		center: firstFeature.geometry.coordinates,
-		zoom: isMobile ? 5.5 : 6.5,
-		duration: 1200,
-		essential: true,
-	});
-
-	window.setTimeout(function() {
-		panelScrollFlyLocked = false;
-	}, 700);
-}
-
-function updateSelectedEventMarker(feature) {
-	ensureEventMarker(feature);
-}
-
-function flyToEvent(eventId, options) {
-	if (!eventId || (activePanelEventId === eventId && !(options && options.force))) return;
-
-	var feature = getEventFeatureById(eventId);
-	if (!feature) return;
-
-	setActivePanelEvent(eventId);
-
-	map.flyTo({
-		center: feature.geometry.coordinates,
-		zoom: isMobile ? 5.5 : 6.5,
-		duration: 1200,
-		essential: true,
-	});
-}
-
-function getCenteredEventItem(listEl) {
-	var items = listEl.querySelectorAll('.event-item');
-	if (!items.length) return null;
-
-	var centerY = listEl.scrollTop + listEl.clientHeight / 2;
-	var closest = null;
-	var closestDistance = Infinity;
-
-	items.forEach(function(item) {
-		var itemCenter = item.offsetTop + item.offsetHeight / 2;
-		var distance = Math.abs(itemCenter - centerY);
-		if (distance < closestDistance) {
-			closestDistance = distance;
-			closest = item;
-		}
-	});
-
-	return closest;
-}
-
-function setupEventPanel() {
-	var listEl = document.getElementById('event-list');
-	if (!listEl) return;
-
-	var sortedEvents = events.features.slice().sort(function(a, b) {
-		return eventSortKey(a) - eventSortKey(b);
-	});
-	sortedPanelEvents = sortedEvents;
-
-	var chapterGroups = groupEventsByChapter(sortedEvents);
-	var firstEvent = null;
-
-	chapterGroups.forEach(function(group) {
-		var section = document.createElement('section');
-		section.className = 'event-chapter';
-		section.dataset.chapter = group.chapter;
-
-		var header = document.createElement('h3');
-		header.className = 'event-chapter__header';
-		header.textContent = '第' + group.chapter + '回';
-		section.appendChild(header);
-
-		group.features.forEach(function(feature) {
-			if (!firstEvent) firstEvent = feature;
-			appendEventItem(section, feature);
-		});
-
-		listEl.appendChild(section);
-	});
-
-	var syncMapToScroll = function() {
-		if (panelScrollFlyLocked) return;
-		var centeredItem = getCenteredEventItem(listEl);
-		if (centeredItem) flyToEvent(centeredItem.dataset.eventId);
-	};
-
-	listEl.addEventListener('scroll', function() {
-		window.clearTimeout(listEl._scrollSyncTimer);
-		listEl._scrollSyncTimer = window.setTimeout(syncMapToScroll, 120);
-	}, { passive: true });
-
-	var playBtn = document.getElementById('event-play-btn');
-	var resetBtn = document.getElementById('event-reset-btn');
-	if (playBtn) playBtn.addEventListener('click', playNextEvent);
-	if (resetBtn) resetBtn.addEventListener('click', resetEventPanel);
-
-	if (firstEvent) {
-		flyToEvent(firstEvent.id, { force: true });
-	}
-}
-
-function setupEventTooltips() {
-	var popup = new mapboxgl.Popup({
-		closeButton: false,
-		closeOnClick: false,
-		maxWidth: isMobile ? '220px' : '280px',
-		offset: 12,
-		className: 'event-tooltip',
-	});
-
-	map.on('mouseenter', 'events', function() {
-		map.getCanvas().style.cursor = 'pointer';
-	});
-
-	map.on('mousemove', 'events', function(e) {
-		if (!e.features || e.features.length === 0) return;
-		var props = e.features[0].properties;
-		popup
-			.setLngLat(e.lngLat)
-			.setHTML(buildEventTooltipHtml(props))
-			.addTo(map);
-	});
-
-	map.on('mouseleave', 'events', function() {
-		map.getCanvas().style.cursor = '';
-		popup.remove();
-	});
-}
 
 function animateJourney(idActive) {
 
@@ -3367,16 +2577,18 @@ function animateJourney(idActive) {
 	updateStatic();
 	function updateStatic() {
 		var segIndex = trips.features[tripIndex].properties.segIndex;
-		map.setFilter('trips-static', ['<=', 'segIndex', segIndex]);
-		clearUpcomingTripPath();
+		map.setFilter('trips-static', ['<', 'segIndex', segIndex] );
+		map.setFilter('events', ['<=', 'segIndex', segIndex] );
+		map.getSource('trips-active').setData(empty);
 	};
 
     flytoTrip();
     function flytoTrip(){
 	    // fly to this trip
-	    var radius = Math.min(turf.length(trips.features[tripIndex], { units: 'kilometers' }) * 0.2, 20);
-	    var bbox = turf.bbox(turf.buffer(trips.features[tripIndex], radius, { units: 'kilometers' }));
-	    map.fitBounds([[bbox[0], bbox[1]], [bbox[2], bbox[3]]], { padding: 40, duration: 1200 });
+	    var radius = Math.min( turf.lineDistance(trips.features[tripIndex], 'kilometers') *.2, 20 );
+	    var bounds = turf.envelope( turf.buffer(trips.features[tripIndex], radius, 'kilometers') );
+	    var lnglat = [bounds.geometry.coordinates[0][0],bounds.geometry.coordinates[0][2]];
+	    map.fitBounds(lnglat);
 	};
 
 	var counter = 0;
