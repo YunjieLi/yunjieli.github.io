@@ -7,7 +7,7 @@
         "name": "西湖牢底",
         "confidence": "1",
         "pointID": 0,
-        "type": "牢房"
+        "type": "hut"
       },
       "geometry": {
         "type": "Point",
@@ -24,7 +24,7 @@
         "name": "华山思过崖",
         "confidence": "2",
         "pointID": 1,
-        "type": "山洞"
+        "type": "mountain"
       },
       "geometry": {
         "type": "Point",
@@ -41,7 +41,7 @@
         "name": "福威镖局长沙分局",
         "confidence": "1",
         "pointID": 2,
-        "type": "宅院"
+        "type": "mansion"
       },
       "geometry": {
         "type": "Point",
@@ -58,7 +58,7 @@
         "name": "华山脚下",
         "confidence": "2",
         "pointID": 3,
-        "type": "乡间"
+        "type": "countryside"
       },
       "geometry": {
         "type": "Point",
@@ -75,8 +75,8 @@
         "name": "华山",
         "confidence": "1",
         "pointID": 4,
-        "school": true,
-        "type": "豪华门派"
+        "key": true,
+        "type": "school"
       },
       "geometry": {
         "type": "Point",
@@ -93,7 +93,7 @@
         "name": "乡间饭铺",
         "confidence": "3",
         "pointID": 5,
-        "type": "乡间"
+        "type": "countryside"
       },
       "geometry": {
         "type": "Point",
@@ -110,7 +110,7 @@
         "name": "药王庙",
         "confidence": "2",
         "pointID": 6,
-        "type": "小庙"
+        "type": "hut"
       },
       "geometry": {
         "type": "Point",
@@ -127,8 +127,8 @@
         "name": "嵩山",
         "confidence": "1",
         "pointID": 7,
-        "school": true,
-        "type": "豪华门派"
+        "key": true,
+        "type": "school"
       },
       "geometry": {
         "type": "Point",
@@ -145,7 +145,7 @@
         "name": "武当山脚",
         "confidence": "2",
         "pointID": 8,
-        "type": "乡间"
+        "type": "countryside"
       },
       "geometry": {
         "type": "Point",
@@ -162,7 +162,7 @@
         "name": "官道上",
         "confidence": "3",
         "pointID": 9,
-        "type": "乡间"
+        "type": "countryside"
       },
       "geometry": {
         "type": "Point",
@@ -176,10 +176,11 @@
     {
       "type": "Feature",
       "properties": {
-        "name": "西湖梅庄",
+        "name": "梅庄",
         "confidence": "1",
         "pointID": 10,
-        "type": "宅院"
+        "key": true,
+        "type": "mansion"
       },
       "geometry": {
         "type": "Point",
@@ -196,8 +197,8 @@
         "name": "恒山",
         "confidence": "1",
         "pointID": 11,
-        "school": true,
-        "type": "豪华门派"
+        "key": true,
+        "type": "school"
       },
       "geometry": {
         "type": "Point",
@@ -214,7 +215,7 @@
         "name": "黄河舟中",
         "confidence": "2",
         "pointID": 12,
-        "type": "船上"
+        "type": "boat"
       },
       "geometry": {
         "type": "Point",
@@ -231,7 +232,8 @@
         "name": "廿八铺",
         "confidence": "1",
         "pointID": 13,
-        "type": "市镇"
+        "key": true,
+        "type": "hut"
       },
       "geometry": {
         "type": "Point",
@@ -248,7 +250,7 @@
         "name": "福威镖局",
         "confidence": "1",
         "pointID": 14,
-        "type": "宅院"
+        "type": "mansion"
       },
       "geometry": {
         "type": "Point",
@@ -265,7 +267,7 @@
         "name": "朱仙镇",
         "confidence": "1",
         "pointID": 15,
-        "type": "市镇"
+        "type": "hut"
       },
       "geometry": {
         "type": "Point",
@@ -282,7 +284,7 @@
         "name": "黄保坪",
         "confidence": "2",
         "pointID": 16,
-        "type": "小庙"
+        "type": "mountain"
       },
       "geometry": {
         "type": "Point",
@@ -299,8 +301,8 @@
         "name": "黑木崖",
         "confidence": "3",
         "pointID": 17,
-        "school": true,
-        "type": "豪华门派"
+        "key": true,
+        "type": "school"
       },
       "geometry": {
         "type": "Point",
@@ -317,7 +319,7 @@
         "name": "五霸岗",
         "confidence": "2",
         "pointID": 18,
-        "type": "小庙"
+        "type": "mountain"
       },
       "geometry": {
         "type": "Point",
@@ -331,11 +333,11 @@
     {
       "type": "Feature",
       "properties": {
-        "name": "少林寺",
+        "name": "少林",
         "confidence": "1",
         "pointID": 19,
-        "school": true,
-        "type": "豪华门派"
+        "key": true,
+        "type": "school"
       },
       "geometry": {
         "type": "Point",
@@ -352,7 +354,7 @@
         "name": "衡山城",
         "confidence": "1",
         "pointID": 20,
-        "type": "市镇"
+        "type": "city"
       },
       "geometry": {
         "type": "Point",
@@ -369,7 +371,7 @@
         "name": "城外荒山",
         "confidence": "2",
         "pointID": 21,
-        "type": "乡间"
+        "type": "countryside"
       },
       "geometry": {
         "type": "Point",
@@ -386,7 +388,7 @@
         "name": "路边草棚",
         "confidence": "3",
         "pointID": 22,
-        "type": "乡间"
+        "type": "countryside"
       },
       "geometry": {
         "type": "Point",
@@ -403,7 +405,7 @@
         "name": "江边市镇",
         "confidence": "3",
         "pointID": 23,
-        "type": "市镇"
+        "type": "hut"
       },
       "geometry": {
         "type": "Point",
@@ -420,8 +422,8 @@
         "name": "洛阳",
         "confidence": "1",
         "pointID": 24,
-        "school": true,
-        "type": "城市"
+        "key": true,
+        "type": "city"
       },
       "geometry": {
         "type": "Point",
@@ -438,7 +440,7 @@
         "name": "无名荒谷",
         "confidence": "3",
         "pointID": 25,
-        "type": "乡间"
+        "type": "countryside"
       },
       "geometry": {
         "type": "Point",
@@ -455,7 +457,7 @@
         "name": "龙泉铸剑谷",
         "confidence": "1",
         "pointID": 26,
-        "type": "小庙"
+        "type": "hut"
       },
       "geometry": {
         "type": "Point",
@@ -472,7 +474,7 @@
         "name": "仙霞岭",
         "confidence": "1",
         "pointID": 27,
-        "type": "小庙"
+        "type": "mountain"
       },
       "geometry": {
         "type": "Point",
@@ -489,7 +491,7 @@
         "name": "鸡鸣渡",
         "confidence": "2",
         "pointID": 28,
-        "type": "小庙"
+        "type": "hut"
       },
       "geometry": {
         "type": "Point",
@@ -506,7 +508,7 @@
         "name": "山下小镇",
         "confidence": "2",
         "pointID": 29,
-        "type": "小庙"
+        "type": "countryside"
       },
       "geometry": {
         "type": "Point",
@@ -523,7 +525,7 @@
         "name": "平定州",
         "confidence": "1",
         "pointID": 30,
-        "type": "市镇"
+        "type": "countryside"
       },
       "geometry": {
         "type": "Point",
@@ -540,7 +542,7 @@
         "name": "乡间茶肆",
         "confidence": "2",
         "pointID": 31,
-        "type": "乡间"
+        "type": "countryside"
       },
       "geometry": {
         "type": "Point",
@@ -557,7 +559,7 @@
         "name": "黄河舟中续",
         "confidence": "3",
         "pointID": 32,
-        "type": "船上"
+        "type": "boat"
       },
       "geometry": {
         "type": "Point",
@@ -574,7 +576,7 @@
         "name": "恒山悬空寺",
         "confidence": "1",
         "pointID": 33,
-        "type": "小庙"
+        "type": "hut"
       },
       "geometry": {
         "type": "Point",
@@ -591,7 +593,7 @@
         "name": "福州向阳巷老宅",
         "confidence": "1",
         "pointID": 34,
-        "type": "宅院"
+        "type": "mansion"
       },
       "geometry": {
         "type": "Point",
@@ -608,7 +610,7 @@
         "name": "老头子居",
         "confidence": "2",
         "pointID": 35,
-        "type": "宅院"
+        "type": "hut"
       },
       "geometry": {
         "type": "Point",
@@ -625,7 +627,7 @@
         "name": "九江",
         "confidence": "1",
         "pointID": 36,
-        "type": "市镇"
+        "type": "hut"
       },
       "geometry": {
         "type": "Point",
@@ -642,7 +644,7 @@
         "name": "仙愁峡",
         "confidence": "3",
         "pointID": 37,
-        "type": "乡间"
+        "type": "mountain"
       },
       "geometry": {
         "type": "Point",
@@ -659,7 +661,7 @@
         "name": "福威镖局南昌分局",
         "confidence": "1",
         "pointID": 38,
-        "type": "宅院"
+        "type": "mansion"
       },
       "geometry": {
         "type": "Point",
@@ -676,7 +678,7 @@
         "name": "山下凉亭",
         "confidence": "2",
         "pointID": 39,
-        "type": "乡间"
+        "type": "countryside"
       },
       "geometry": {
         "type": "Point",
@@ -690,25 +692,9 @@
     {
       "type": "Feature",
       "properties": {
-        "name": "东岳泰山",
-        "school": true,
-        "type": "豪华门派"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          117.104015,
-          36.25607
-        ]
-      },
-      "id": "ec2f67c6cbc4cd2fc3479ac89364af1c"
-    },
-    {
-      "type": "Feature",
-      "properties": {
         "name": "福州",
-        "school": true,
-        "type": "城市"
+        "key": true,
+        "type": "city"
       },
       "geometry": {
         "type": "Point",
@@ -723,8 +709,7 @@
       "type": "Feature",
       "properties": {
         "name": "杭州",
-        "school": true,
-        "type": "城市"
+        "type": "city"
       },
       "geometry": {
         "type": "Point",
@@ -738,9 +723,9 @@
     {
       "type": "Feature",
       "properties": {
-        "name": "南岳衡山",
-        "school": true,
-        "type": "豪华门派"
+        "name": "衡山",
+        "key": true,
+        "type": "school"
       },
       "geometry": {
         "type": "Point",
@@ -754,9 +739,25 @@
     {
       "type": "Feature",
       "properties": {
-        "name": "武当山",
-        "school": true,
-        "type": "豪华门派"
+        "name": "泰山",
+        "key": true,
+        "type": "school"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          117.104015,
+          36.25607
+        ]
+      },
+      "id": "ec2f67c6cbc4cd2fc3479ac89364af1c"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "武当",
+        "key": true,
+        "type": "school"
       },
       "geometry": {
         "type": "Point",

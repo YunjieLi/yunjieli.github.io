@@ -9,6 +9,7 @@ var map;
 var trips_straight;
 var events;
 var locations;
+var basemapStyle;
 var people = {
 	"Pingzhi": {
 		"name": "林平之"
@@ -47,6 +48,8 @@ var idActive;
 var animationID;
 
 var segmentNumber = 10;
+var defaultLocationType = 'countryside';
+var locationIconWidth = 48;
 
 function eventChapterSegSortKey(feature) {
 	var props = feature.properties;
@@ -147,54 +150,369 @@ function createTripArcs() {
 }
 
 function filterBasemapLabels() {
-	var keepPattern = /^(settlement-major-label|settlement-minor-label|state-label)/;
+	var keepLayers = basemapStyle.symbolLayers && basemapStyle.symbolLayers.keep;
+	var keepSet = keepLayers ? new Set(keepLayers) : null;
 
 	map.getStyle().layers.forEach(function(layer) {
 		if (layer.type !== 'symbol') return;
-		if (keepPattern.test(layer.id)) return;
+		if (keepSet && keepSet.has(layer.id)) return;
 		map.setLayoutProperty(layer.id, 'visibility', 'none');
 	});
+}
+
+function hasUrlMapView() {
+	var params = new URLSearchParams(window.location.search);
+	var lat = parseFloat(params.get('lat'));
+	var lon = parseFloat(params.get('lon'));
+	return !isNaN(lat) && !isNaN(lon);
+}
+
+function getInitialMapView() {
+	var params = new URLSearchParams(window.location.search);
+	var lat = parseFloat(params.get('lat'));
+	var lon = parseFloat(params.get('lon'));
+	var zoom = parseFloat(params.get('zoom'));
+	var center = basemapStyle.center.slice();
+	var viewZoom = basemapStyle.zoom;
+
+	if (!isNaN(lon) && !isNaN(lat)) {
+		center = [lon, lat];
+	}
+	if (!isNaN(zoom)) {
+		viewZoom = zoom;
+	}
+	if (basemapStyle.maxZoom != null && viewZoom > basemapStyle.maxZoom) {
+		viewZoom = basemapStyle.maxZoom;
+	}
+
+	return { center: center, zoom: viewZoom };
+}
+
+function syncMapViewToUrl() {
+	if (!map) return;
+
+	var center = map.getCenter();
+	var zoom = map.getZoom();
+	var params = new URLSearchParams(window.location.search);
+
+	params.set('lat', center.lat.toFixed(5));
+	params.set('lon', center.lng.toFixed(5));
+	params.set('zoom', zoom.toFixed(2));
+
+	var query = params.toString();
+	var newUrl = window.location.pathname + (query ? '?' + query : '') + window.location.hash;
+	window.history.replaceState(null, '', newUrl);
+}
+
+function setupMapViewUrlSync() {
+	map.on('moveend', function() {
+		window.clearTimeout(map._urlSyncTimer);
+		map._urlSyncTimer = window.setTimeout(syncMapViewToUrl, 200);
+	});
+	syncMapViewToUrl();
+}
+
+var locationByPointId = {};
+
+function isKeyLocation(feature) {
+	return feature.properties.key === true;
+}
+
+function getLocationByPointId(pointID) {
+	return locationByPointId[pointID] || null;
 }
 
 function getSchoolsGeojson() {
 	return {
 		type: 'FeatureCollection',
-		features: locations.features.filter(function(feature) {
-			return feature.properties.school === true;
+		features: locations.features.filter(isKeyLocation),
+	};
+}
+
+var animationEndpointPointIds = null;
+
+function setAnimationEndpointPointIds(fromFeature, toFeature) {
+	animationEndpointPointIds = new Set();
+	[fromFeature, toFeature].forEach(function(feature) {
+		if (!feature) return;
+		var pointID = feature.properties.pointID;
+		if (pointID != null) animationEndpointPointIds.add(pointID);
+	});
+}
+
+function clearAnimationEndpointPointIds() {
+	animationEndpointPointIds = null;
+}
+
+function isLocationMarkerVisible(pointID) {
+	if (pointID == null) return false;
+
+	var location = getLocationByPointId(pointID);
+	if (!location) return true;
+	if (isKeyLocation(location)) return true;
+	if (map && map.getZoom() > 6) return true;
+	if (animationEndpointPointIds && animationEndpointPointIds.has(pointID)) return true;
+	return false;
+}
+
+function getVisibleEventsGeojson() {
+	if (!events) return empty;
+
+	return {
+		type: 'FeatureCollection',
+		features: events.features.filter(function(feature) {
+			return isLocationMarkerVisible(feature.properties.pointID);
 		}),
 	};
 }
 
+function locationsOverlapInPixels(featureA, featureB, radiusPx) {
+	if (!map) return false;
+
+	var coordsA = featureA.geometry && featureA.geometry.coordinates;
+	var coordsB = featureB.geometry && featureB.geometry.coordinates;
+	if (!coordsA || !coordsB) return false;
+
+	var pointA = map.project(coordsA);
+	var pointB = map.project(coordsB);
+	var dx = pointA.x - pointB.x;
+	var dy = pointA.y - pointB.y;
+
+	return (dx * dx + dy * dy) <= radiusPx * radiusPx;
+}
+
+function nonKeyOverlapsKeyLocation(feature) {
+	return locations.features.some(function(keyFeature) {
+		if (!isKeyLocation(keyFeature)) return false;
+		return locationsOverlapInPixels(feature, keyFeature, locationIconWidth * 0.75);
+	});
+}
+
+function getVisibleNonKeyLocationsGeojson() {
+	if (!locations) return empty;
+
+	return {
+		type: 'FeatureCollection',
+		features: locations.features.filter(function(feature) {
+			if (isKeyLocation(feature)) return false;
+			if (!isLocationMarkerVisible(feature.properties.pointID)) return false;
+			return !nonKeyOverlapsKeyLocation(feature);
+		}),
+	};
+}
+
+function updateLocationMarkersVisibility() {
+	if (!map) return;
+	if (map.getSource('events')) {
+		map.getSource('events').setData(getVisibleEventsGeojson());
+	}
+	if (map.getSource('locations-non-key')) {
+		map.getSource('locations-non-key').setData(getVisibleNonKeyLocationsGeojson());
+	}
+}
+
+function setupLocationMarkersVisibility() {
+	updateLocationMarkersVisibility();
+	map.on('zoom', updateLocationMarkersVisibility);
+}
+
+function getLocationTypes() {
+	var types = {};
+
+	locations.features.forEach(function(feature) {
+		var type = feature.properties.type;
+		if (type) types[type] = true;
+	});
+
+	types[defaultLocationType] = true;
+	return Object.keys(types);
+}
+
+function getLocationIconId(type) {
+	return 'location-' + (type || defaultLocationType);
+}
+
+function getLocationIconImageExpression() {
+	return [
+		'concat',
+		'location-',
+		['coalesce', ['get', 'type'], defaultLocationType],
+	];
+}
+
+function rasterizeLocationIcon(img) {
+	var aspect = img.naturalWidth / img.naturalHeight || 1;
+	var width = locationIconWidth;
+	var height = Math.round(width / aspect);
+	var canvas = document.createElement('canvas');
+
+	canvas.width = width;
+	canvas.height = height;
+	var ctx = canvas.getContext('2d');
+	ctx.drawImage(img, 0, 0, width, height);
+	return ctx.getImageData(0, 0, width, height);
+}
+
+function loadLocationIconImages(callback) {
+	var types = getLocationTypes();
+	var pending = types.length;
+
+	if (!pending) {
+		callback();
+		return;
+	}
+
+	types.forEach(function(type) {
+		var iconId = getLocationIconId(type);
+		var img = new Image();
+
+		img.onload = function() {
+			if (!map.hasImage(iconId)) {
+				map.addImage(iconId, rasterizeLocationIcon(img), { pixelRatio: 1 });
+			}
+			pending -= 1;
+			if (pending === 0) callback();
+		};
+		img.onerror = function() {
+			console.error('Failed to load location icon for type:', type);
+			pending -= 1;
+			if (pending === 0) callback();
+		};
+		img.src = './assets/location-' + type + '.svg';
+	});
+}
+
+var keyLocationLabelColor = '#286972';
+var nonKeyLocationLabelColor = '#56524B';
+var locationLabelFont = ['Open Sans Regular', 'Arial Unicode MS Regular'];
+
+function getLocationIconLayout(overrides) {
+	var layout = {
+		'icon-image': getLocationIconImageExpression(),
+		'icon-size': 1,
+		'icon-anchor': 'bottom',
+		'icon-allow-overlap': true,
+		'icon-ignore-placement': true,
+	};
+
+	if (overrides) {
+		Object.keys(overrides).forEach(function(key) {
+			layout[key] = overrides[key];
+		});
+	}
+
+	return layout;
+}
+
+function getKeyLocationLabelAnchorExpression() {
+	return [
+		'match',
+		['get', 'name'],
+		'洛阳', 'right',
+		'少林', 'top',
+		'嵩山', 'left',
+		'top',
+	];
+}
+
+function getKeyLocationLabelOffsetExpression() {
+	return [
+		'match',
+		['get', 'name'],
+		'洛阳', ['literal', [-0.55, 0]],
+		'少林', ['literal', [0, 0.3]],
+		'嵩山', ['literal', [0.55, 0]],
+		['literal', [0, 0.3]],
+	];
+}
+
+function getKeyLocationLayerLayout() {
+	return getLocationIconLayout({
+		'text-field': ['get', 'name'],
+		'text-size': 20,
+		'text-offset': getKeyLocationLabelOffsetExpression(),
+		'text-anchor': getKeyLocationLabelAnchorExpression(),
+		'text-font': locationLabelFont,
+		'icon-allow-overlap': true,
+		'icon-ignore-placement': true,
+		'text-allow-overlap': true,
+		'text-ignore-placement': true,
+		'text-optional': false,
+		'symbol-sort-key': 200,
+	});
+}
+
+function getNonKeyLocationLayerLayout() {
+	return {
+		'icon-image': getLocationIconImageExpression(),
+		'icon-size': 1,
+		'icon-anchor': 'bottom',
+		'icon-allow-overlap': false,
+		'icon-ignore-placement': false,
+		'text-field': ['get', 'name'],
+		'text-size': 16,
+		'text-offset': [0, 0.25],
+		'text-anchor': 'top',
+		'text-font': locationLabelFont,
+		'text-allow-overlap': false,
+		'text-ignore-placement': false,
+		'text-optional': true,
+		'symbol-sort-key': 100,
+	};
+}
+
+function ensureLocationLayersOnTop() {
+	if (!map.getLayer('schools') || !map.getLayer('locations-non-key')) return;
+
+	var beforeId = map.getLayer('play-event-labels') ? 'play-event-labels' : undefined;
+	map.moveLayer('locations-non-key', beforeId);
+	map.moveLayer('schools', beforeId);
+}
+
 function syncEventsWithLocations() {
-	var byPointId = {};
+	locationByPointId = {};
 
 	locations.features.forEach(function(feature) {
 		if (feature.properties.pointID == null) return;
-		byPointId[feature.properties.pointID] = feature;
+		locationByPointId[feature.properties.pointID] = feature;
 	});
 
 	events.features.forEach(function(event) {
-		var location = byPointId[event.properties.pointID];
+		var location = locationByPointId[event.properties.pointID];
 		if (!location) return;
 		event.properties.name = location.properties.name;
 		event.geometry.coordinates = location.geometry.coordinates.slice();
+		if (location.properties.type) {
+			event.properties.type = location.properties.type;
+		}
 	});
 }
 
 function initMap() {
-	map = new mapboxgl.Map({
+	var initialView = getInitialMapView();
+	var mapOptions = {
 		container: 'map',
-		style: 'mapbox://styles/mapbox/light-v11',
-		center: [111.87163056653998, 33.76161539482898],
-		zoom: 4.14
-	});
+		style: basemapStyle.style,
+		center: initialView.center,
+		zoom: initialView.zoom
+	};
+
+	if (basemapStyle.language) mapOptions.language = basemapStyle.language;
+	if (basemapStyle.worldview) mapOptions.worldview = basemapStyle.worldview;
+	if (basemapStyle.maxZoom != null) mapOptions.maxZoom = basemapStyle.maxZoom;
+
+	map = new mapboxgl.Map(mapOptions);
 
 	map.on('load', function() {
+	if (basemapStyle.language && map.setLanguage) {
+		map.setLanguage(basemapStyle.language);
+	}
 	filterBasemapLabels();
+	setupMapViewUrlSync();
 	createTripArcs();
 	buildEventArcs();
 
-	addLayers();
+	loadLocationIconImages(addLayers);
 
 	function addLayers() {
 
@@ -228,22 +546,33 @@ function initMap() {
 		});
 		map.addSource("events", {
 			"type": "geojson",
-			"data": events
+			"data": empty
 		});
 
-		//trips-static
+		//trips-all
+		map.addLayer({
+			"id": "trips-all",
+			"type": "line",
+			"source": "trips-static",
+			"paint": {
+				"line-color": "#9CBFAF",
+				"line-opacity": 0.6,
+				"line-width": 2
+			}
+		});
+		//trips-static (completed trip segments)
 		map.addLayer({
 			"id": "trips-static",
 			"type": "line",
 			"source": "trips-static",
 			"paint": {
-				"line-color": "#bb8",
-				"line-opacity": .6,
-				"line-width": 3
+				"line-color": "#286972",
+				"line-opacity": 0.6,
+				"line-width": 4
 			}
 		});
 		map.setFilter('trips-static', ['==', 'segIndex', -1]);
-		//trips-active
+		//trips-active (completed portion of in-progress animation)
 		map.addLayer({
 			"id": "trips-active",
 			"type": "line",
@@ -254,9 +583,9 @@ function initMap() {
 				"line-join": "round"
 			},
 			"paint": {
-				"line-color": "#ab8",
-				"line-opacity": .4,
-				"line-width": 3
+				"line-color": "#286972",
+				"line-opacity": 0.6,
+				"line-width": 4
 			}
 		});
 		// arcs between consecutive events
@@ -275,42 +604,36 @@ function initMap() {
 				"line-width": 2
 			}
 		});
-		//event points
 		map.addLayer({
 			"id": "events",
-			"type": "circle",
+			"type": "symbol",
 			"source": "events",
+			"layout": getLocationIconLayout(),
 			"paint": {
-				"circle-color": "#d68",
-				"circle-opacity": 0.4,
-				"circle-radius": 5
+				"icon-opacity": 0.85,
 			}
 		});
-		map.addLayer({
-			"id": "schools-dot",
-			"type": "circle",
-			"source": "schools",
-			"paint": {
-				"circle-color": "#ab8",
-				"circle-radius": 5,
-				"circle-stroke-width": 1,
-				"circle-stroke-color": "#fff"
-			}
+		map.addSource("locations-non-key", {
+			"type": "geojson",
+			"data": empty
 		});
-		//schools
 		map.addLayer({
 			"id": "schools",
 			"type": "symbol",
 			"source": "schools",
-			"layout": {
-				"text-field": ["get", "name"],
-				"text-size": 11,
-				"text-offset": [0, 1],
-				"text-anchor": "top",
-				"text-font": ["Open Sans Regular", "Arial Unicode MS Regular"]
-			},
+			"layout": getKeyLocationLayerLayout(),
 			"paint": {
-				"text-color": "#ab8"
+				"text-color": keyLocationLabelColor,
+			}
+		});
+		map.addLayer({
+			"id": "locations-non-key",
+			"type": "symbol",
+			"source": "locations-non-key",
+			"layout": getNonKeyLocationLayerLayout(),
+			"paint": {
+				"icon-opacity": 0.85,
+				"text-color": nonKeyLocationLabelColor,
 			}
 		});
 		map.addSource("play-event-labels", {
@@ -354,11 +677,12 @@ function initMap() {
 				"text-halo-width": 2.5
 			}
 		});
-	};
 
-	setupEventTooltips();
-	setupEventPanel();
-	setupEventsDataModal();
+		ensureLocationLayersOnTop();
+		setupLocationMarkersVisibility();
+		setupEventTooltips();
+		initializeActiveEvent();
+	};
 
 	$(".slide").hover(function() {
 		if (this.id !== idActive) {
@@ -382,12 +706,19 @@ Promise.all([
 		if (!response.ok) throw new Error('Failed to load trips.geojson');
 		return response.json();
 	}),
+	fetch('./basemap-style.json').then(function(response) {
+		if (!response.ok) throw new Error('Failed to load basemap-style.json');
+		return response.json();
+	}),
 ]).then(function(results) {
 	events = results[0];
 	locations = results[1];
 	trips_straight = results[2];
+	basemapStyle = results[3];
 	syncEventsWithLocations();
 	initMap();
+	setupEventsDataModal();
+	setupEventPanel();
 }).catch(function(error) {
 	console.error(error);
 });
@@ -632,6 +963,8 @@ function cancelPlayAnimation() {
 	}
 	clearUpcomingTripPath();
 	restoreTripsStaticForActiveEvent();
+	clearAnimationEndpointPointIds();
+	updateLocationMarkersVisibility();
 	playAnimationInProgress = false;
 }
 
@@ -694,7 +1027,6 @@ function getTripsBetweenEvents(fromFeature, toFeature) {
 }
 
 function initActiveTripPath() {
-	map.setPaintProperty('trips-active', 'line-opacity', 0.75);
 	map.setLayoutProperty('trips-active', 'visibility', 'visible');
 	map.getSource('trips-active').setData(empty);
 }
@@ -725,7 +1057,6 @@ function slicePathCoordsToProgress(pathCoords, progress) {
 function updateActiveTripPathFromCoords(pathCoords) {
 	if (!map.getSource('trips-active')) return;
 
-	map.setPaintProperty('trips-active', 'line-opacity', 0.75);
 	map.setLayoutProperty('trips-active', 'visibility', 'visible');
 	map.getSource('trips-active').setData({
 		type: 'FeatureCollection',
@@ -743,7 +1074,6 @@ function updateActiveTripPathFromCoords(pathCoords) {
 function clearUpcomingTripPath() {
 	map.getSource('trips-active').setData(empty);
 	map.setLayoutProperty('trips-active', 'visibility', 'none');
-	map.setPaintProperty('trips-active', 'line-opacity', 0.4);
 	clearPathTipMarker();
 }
 
@@ -827,7 +1157,7 @@ function flyToEventPair(fromFeature, toFeature, callback) {
 	if (from[0] === to[0] && from[1] === to[1]) {
 		map.flyTo({
 			center: to,
-			zoom: isMobile ? 5.5 : 6.5,
+			zoom: isMobile ? 5.5 : 6,
 			duration: moveDuration,
 			essential: true,
 		});
@@ -1019,6 +1349,8 @@ function finishPlayAdvance(currentFeature, nextFeature) {
 		nextItem.scrollIntoView({ block: 'center', behavior: 'smooth' });
 	}
 
+	clearAnimationEndpointPointIds();
+	updateLocationMarkersVisibility();
 	playAnimationInProgress = false;
 	panelScrollFlyLocked = false;
 	clearPlayEventLabels();
@@ -1057,6 +1389,9 @@ function playNextEvent() {
 	var currentFeature = sortedPanelEvents[activeIndex];
 	var nextFeature = sortedPanelEvents[activeIndex + 1];
 	var tripSegID = getEventSegIndex(nextFeature);
+
+	setAnimationEndpointPointIds(currentFeature, nextFeature);
+	updateLocationMarkersVisibility();
 
 	playAnimationInProgress = true;
 	panelScrollFlyLocked = true;
@@ -1112,7 +1447,7 @@ function resetEventPanel() {
 	clearPlayEventLabels();
 	map.flyTo({
 		center: firstFeature.geometry.coordinates,
-		zoom: isMobile ? 5.5 : 6.5,
+		zoom: isMobile ? 5.5 : 6,
 		duration: 1200,
 		essential: true,
 	});
@@ -1136,7 +1471,7 @@ function flyToEvent(eventId, options) {
 
 	map.flyTo({
 		center: feature.geometry.coordinates,
-		zoom: isMobile ? 5.5 : 6.5,
+		zoom: isMobile ? 5.5 : 6,
 		duration: 1200,
 		essential: true,
 	});
@@ -1193,7 +1528,7 @@ function getLocationRowsForTable() {
 			pointID: pointID,
 			name: feature.properties.name || '',
 			confidence: feature.properties.confidence || '',
-			school: feature.properties.school === true,
+			key: feature.properties.key === true,
 			type: feature.properties.type || '',
 			coordinates: feature.geometry && feature.geometry.coordinates
 				? feature.geometry.coordinates
@@ -1251,7 +1586,7 @@ function buildLocationsTableRow(location) {
 	appendTableCell(row, location.coordinates[0] != null ? location.coordinates[0] : '', { editable: true });
 	appendTableCell(row, location.coordinates[1] != null ? location.coordinates[1] : '', { editable: true });
 	appendTableCell(row, location.confidence, { editable: true });
-	appendTableCell(row, location.school ? 'TRUE' : '', { editable: true });
+	appendTableCell(row, location.key ? 'TRUE' : '', { editable: true });
 	appendTableCell(row, location.type, { editable: true });
 	appendTableCell(row, location.eventCount);
 
@@ -1332,7 +1667,7 @@ function collectEventsGeojsonFromTable() {
 	};
 }
 
-function parseSchoolCell(text) {
+function parseKeyCell(text) {
 	var value = String(text || '').trim().toLowerCase();
 	return value === 'true' || value === '1' || value === 'yes';
 }
@@ -1353,7 +1688,7 @@ function collectLocationsGeojsonFromTable() {
 
 		if (!isNaN(pointID) && pointIDText !== '') properties.pointID = pointID;
 		if (properties.confidence === '') delete properties.confidence;
-		if (parseSchoolCell(cells[5].textContent)) properties.school = true;
+		if (parseKeyCell(cells[5].textContent)) properties.key = true;
 		if (type) properties.type = type;
 
 		var feature = {
@@ -1607,9 +1942,16 @@ function setEventsModalTab(tabName) {
 function openEventsModal() {
 	var modal = document.getElementById('events-modal');
 	if (!modal) return;
-	populateEventsTable();
-	populateLocationsTable();
-	populateTripsTable();
+
+	try {
+		populateEventsTable();
+		populateLocationsTable();
+		populateTripsTable();
+	} catch (error) {
+		console.error(error);
+		return;
+	}
+
 	setEventsModalTab('events');
 	modal.classList.add('is-open');
 	modal.setAttribute('aria-hidden', 'false');
@@ -1649,7 +1991,11 @@ function setupPlayKeyboardShortcut() {
 	});
 }
 
+var eventsDataModalReady = false;
+
 function setupEventsDataModal() {
+	if (eventsDataModalReady) return;
+
 	var menuBtn = document.getElementById('event-menu-btn');
 	var closeBtn = document.getElementById('events-modal__close');
 	var eventsTab = document.getElementById('events-modal__tab-events');
@@ -1661,6 +2007,7 @@ function setupEventsDataModal() {
 	var modal = document.getElementById('events-modal');
 	if (!menuBtn || !modal) return;
 
+	eventsDataModalReady = true;
 	menuBtn.addEventListener('click', openEventsModal);
 	if (closeBtn) closeBtn.addEventListener('click', closeEventsModal);
 	if (eventsTab) eventsTab.addEventListener('click', function() { setEventsModalTab('events'); });
@@ -1691,7 +2038,6 @@ function setupEventPanel() {
 	sortedPanelEvents = sortedEvents;
 
 	var chapterGroups = groupEventsByChapter(sortedEvents);
-	var firstEvent = null;
 
 	chapterGroups.forEach(function(group) {
 		var section = document.createElement('section');
@@ -1704,7 +2050,6 @@ function setupEventPanel() {
 		section.appendChild(header);
 
 		group.features.forEach(function(feature) {
-			if (!firstEvent) firstEvent = feature;
 			appendEventItem(section, feature);
 		});
 
@@ -1727,10 +2072,20 @@ function setupEventPanel() {
 	if (playBtn) playBtn.addEventListener('click', playNextEvent);
 	if (resetBtn) resetBtn.addEventListener('click', resetEventPanel);
 	setupPlayKeyboardShortcut();
+}
 
-	if (firstEvent) {
-		flyToEvent(firstEvent.id, { force: true });
+function initializeActiveEvent() {
+	if (!sortedPanelEvents.length) return;
+
+	var firstEvent = sortedPanelEvents[0];
+	if (!firstEvent) return;
+
+	if (hasUrlMapView()) {
+		setActivePanelEvent(firstEvent.id);
+		return;
 	}
+
+	flyToEvent(firstEvent.id, { force: true });
 }
 
 function setupEventTooltips() {

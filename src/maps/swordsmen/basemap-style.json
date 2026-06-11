@@ -1,0 +1,14 @@
+{
+  "style": "mapbox://styles/mapbox/light-v11",
+  "center": [111.87163056653998, 33.76161539482898],
+  "zoom": 4.14,
+  "maxZoom": 12,
+  "language": "zh-Hans",
+  "worldview": "CN",
+  "symbolLayers": {
+    "keep": [
+      "country-label",
+      "state-label"
+    ]
+  }
+}
