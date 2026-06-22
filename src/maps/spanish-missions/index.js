@@ -24,10 +24,19 @@ var MEXICO_CITY = {
 	}],
 };
 
+function getNewSpainGeojson() {
+	return selectedYear >= NEW_SPAIN_BOUNDARY_YEAR ? newSpain1819 : newSpain1794;
+}
+
+function updateNewSpainData() {
+	if (!map || !map.getSource('new-spain')) return;
+	map.getSource('new-spain').setData(getNewSpainGeojson());
+}
+
 function addNewSpainLayers() {
 	map.addSource('new-spain', {
 		type: 'geojson',
-		data: newSpain,
+		data: getNewSpainGeojson(),
 	});
 
 	map.addLayer({
@@ -172,7 +181,9 @@ function setupMexicoCityInteractions() {
 
 var missions;
 var california;
-var newSpain;
+var newSpain1794;
+var newSpain1819;
+var NEW_SPAIN_BOUNDARY_YEAR = 1819;
 var map;
 var minYear = 1683;
 var maxYear = 1834;
@@ -676,6 +687,7 @@ function updateMissionData() {
 	if (!map || !map.getSource('missions')) return;
 
 	map.getSource('missions').setData(getVisibleGeojson());
+	updateNewSpainData();
 	updateTimelineUi();
 }
 
@@ -797,14 +809,19 @@ Promise.all([
 		if (!response.ok) throw new Error('Failed to load california.geojson');
 		return response.json();
 	}),
-	fetch('./new-spain.geojson').then(function(response) {
-		if (!response.ok) throw new Error('Failed to load new-spain.geojson');
+	fetch('./new-spain-1794.geojson').then(function(response) {
+		if (!response.ok) throw new Error('Failed to load new-spain-1794.geojson');
+		return response.json();
+	}),
+	fetch('./new-spain-1819.geojson').then(function(response) {
+		if (!response.ok) throw new Error('Failed to load new-spain-1819.geojson');
 		return response.json();
 	}),
 ]).then(function(results) {
 	missions = normalizeMissions(results[0]);
 	california = results[1];
-	newSpain = results[2];
+	newSpain1794 = results[2];
+	newSpain1819 = results[3];
 	syncYearRange();
 	initMap();
 	setupDataModal();
