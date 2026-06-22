@@ -10,9 +10,18 @@
         "chapter": "1",
         "segID": "seg0",
         "people": [
-          "Pingzhi"
+          "林平之"
         ],
-        "pointID": 14
+        "下次移动人物": [
+          "林平之"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "乡间茶肆",
+        "Yingying": "",
+        "pointID": 14,
+        "type": "mansion"
       },
       "geometry": {
         "type": "Point",
@@ -31,10 +40,19 @@
         "chapter": "1",
         "segID": "seg1",
         "people": [
-          "Pingzhi",
-          "Lingshan"
+          "林平之",
+          "岳灵珊"
         ],
-        "pointID": 31
+        "下次移动人物": [
+          "林平之"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "",
+        "pointID": 31,
+        "type": "countryside"
       },
       "geometry": {
         "type": "Point",
@@ -53,9 +71,18 @@
         "chapter": "1",
         "segID": "seg2",
         "people": [
-          "Pingzhi"
+          "林平之"
         ],
-        "pointID": 14
+        "下次移动人物": [
+          "林平之"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "",
+        "pointID": 14,
+        "type": "mansion"
       },
       "geometry": {
         "type": "Point",
@@ -74,9 +101,18 @@
         "chapter": "1",
         "segID": "seg3",
         "people": [
-          "Pingzhi"
+          "林平之"
         ],
-        "pointID": 5
+        "下次移动人物": [
+          "林平之"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "",
+        "pointID": 5,
+        "type": "countryside"
       },
       "geometry": {
         "type": "Point",
@@ -95,9 +131,18 @@
         "chapter": "2",
         "segID": "seg4",
         "people": [
-          "Pingzhi"
+          "林平之"
         ],
-        "pointID": 38
+        "下次移动人物": [
+          "林平之"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "",
+        "pointID": 38,
+        "type": "mansion"
       },
       "geometry": {
         "type": "Point",
@@ -116,9 +161,18 @@
         "chapter": "2",
         "segID": "seg5",
         "people": [
-          "Pingzhi"
+          "林平之"
         ],
-        "pointID": 2
+        "下次移动人物": [
+          "林平之"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "",
+        "pointID": 2,
+        "type": "mansion"
       },
       "geometry": {
         "type": "Point",
@@ -137,10 +191,20 @@
         "chapter": "2",
         "segID": "seg6",
         "people": [
-          "Yilin",
-          "Pingzhi"
+          "仪琳",
+          "林平之",
+          "岳灵珊"
         ],
-        "pointID": 20
+        "下次移动人物": [
+          "仪琳"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "",
+        "pointID": 20,
+        "type": "city"
       },
       "geometry": {
         "type": "Point",
@@ -159,10 +223,17 @@
         "chapter": "5",
         "segID": "seg9",
         "people": [
-          "Yilin",
-          "Chong"
+          "仪琳",
+          "令狐冲"
         ],
-        "pointID": 21
+        "下次移动人物": [],
+        "Chong": "",
+        "Pingzhi": "衡山城",
+        "Yilin": "",
+        "Lingshan": "衡山城",
+        "Yingying": "",
+        "pointID": 21,
+        "type": "countryside"
       },
       "geometry": {
         "type": "Point",
@@ -181,9 +252,17 @@
         "chapter": "6",
         "segID": "seg10",
         "people": [
-          "Pingzhi"
+          "林平之",
+          "岳灵珊"
         ],
-        "pointID": 20
+        "下次移动人物": [],
+        "Chong": "城外荒山",
+        "Pingzhi": "",
+        "Yilin": "城外荒山",
+        "Lingshan": "",
+        "Yingying": "",
+        "pointID": 20,
+        "type": "city"
       },
       "geometry": {
         "type": "Point",
@@ -202,10 +281,21 @@
         "chapter": "7",
         "segID": "seg11",
         "people": [
-          "Chong",
-          "Yilin"
+          "令狐冲",
+          "仪琳"
         ],
-        "pointID": 21
+        "下次移动人物": [
+          "令狐冲",
+          "岳灵珊",
+          "林平之"
+        ],
+        "Chong": "",
+        "Pingzhi": "衡山城",
+        "Yilin": "",
+        "Lingshan": "衡山城",
+        "Yingying": "",
+        "pointID": 21,
+        "type": "countryside"
       },
       "geometry": {
         "type": "Point",
@@ -224,11 +314,20 @@
         "chapter": "7",
         "segID": "seg12",
         "people": [
-          "Chong",
-          "Lingshan",
-          "Pingzhi"
+          "令狐冲",
+          "岳灵珊",
+          "林平之"
         ],
-        "pointID": 4
+        "下次移动人物": [
+          "令狐冲"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "",
+        "pointID": 4,
+        "type": "school"
       },
       "geometry": {
         "type": "Point",
@@ -247,9 +346,18 @@
         "chapter": "8",
         "segID": "seg13",
         "people": [
-          "Chong"
+          "令狐冲"
         ],
-        "pointID": 1
+        "下次移动人物": [
+          "令狐冲"
+        ],
+        "Chong": "",
+        "Pingzhi": "华山",
+        "Yilin": "",
+        "Lingshan": "华山",
+        "Yingying": "",
+        "pointID": 1,
+        "type": "mountain"
       },
       "geometry": {
         "type": "Point",
@@ -268,11 +376,20 @@
         "chapter": "10",
         "segID": "seg14",
         "people": [
-          "Chong",
-          "Lingshan",
-          "PIngzhi"
+          "令狐冲",
+          "岳灵珊",
+          "林平之"
         ],
-        "pointID": 4
+        "下次移动人物": [
+          "令狐冲"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "",
+        "pointID": 4,
+        "type": "school"
       },
       "geometry": {
         "type": "Point",
@@ -291,9 +408,18 @@
         "chapter": "12",
         "segID": "seg15",
         "people": [
-          "Chong"
+          "令狐冲"
         ],
-        "pointID": 3
+        "下次移动人物": [
+          "令狐冲"
+        ],
+        "Chong": "",
+        "Pingzhi": "华山",
+        "Yilin": "",
+        "Lingshan": "华山",
+        "Yingying": "",
+        "pointID": 3,
+        "type": "countryside"
       },
       "geometry": {
         "type": "Point",
@@ -312,11 +438,22 @@
         "chapter": "12",
         "segID": "seg16",
         "people": [
-          "Chong",
-          "Lingshan",
-          "Pingzhi"
+          "令狐冲",
+          "岳灵珊",
+          "林平之"
         ],
-        "pointID": 6
+        "下次移动人物": [
+          "令狐冲",
+          "岳灵珊",
+          "林平之"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "",
+        "pointID": 6,
+        "type": "hut"
       },
       "geometry": {
         "type": "Point",
@@ -335,12 +472,23 @@
         "chapter": "13",
         "segID": "seg17",
         "people": [
-          "Chong",
-          "Yingying",
-          "Lingshan",
-          "Pingzhi"
+          "令狐冲",
+          "任盈盈",
+          "岳灵珊",
+          "林平之"
         ],
-        "pointID": 24
+        "下次移动人物": [
+          "令狐冲",
+          "岳灵珊",
+          "林平之"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "",
+        "pointID": 24,
+        "type": "city"
       },
       "geometry": {
         "type": "Point",
@@ -359,11 +507,22 @@
         "chapter": "14",
         "segID": "seg19",
         "people": [
-          "Chong",
-          "Lingshan",
-          "Pingzhi"
+          "令狐冲",
+          "岳灵珊",
+          "林平之"
         ],
-        "pointID": 15
+        "下次移动人物": [
+          "令狐冲",
+          "岳灵珊",
+          "林平之"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "洛阳",
+        "pointID": 15,
+        "type": "hut"
       },
       "geometry": {
         "type": "Point",
@@ -382,11 +541,20 @@
         "chapter": "14",
         "segID": "seg20",
         "people": [
-          "Chong",
-          "Lingshan",
-          "Pingzhi"
+          "令狐冲",
+          "岳灵珊",
+          "林平之"
         ],
-        "pointID": 12
+        "下次移动人物": [
+          "令狐冲"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "洛阳",
+        "pointID": 12,
+        "type": "boat"
       },
       "geometry": {
         "type": "Point",
@@ -405,9 +573,20 @@
         "chapter": "15",
         "segID": "seg21",
         "people": [
-          "Chong"
+          "令狐冲"
         ],
-        "pointID": 35
+        "下次移动人物": [
+          "令狐冲",
+          "岳灵珊",
+          "林平之"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "洛阳",
+        "pointID": 35,
+        "type": "hut"
       },
       "geometry": {
         "type": "Point",
@@ -426,11 +605,22 @@
         "chapter": "16",
         "segID": "seg22",
         "people": [
-          "Chong",
-          "Lingshan",
-          "Pingzhi"
+          "令狐冲",
+          "岳灵珊",
+          "林平之"
         ],
-        "pointID": 32
+        "下次移动人物": [
+          "令狐冲",
+          "岳灵珊",
+          "林平之"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "洛阳",
+        "pointID": 32,
+        "type": "boat"
       },
       "geometry": {
         "type": "Point",
@@ -449,12 +639,22 @@
         "chapter": "17",
         "segID": "seg23",
         "people": [
-          "Chong",
-          "Yingying",
-          "Lingshan",
-          "Pingzhi"
+          "令狐冲",
+          "任盈盈",
+          "岳灵珊",
+          "林平之"
         ],
-        "pointID": 18
+        "下次移动人物": [
+          "令狐冲",
+          "任盈盈"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "",
+        "pointID": 18,
+        "type": "mountain"
       },
       "geometry": {
         "type": "Point",
@@ -473,10 +673,19 @@
         "chapter": "18",
         "segID": "seg24",
         "people": [
-          "Chong",
-          "Yingying"
+          "令狐冲",
+          "任盈盈"
         ],
-        "pointID": 19
+        "下次移动人物": [
+          "令狐冲"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "",
+        "pointID": 19,
+        "type": "school"
       },
       "geometry": {
         "type": "Point",
@@ -495,9 +704,18 @@
         "chapter": "18",
         "segID": "seg25",
         "people": [
-          "Chong"
+          "令狐冲"
         ],
-        "pointID": 39
+        "下次移动人物": [
+          "令狐冲"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "少林",
+        "pointID": 39,
+        "type": "countryside"
       },
       "geometry": {
         "type": "Point",
@@ -516,9 +734,18 @@
         "chapter": "18",
         "segID": "seg26",
         "people": [
-          "Chong"
+          "令狐冲"
         ],
-        "pointID": 37
+        "下次移动人物": [
+          "令狐冲"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "少林",
+        "pointID": 37,
+        "type": "mountain"
       },
       "geometry": {
         "type": "Point",
@@ -537,9 +764,18 @@
         "chapter": "19",
         "segID": "seg27",
         "people": [
-          "Chong"
+          "令狐冲"
         ],
-        "pointID": 10
+        "下次移动人物": [
+          "令狐冲"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "少林",
+        "pointID": 10,
+        "type": "mansion"
       },
       "geometry": {
         "type": "Point",
@@ -558,9 +794,18 @@
         "chapter": "20",
         "segID": "seg28",
         "people": [
-          "Chong"
+          "令狐冲"
         ],
-        "pointID": 0
+        "下次移动人物": [
+          "令狐冲"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "少林",
+        "pointID": 0,
+        "type": "hut"
       },
       "geometry": {
         "type": "Point",
@@ -579,9 +824,18 @@
         "chapter": "21",
         "segID": "seg29",
         "people": [
-          "Chong"
+          "令狐冲"
         ],
-        "pointID": 10
+        "下次移动人物": [
+          "令狐冲"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "少林",
+        "pointID": 10,
+        "type": "mansion"
       },
       "geometry": {
         "type": "Point",
@@ -600,10 +854,20 @@
         "chapter": "22",
         "segID": "seg30",
         "people": [
-          "Chong",
-          "Yilin"
+          "令狐冲",
+          "仪琳"
         ],
-        "pointID": 27
+        "下次移动人物": [
+          "令狐冲",
+          "仪琳"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "少林",
+        "pointID": 27,
+        "type": "mountain"
       },
       "geometry": {
         "type": "Point",
@@ -622,10 +886,19 @@
         "chapter": "23",
         "segID": "seg31",
         "people": [
-          "Chong",
-          "Yilin"
+          "令狐冲",
+          "仪琳"
         ],
-        "pointID": 13
+        "下次移动人物": [
+          "令狐冲"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "少林",
+        "pointID": 13,
+        "type": "hut"
       },
       "geometry": {
         "type": "Point",
@@ -644,11 +917,20 @@
         "chapter": "24",
         "segID": "seg32",
         "people": [
-          "Chong",
-          "Pingzhi",
-          "Lingshan"
+          "令狐冲",
+          "林平之",
+          "岳灵珊"
         ],
-        "pointID": 34
+        "下次移动人物": [
+          "令狐冲"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "少林",
+        "pointID": 34,
+        "type": "mansion"
       },
       "geometry": {
         "type": "Point",
@@ -667,11 +949,20 @@
         "chapter": "24",
         "segID": "seg33",
         "people": [
-          "Chong",
-          "Pingzhi",
-          "Lingshan"
+          "令狐冲",
+          "林平之",
+          "岳灵珊"
         ],
-        "pointID": 14
+        "下次移动人物": [
+          "令狐冲"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "少林",
+        "pointID": 14,
+        "type": "mansion"
       },
       "geometry": {
         "type": "Point",
@@ -690,10 +981,20 @@
         "chapter": "25",
         "segID": "seg34",
         "people": [
-          "Chong",
-          "Yilin"
+          "令狐冲",
+          "仪琳"
         ],
-        "pointID": 26
+        "下次移动人物": [
+          "令狐冲",
+          "仪琳"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "少林",
+        "pointID": 26,
+        "type": "hut"
       },
       "geometry": {
         "type": "Point",
@@ -712,10 +1013,20 @@
         "chapter": "25",
         "segID": "seg35",
         "people": [
-          "Chong",
-          "Yilin"
+          "令狐冲",
+          "仪琳"
         ],
-        "pointID": 36
+        "下次移动人物": [
+          "令狐冲",
+          "仪琳"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "少林",
+        "pointID": 36,
+        "type": "hut"
       },
       "geometry": {
         "type": "Point",
@@ -734,10 +1045,19 @@
         "chapter": "25",
         "segID": "seg36",
         "people": [
-          "Chong",
-          "Yilin"
+          "令狐冲",
+          "仪琳"
         ],
-        "pointID": 28
+        "下次移动人物": [
+          "令狐冲"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "少林",
+        "pointID": 28,
+        "type": "hut"
       },
       "geometry": {
         "type": "Point",
@@ -756,9 +1076,18 @@
         "chapter": "26",
         "segID": "seg37",
         "people": [
-          "Chong"
+          "令狐冲"
         ],
-        "pointID": 16
+        "下次移动人物": [
+          "令狐冲"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "",
+        "pointID": 16,
+        "type": "mountain"
       },
       "geometry": {
         "type": "Point",
@@ -777,9 +1106,18 @@
         "chapter": "26",
         "segID": "seg38",
         "people": [
-          "Chong"
+          "令狐冲"
         ],
-        "pointID": 8
+        "下次移动人物": [
+          "令狐冲"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "",
+        "pointID": 8,
+        "type": "countryside"
       },
       "geometry": {
         "type": "Point",
@@ -798,12 +1136,21 @@
         "chapter": "26",
         "segID": "seg39",
         "people": [
-          "Chong",
-          "Yingying",
-          "Lingshan",
-          "Pingzhi"
+          "令狐冲",
+          "任盈盈",
+          "岳灵珊",
+          "林平之"
         ],
-        "pointID": 19
+        "下次移动人物": [
+          "令狐冲"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "",
+        "pointID": 19,
+        "type": "school"
       },
       "geometry": {
         "type": "Point",
@@ -822,10 +1169,19 @@
         "chapter": "29",
         "segID": "seg40",
         "people": [
-          "Chong",
-          "Yilin"
+          "令狐冲",
+          "仪琳"
         ],
-        "pointID": 11
+        "下次移动人物": [
+          "令狐冲"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "",
+        "pointID": 11,
+        "type": "school"
       },
       "geometry": {
         "type": "Point",
@@ -844,10 +1200,19 @@
         "chapter": "30",
         "segID": "seg41",
         "people": [
-          "Chong",
-          "Yingying"
+          "令狐冲",
+          "任盈盈"
         ],
-        "pointID": 33
+        "下次移动人物": [
+          "令狐冲"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "",
+        "pointID": 33,
+        "type": "hut"
       },
       "geometry": {
         "type": "Point",
@@ -866,10 +1231,20 @@
         "chapter": "30",
         "segID": "seg42",
         "people": [
-          "Chong",
-          "Yingying"
+          "令狐冲",
+          "任盈盈"
         ],
-        "pointID": 30
+        "下次移动人物": [
+          "令狐冲",
+          "任盈盈"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "",
+        "pointID": 30,
+        "type": "countryside"
       },
       "geometry": {
         "type": "Point",
@@ -888,10 +1263,19 @@
         "chapter": "31",
         "segID": "seg43",
         "people": [
-          "Chong",
-          "Yingying"
+          "令狐冲",
+          "任盈盈"
         ],
-        "pointID": 17
+        "下次移动人物": [
+          "令狐冲"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "",
+        "pointID": 17,
+        "type": "school"
       },
       "geometry": {
         "type": "Point",
@@ -910,9 +1294,19 @@
         "chapter": "32",
         "segID": "seg44",
         "people": [
-          "Chong"
+          "令狐冲，仪琳"
         ],
-        "pointID": 11
+        "下次移动人物": [
+          "令狐冲",
+          "仪琳"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "",
+        "pointID": 11,
+        "type": "school"
       },
       "geometry": {
         "type": "Point",
@@ -931,13 +1325,26 @@
         "chapter": "32",
         "segID": "seg45",
         "people": [
-          "Chong",
-          "Lingshan",
-          "Pingzhi",
-          "Yilin",
-          "Yingying"
+          "令狐冲",
+          "岳灵珊",
+          "林平之",
+          "仪琳",
+          "任盈盈"
         ],
-        "pointID": 7
+        "下次移动人物": [
+          "令狐冲",
+          "岳灵珊",
+          "林平之",
+          "仪琳",
+          "任盈盈"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "",
+        "pointID": 7,
+        "type": "school"
       },
       "geometry": {
         "type": "Point",
@@ -956,13 +1363,25 @@
         "chapter": "35",
         "segID": "seg46",
         "people": [
-          "Chong",
-          "Lingshan",
-          "Pingzhi",
-          "Yilin",
-          "Yingying"
+          "令狐冲",
+          "岳灵珊",
+          "林平之",
+          "任盈盈"
         ],
-        "pointID": 29
+        "下次移动人物": [
+          "令狐冲",
+          "岳灵珊",
+          "林平之",
+          "仪琳",
+          "任盈盈"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "",
+        "pointID": 29,
+        "type": "countryside"
       },
       "geometry": {
         "type": "Point",
@@ -981,12 +1400,24 @@
         "chapter": "35",
         "segID": "seg47",
         "people": [
-          "Chong",
-          "Lingshan",
-          "Pingzhi",
-          "Yingying"
+          "令狐冲",
+          "岳灵珊",
+          "林平之",
+          "任盈盈"
         ],
-        "pointID": 23
+        "下次移动人物": [
+          "令狐冲",
+          "岳灵珊",
+          "林平之",
+          "任盈盈"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "",
+        "pointID": 23,
+        "type": "hut"
       },
       "geometry": {
         "type": "Point",
@@ -1005,12 +1436,22 @@
         "chapter": "35",
         "segID": "seg48",
         "people": [
-          "Chong",
-          "Lingshan",
-          "Pingzhi",
-          "Yingying"
+          "令狐冲",
+          "岳灵珊",
+          "林平之",
+          "任盈盈"
         ],
-        "pointID": 22
+        "下次移动人物": [
+          "令狐冲",
+          "任盈盈"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "",
+        "pointID": 22,
+        "type": "countryside"
       },
       "geometry": {
         "type": "Point",
@@ -1029,12 +1470,22 @@
         "chapter": "35",
         "segID": "seg49",
         "people": [
-          "Chong",
-          "Lingshan",
-          "Pingzhi",
-          "Yingying"
+          "令狐冲",
+          "岳灵珊",
+          "林平之",
+          "任盈盈"
         ],
-        "pointID": 9
+        "下次移动人物": [
+          "令狐冲",
+          "任盈盈"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "",
+        "pointID": 9,
+        "type": "countryside"
       },
       "geometry": {
         "type": "Point",
@@ -1053,11 +1504,20 @@
         "chapter": "36",
         "segID": "seg50",
         "people": [
-          "Chong",
-          "Lingshan",
-          "Yingying"
+          "令狐冲",
+          "岳灵珊",
+          "任盈盈"
         ],
-        "pointID": 25
+        "下次移动人物": [
+          "令狐冲"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "",
+        "Yingying": "",
+        "pointID": 25,
+        "type": "countryside"
       },
       "geometry": {
         "type": "Point",
@@ -1076,10 +1536,20 @@
         "chapter": "37",
         "segID": "seg51",
         "people": [
-          "Yilin",
-          "Chong"
+          "仪琳",
+          "令狐冲"
         ],
-        "pointID": 11
+        "下次移动人物": [
+          "令狐冲",
+          "仪琳"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "无名荒谷",
+        "Yingying": "",
+        "pointID": 11,
+        "type": "school"
       },
       "geometry": {
         "type": "Point",
@@ -1098,10 +1568,20 @@
         "chapter": "38",
         "segID": "seg52",
         "people": [
-          "Chong",
-          "Yingying"
+          "令狐冲",
+          "任盈盈"
         ],
-        "pointID": 1
+        "下次移动人物": [
+          "令狐冲",
+          "任盈盈"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "无名荒谷",
+        "Yingying": "",
+        "pointID": 1,
+        "type": "mountain"
       },
       "geometry": {
         "type": "Point",
@@ -1120,9 +1600,19 @@
         "chapter": "39",
         "segID": "seg53",
         "people": [
-          "Chong"
+          "令狐冲",
+          "仪琳"
         ],
-        "pointID": 4
+        "下次移动人物": [
+          "令狐冲"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "无名荒谷",
+        "Yingying": "",
+        "pointID": 4,
+        "type": "school"
       },
       "geometry": {
         "type": "Point",
@@ -1141,10 +1631,20 @@
         "chapter": "40",
         "segID": "seg54",
         "people": [
-          "Chong",
-          "Yingying"
+          "令狐冲",
+          "任盈盈"
         ],
-        "pointID": 11
+        "下次移动人物": [
+          "令狐冲",
+          "任盈盈"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "无名荒谷",
+        "Yingying": "",
+        "pointID": 11,
+        "type": "school"
       },
       "geometry": {
         "type": "Point",
@@ -1163,10 +1663,20 @@
         "chapter": "40",
         "segID": "seg55",
         "people": [
-          "Chong",
-          "Yingying"
+          "令狐冲",
+          "任盈盈"
         ],
-        "pointID": 10
+        "下次移动人物": [
+          "令狐冲",
+          "任盈盈"
+        ],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "无名荒谷",
+        "Yingying": "",
+        "pointID": 10,
+        "type": "mansion"
       },
       "geometry": {
         "type": "Point",
@@ -1185,10 +1695,17 @@
         "chapter": "40",
         "segID": "seg56",
         "people": [
-          "Chong",
-          "Yingying"
+          "令狐冲",
+          "任盈盈"
         ],
-        "pointID": 4
+        "下次移动人物": [],
+        "Chong": "",
+        "Pingzhi": "",
+        "Yilin": "",
+        "Lingshan": "无名荒谷",
+        "Yingying": "",
+        "pointID": 4,
+        "type": "school"
       },
       "geometry": {
         "type": "Point",

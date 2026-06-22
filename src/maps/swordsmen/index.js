@@ -9,7 +9,21 @@ var map;
 var trips_straight;
 var events;
 var locations;
-var basemapStyle;
+var basemapStyle = {
+	style: 'mapbox://styles/mapbox/light-v11',
+	center: [111.87163056653998, 33.76161539482898],
+	zoom: 4.14,
+	pitch: 60,
+	maxZoom: 14,
+	language: 'zh-Hans',
+	worldview: 'CN',
+	symbolLayers: {
+		keep: [
+			'country-label',
+			'state-label',
+		],
+	},
+};
 var people = {
 	"Pingzhi": {
 		"name": "林平之"
@@ -30,6 +44,14 @@ var people = {
 		"name": "旁白"
 	}
 };
+var peopleNameByKey = {};
+var peopleKeyByName = {};
+Object.keys(people).forEach(function(key) {
+	if (people[key] && people[key].name) {
+		peopleNameByKey[key] = people[key].name;
+		peopleKeyByName[people[key].name] = key;
+	}
+});
 var empty = {
 	"type": "FeatureCollection",
 	"features": []
@@ -50,6 +72,36 @@ var animationID;
 var segmentNumber = 10;
 var defaultLocationType = 'countryside';
 var locationIconWidth = 48;
+var eventCharacterKeys = ['Chong', 'Pingzhi', 'Yilin', 'Lingshan', 'Yingying'];
+var nextTripPeopleKey = '下次移动人物';
+var eventCharacterPlacementsByEventId = {};
+
+function getEventCharacterFieldValue(props, key) {
+	var value = props[key];
+	if (value == null || typeof value === 'boolean') return '';
+	return String(value);
+}
+
+function cacheEventCharacterPlacements() {
+	eventCharacterPlacementsByEventId = {};
+	if (!events || !events.features) return;
+
+	events.features.forEach(function(feature) {
+		if (!feature.id) return;
+		var fields = {};
+		eventCharacterKeys.forEach(function(key) {
+			fields[key] = getEventCharacterFieldValue(feature.properties, key);
+		});
+		eventCharacterPlacementsByEventId[feature.id] = fields;
+	});
+}
+
+function getCachedEventCharacterFieldValue(feature, key) {
+	if (!feature || !feature.id) return '';
+	var cached = eventCharacterPlacementsByEventId[feature.id];
+	if (cached && cached[key] != null) return cached[key];
+	return getEventCharacterFieldValue(feature.properties, key);
+}
 
 function eventChapterSegSortKey(feature) {
 	var props = feature.properties;
@@ -167,6 +219,10 @@ function hasUrlMapView() {
 	return !isNaN(lat) && !isNaN(lon);
 }
 
+function getMapPitch() {
+	return basemapStyle && basemapStyle.pitch != null ? basemapStyle.pitch : 60;
+}
+
 function getInitialMapView() {
 	var params = new URLSearchParams(window.location.search);
 	var lat = parseFloat(params.get('lat'));
@@ -213,6 +269,7 @@ function setupMapViewUrlSync() {
 }
 
 var locationByPointId = {};
+var locationCoordsByName = {};
 
 function isKeyLocation(feature) {
 	return feature.properties.key === true;
@@ -470,8 +527,13 @@ function ensureLocationLayersOnTop() {
 
 function syncEventsWithLocations() {
 	locationByPointId = {};
+	locationCoordsByName = {};
 
 	locations.features.forEach(function(feature) {
+		var name = feature.properties.name;
+		if (name && feature.geometry && feature.geometry.coordinates) {
+			locationCoordsByName[name] = feature.geometry.coordinates.slice();
+		}
 		if (feature.properties.pointID == null) return;
 		locationByPointId[feature.properties.pointID] = feature;
 	});
@@ -493,7 +555,8 @@ function initMap() {
 		container: 'map',
 		style: basemapStyle.style,
 		center: initialView.center,
-		zoom: initialView.zoom
+		zoom: initialView.zoom,
+		pitch: getMapPitch(),
 	};
 
 	if (basemapStyle.language) mapOptions.language = basemapStyle.language;
@@ -643,6 +706,8 @@ function initMap() {
 		ensureLocationLayersOnTop();
 		setupLocationMarkersVisibility();
 		setupEventTooltips();
+		setupCharacterMarkerOverlaySync();
+		setupCharacterPlacementMarkerSync();
 		initializeActiveEvent();
 	};
 
@@ -668,16 +733,13 @@ Promise.all([
 		if (!response.ok) throw new Error('Failed to load trips.geojson');
 		return response.json();
 	}),
-	fetch('./basemap-style.json').then(function(response) {
-		if (!response.ok) throw new Error('Failed to load basemap-style.json');
-		return response.json();
-	}),
 ]).then(function(results) {
 	events = results[0];
 	locations = results[1];
 	trips_straight = results[2];
-	basemapStyle = results[3];
 	syncEventsWithLocations();
+	syncNextTripPeopleFromTrips();
+	cacheEventCharacterPlacements();
 	initMap();
 	setupEventsDataModal();
 	setupEventPanel();
@@ -685,27 +747,52 @@ Promise.all([
 	console.error(error);
 });
 
-function parseEventPeopleKeys(peopleProp) {
-	var keys = peopleProp;
+function parsePeopleArray(peopleProp) {
+	var values = peopleProp;
 	if (typeof peopleProp === 'string') {
 		try {
-			keys = JSON.parse(peopleProp);
+			values = JSON.parse(peopleProp);
 		} catch (error) {
-			keys = [];
+			values = peopleProp.split(',').map(function(item) {
+				return item.trim();
+			}).filter(Boolean);
 		}
 	}
-	return Array.isArray(keys) ? keys : [];
+	if (!Array.isArray(values)) return [];
+	return values.map(function(value) {
+		return String(value).trim();
+	}).filter(Boolean);
+}
+
+function resolvePeopleKey(value) {
+	var text = String(value || '').trim();
+	if (!text) return null;
+	if (people[text]) return text;
+	if (peopleKeyByName[text]) return peopleKeyByName[text];
+	return null;
+}
+
+function formatPeopleValueForStorage(value) {
+	var key = resolvePeopleKey(value);
+	return key ? peopleNameByKey[key] : String(value || '').trim();
+}
+
+function parseEventPeopleKeys(peopleProp) {
+	return parsePeopleArray(peopleProp).map(resolvePeopleKey).filter(Boolean);
 }
 
 function formatEventPeople(peopleProp) {
-	return parseEventPeopleKeys(peopleProp).map(function(key) {
-		return (people[key] && people[key].name) || key;
+	return parsePeopleArray(peopleProp).map(function(value) {
+		var key = resolvePeopleKey(value);
+		return key ? peopleNameByKey[key] : value;
 	}).join('、');
 }
 
 function hasPeopleAvatar(key) {
-	if (key === 'Narrator') return false;
-	return !!(people[key] && people[key].name);
+	if (!key) return false;
+	var resolvedKey = resolvePeopleKey(key) || key;
+	if (resolvedKey === 'Narrator') return false;
+	return !!(people[resolvedKey] && people[resolvedKey].name);
 }
 
 function filterPeopleAvatarKeys(keys) {
@@ -713,8 +800,9 @@ function filterPeopleAvatarKeys(keys) {
 }
 
 function peopleAvatarSrc(key, format) {
-	if (!hasPeopleAvatar(key)) return null;
-	var name = people[key].name;
+	var resolvedKey = resolvePeopleKey(key) || key;
+	if (!hasPeopleAvatar(resolvedKey)) return null;
+	var name = people[resolvedKey].name;
 	if (format === 'gif') return './assets/' + name + '.gif';
 	return './assets/' + name + '.png';
 }
@@ -726,7 +814,8 @@ function buildEventPeopleAvatarsHtml(peopleProp) {
 	return (
 		'<div class="event-item__people">' +
 			keys.map(function(key) {
-				var name = people[key].name;
+				var resolvedKey = resolvePeopleKey(key) || key;
+				var name = people[resolvedKey].name;
 				return (
 					'<img class="event-item__avatar" src="' + peopleAvatarSrc(key, 'png') + '" ' +
 						'alt="' + name + '" title="' + name + '" />'
@@ -808,9 +897,12 @@ var activePanelEventId = null;
 var panelScrollFlyLocked = false;
 var selectedEventMarker = null;
 var selectedPathTipMarker = null;
+var characterPlacementMarkers = [];
+var characterMarkerOverlay = null;
 var sortedPanelEvents = [];
 var playAnimationInProgress = false;
 var playAnimationId = null;
+var panelScrollSyncReady = false;
 
 function getEventFeatureById(eventId) {
 	return events.features.find(function(item) {
@@ -829,24 +921,49 @@ function getEventPeopleKeys(feature) {
 	return parseEventPeopleKeys(feature.properties.people);
 }
 
-function getDefaultTripPeopleKeysFromEvents(tripSegID) {
-	var eventsList = getEventsForTripSync();
-	var keys = [];
-	var fromEvent = eventsList.find(function(feature) {
-		return getEventSegIndex(feature) === tripSegID - 1;
-	});
-	var toEvent = eventsList.find(function(feature) {
-		return getEventSegIndex(feature) === tripSegID;
-	});
+function getEventFeatureBySegIndex(segIndex) {
+	if (segIndex == null || isNaN(segIndex)) return null;
+	return events.features.find(function(feature) {
+		return getEventSegIndex(feature) === segIndex;
+	}) || null;
+}
 
-	[fromEvent, toEvent].forEach(function(feature) {
-		if (!feature) return;
-		getEventPeopleKeys(feature).forEach(function(key) {
-			if (keys.indexOf(key) === -1) keys.push(key);
+function getNextTripPeopleKeys(feature) {
+	if (!feature || !feature.properties) return [];
+
+	var keys = parseEventPeopleKeys(feature.properties[nextTripPeopleKey]);
+	if (keys.length) return keys;
+
+	var segIdx = getEventSegIndex(feature);
+	if (segIdx == null || isNaN(segIdx)) return [];
+
+	var trip = getTripFeatureBySegID(segIdx + 1);
+	if (!trip) return [];
+	return parseEventPeopleKeys(trip.properties.people);
+}
+
+function syncNextTripPeopleFromTrips() {
+	if (!events || !events.features || !trips_straight) return;
+
+	events.features.forEach(function(event) {
+		var segIdx = getEventSegIndex(event);
+		if (segIdx == null || isNaN(segIdx)) return;
+
+		var existing = parseEventPeopleKeys(event.properties[nextTripPeopleKey]);
+		if (existing.length) return;
+
+		var tripPeople = getNextTripPeopleKeys(event);
+		if (!tripPeople.length) return;
+
+		event.properties[nextTripPeopleKey] = tripPeople.map(function(key) {
+			return peopleNameByKey[key];
 		});
 	});
+}
 
-	return keys;
+function getDefaultTripPeopleKeysFromEvents(tripSegID) {
+	var fromEvent = getEventFeatureBySegIndex(tripSegID - 1);
+	return getNextTripPeopleKeys(fromEvent);
 }
 
 function syncTripsFromTable() {
@@ -863,9 +980,7 @@ function getTripFeatureBySegID(tripSegID) {
 }
 
 function getTripPeopleKeys(tripSegID) {
-	var trip = getTripFeatureBySegID(tripSegID);
-	if (!trip) return [];
-	return parseEventPeopleKeys(trip.properties.people);
+	return getDefaultTripPeopleKeysFromEvents(tripSegID);
 }
 
 function tripPeopleKeysEqual(tripSegIDA, tripSegIDB) {
@@ -879,10 +994,12 @@ function tripPeopleKeysEqual(tripSegIDA, tripSegIDB) {
 }
 
 function clearEventMarkers() {
-	if (selectedEventMarker) {
-		selectedEventMarker.remove();
-		selectedEventMarker = null;
+	if (!selectedEventMarker) return;
+
+	if (selectedEventMarker.element && selectedEventMarker.element.parentNode) {
+		selectedEventMarker.element.parentNode.removeChild(selectedEventMarker.element);
 	}
+	selectedEventMarker = null;
 }
 
 function clearPathTipMarker() {
@@ -915,19 +1032,237 @@ function ensurePathTipMarker(coords) {
 function buildEventMarkerElement(keys, animated) {
 	var el = document.createElement('div');
 	el.className = 'event-character-marker';
-	var format = animated ? 'gif' : 'png';
 
 	filterPeopleAvatarKeys(keys).forEach(function(key) {
-		var name = (people[key] && people[key].name) || key;
+		var resolvedKey = resolvePeopleKey(key) || key;
+		var name = (people[resolvedKey] && people[resolvedKey].name) || key;
 		var img = document.createElement('img');
 		img.className = 'event-character-marker__avatar';
-		img.src = peopleAvatarSrc(key, format);
+		img.src = peopleAvatarSrc(key, animated ? 'gif' : 'png');
 		img.alt = name;
 		img.title = name;
 		el.appendChild(img);
 	});
 
 	return el;
+}
+
+function buildStaticCharacterMarkerElement(keys) {
+	return buildEventMarkerElement(keys, false);
+}
+
+function buildAnimatedCharacterMarkerElement(keys) {
+	return buildEventMarkerElement(keys, true);
+}
+
+function ensureCharacterMarkerOverlay() {
+	if (characterMarkerOverlay) return characterMarkerOverlay;
+
+	characterMarkerOverlay = document.createElement('div');
+	characterMarkerOverlay.className = 'character-marker-overlay';
+	map.getContainer().appendChild(characterMarkerOverlay);
+	return characterMarkerOverlay;
+}
+
+function syncOverlayMarkerPosition(entry) {
+	if (!map || !entry || !entry.element || !entry.coords) return;
+
+	var point = map.project(entry.coords);
+	entry.element.style.transform = 'translate(' + point.x + 'px, ' + point.y + 'px) translate(-50%, -100%)';
+}
+
+function syncAllOverlayMarkerPositions() {
+	characterPlacementMarkers.forEach(syncOverlayMarkerPosition);
+	if (selectedEventMarker) syncOverlayMarkerPosition(selectedEventMarker);
+}
+
+function setupCharacterMarkerOverlaySync() {
+	if (!map || map._characterMarkerOverlaySyncReady) return;
+
+	map._characterMarkerOverlaySyncReady = true;
+	ensureCharacterMarkerOverlay();
+	map.on('move', syncAllOverlayMarkerPositions);
+	map.on('resize', syncAllOverlayMarkerPositions);
+}
+
+function getLocationCoordsByName(name) {
+	if (!name) return null;
+	return locationCoordsByName[name] || null;
+}
+
+function getCharacterLocationNameForEvent(feature, key) {
+	if (!feature || !feature.properties) return '';
+
+	var columnValue = getCachedEventCharacterFieldValue(feature, key).trim();
+	if (columnValue) return columnValue;
+
+	if (getEventPeopleKeys(feature).indexOf(key) !== -1) {
+		return String(feature.properties.name || '').trim();
+	}
+
+	return '';
+}
+
+function resolveCharacterCoords(feature, locationName) {
+	if (!locationName) return null;
+
+	var coords = getLocationCoordsByName(locationName);
+	if (coords) return coords.slice();
+
+	if (
+		feature &&
+		feature.properties &&
+		feature.properties.name === locationName &&
+		feature.geometry &&
+		feature.geometry.coordinates
+	) {
+		return feature.geometry.coordinates.slice();
+	}
+
+	return null;
+}
+
+function getCharacterPlacementsFromEvent(feature) {
+	if (!feature) return [];
+
+	var placements = [];
+
+	eventCharacterKeys.forEach(function(key) {
+		var locationName = getCharacterLocationNameForEvent(feature, key);
+		if (!locationName || !hasPeopleAvatar(key)) return;
+
+		var coords = resolveCharacterCoords(feature, locationName);
+		if (!coords) return;
+
+		placements.push({
+			key: key,
+			locationName: locationName,
+			coords: coords,
+		});
+	});
+
+	return placements;
+}
+
+function groupCharacterPlacements(placements) {
+	var groupsByCoords = {};
+
+	placements.forEach(function(placement) {
+		var groupKey = placement.coords[0] + ',' + placement.coords[1];
+		if (!groupsByCoords[groupKey]) {
+			groupsByCoords[groupKey] = {
+				coords: placement.coords,
+				keys: [],
+			};
+		}
+		groupsByCoords[groupKey].keys.push(placement.key);
+	});
+
+	return Object.keys(groupsByCoords).map(function(groupKey) {
+		return groupsByCoords[groupKey];
+	});
+}
+
+function addCharacterPlacementMarker(keys, coords, animated) {
+	if (!map) return null;
+
+	setupCharacterMarkerOverlaySync();
+	var overlay = ensureCharacterMarkerOverlay();
+	var element = animated
+		? buildAnimatedCharacterMarkerElement(keys)
+		: buildStaticCharacterMarkerElement(keys);
+	element.classList.add('event-character-marker--overlay');
+	overlay.appendChild(element);
+
+	var entry = {
+		element: element,
+		coords: coords.slice(),
+	};
+	characterPlacementMarkers.push(entry);
+	syncOverlayMarkerPosition(entry);
+	return entry;
+}
+
+function clearCharacterPlacementMarkers() {
+	characterPlacementMarkers.forEach(function(entry) {
+		if (entry.element && entry.element.parentNode) {
+			entry.element.parentNode.removeChild(entry.element);
+		}
+	});
+	characterPlacementMarkers = [];
+}
+
+function showCharacterPlacementMarkers(feature) {
+	clearCharacterPlacementMarkers();
+	if (!map || !feature) return;
+
+	groupCharacterPlacements(getCharacterPlacementsFromEvent(feature)).forEach(function(group) {
+		addCharacterPlacementMarker(group.keys, group.coords, false);
+	});
+}
+
+function refreshCharacterPlacementMarkersForActiveEvent() {
+	if (playAnimationInProgress || !map || !activePanelEventId) return;
+
+	var feature = getEventFeatureById(activePanelEventId);
+	if (!feature) {
+		clearCharacterPlacementMarkers();
+		clearEventMarkers();
+		return;
+	}
+
+	updateSelectedEventMarker(feature);
+}
+
+function setupCharacterPlacementMarkerSync() {
+	map.on('moveend', function() {
+		window.clearTimeout(map._characterMarkerRefreshTimer);
+		map._characterMarkerRefreshTimer = window.setTimeout(function() {
+			if (playAnimationInProgress || !activePanelEventId) return;
+
+			var feature = getEventFeatureById(activePanelEventId);
+			if (!feature) return;
+			if (!getCharacterPlacementsFromEvent(feature).length) return;
+			if (characterPlacementMarkers.length) return;
+
+			showCharacterPlacementMarkers(feature);
+		}, 50);
+	});
+}
+
+function getStaticTripStartCharacterKeys(fromFeature, tripSegID) {
+	var tripPeople = filterPeopleAvatarKeys(getTripPeopleKeys(tripSegID));
+	var keys = [];
+
+	eventCharacterKeys.forEach(function(key) {
+		var locationName = getCharacterLocationNameForEvent(fromFeature, key);
+		if (!locationName || !hasPeopleAvatar(key)) return;
+		if (tripPeople.indexOf(key) !== -1) return;
+		keys.push(key);
+	});
+
+	return keys;
+}
+
+function showTripStartCharacterPlacementMarkers(fromFeature, tripSegID) {
+	clearCharacterPlacementMarkers();
+	if (!map || !fromFeature) return;
+
+	var staticKeys = getStaticTripStartCharacterKeys(fromFeature, tripSegID);
+	if (!staticKeys.length) return;
+
+	var staticKeySet = {};
+	staticKeys.forEach(function(key) {
+		staticKeySet[key] = true;
+	});
+
+	var placements = getCharacterPlacementsFromEvent(fromFeature).filter(function(placement) {
+		return staticKeySet[placement.key];
+	});
+
+	groupCharacterPlacements(placements).forEach(function(group) {
+		addCharacterPlacementMarker(group.keys, group.coords, false);
+	});
 }
 
 function cancelPlayAnimation() {
@@ -940,6 +1275,13 @@ function cancelPlayAnimation() {
 	clearAnimationEndpointPointIds();
 	updateLocationMarkersVisibility();
 	playAnimationInProgress = false;
+
+	var feature = activePanelEventId ? getEventFeatureById(activePanelEventId) : null;
+	if (feature) {
+		updateSelectedEventMarker(feature);
+	} else {
+		clearCharacterPlacementMarkers();
+	}
 }
 
 function updatePlayButtonState() {
@@ -1086,6 +1428,7 @@ function flyToEventPair(fromFeature, toFeature, callback) {
 		map.flyTo({
 			center: to,
 			zoom: isMobile ? 5.5 : 6,
+			pitch: getMapPitch(),
 			duration: moveDuration,
 			essential: true,
 		});
@@ -1100,6 +1443,7 @@ function flyToEventPair(fromFeature, toFeature, callback) {
 
 	map.fitBounds([[bbox[0], bbox[1]], [bbox[2], bbox[3]]], {
 		padding: isMobile ? 30 : 60,
+		pitch: getMapPitch(),
 		duration: moveDuration,
 		essential: true,
 	});
@@ -1157,22 +1501,6 @@ function getPathAnimationDuration(pathCoords) {
 	return Math.min(Math.max(km * 600, 1500), 5000);
 }
 
-function ensureEventMarker(feature, coords) {
-	var keys = filterPeopleAvatarKeys(getEventPeopleKeys(feature));
-	if (!keys.length) {
-		clearEventMarkers();
-		return;
-	}
-
-	clearEventMarkers();
-	selectedEventMarker = new mapboxgl.Marker({
-		element: buildEventMarkerElement(keys, false),
-		anchor: 'bottom',
-	})
-		.setLngLat(coords || feature.geometry.coordinates)
-		.addTo(map);
-}
-
 function ensureTripMarker(tripSegID, coords) {
 	var keys = filterPeopleAvatarKeys(getTripPeopleKeys(tripSegID));
 	if (!keys.length) {
@@ -1181,18 +1509,25 @@ function ensureTripMarker(tripSegID, coords) {
 	}
 
 	clearEventMarkers();
-	selectedEventMarker = new mapboxgl.Marker({
-		element: buildEventMarkerElement(keys, true),
-		anchor: 'bottom',
-	})
-		.setLngLat(coords)
-		.addTo(map);
+	setupCharacterMarkerOverlaySync();
+
+	var overlay = ensureCharacterMarkerOverlay();
+	var element = buildAnimatedCharacterMarkerElement(keys);
+	element.classList.add('event-character-marker--overlay');
+	overlay.appendChild(element);
+
+	selectedEventMarker = {
+		element: element,
+		coords: coords.slice(),
+	};
+	syncOverlayMarkerPosition(selectedEventMarker);
 }
 
 function setMarkerLngLat(coords) {
-	if (selectedEventMarker) {
-		selectedEventMarker.setLngLat(coords);
-	}
+	if (!selectedEventMarker) return;
+
+	selectedEventMarker.coords = coords.slice();
+	syncOverlayMarkerPosition(selectedEventMarker);
 }
 
 function animateTripProgress(pathCoords, duration, hasAvatar, onComplete) {
@@ -1264,7 +1599,8 @@ function animateTripProgress(pathCoords, duration, hasAvatar, onComplete) {
 function finishPlayAdvance(currentFeature, nextFeature) {
 	var nextItem = document.querySelector('.event-item[data-event-id="' + nextFeature.id + '"]');
 
-	ensureEventMarker(nextFeature);
+	clearEventMarkers();
+	showCharacterPlacementMarkers(nextFeature);
 
 	activePanelEventId = nextFeature.id;
 	document.querySelectorAll('.event-item').forEach(function(item) {
@@ -1323,6 +1659,8 @@ function playNextEvent() {
 	panelScrollFlyLocked = true;
 	updatePlayButtonState();
 
+	showTripStartCharacterPlacementMarkers(currentFeature, tripSegID);
+
 	var hasAvatar = filterPeopleAvatarKeys(getTripPeopleKeys(tripSegID)).length > 0;
 	if (hasAvatar) {
 		ensureTripMarker(tripSegID, currentFeature.geometry.coordinates);
@@ -1372,21 +1710,30 @@ function resetEventPanel() {
 	map.flyTo({
 		center: firstFeature.geometry.coordinates,
 		zoom: isMobile ? 5.5 : 6,
+		pitch: getMapPitch(),
 		duration: 1200,
 		essential: true,
 	});
 
 	window.setTimeout(function() {
 		panelScrollFlyLocked = false;
+		refreshCharacterPlacementMarkersForActiveEvent();
 	}, 700);
 }
 
 function updateSelectedEventMarker(feature) {
-	ensureEventMarker(feature);
+	clearEventMarkers();
+	if (playAnimationInProgress) return;
+	showCharacterPlacementMarkers(feature);
 }
 
 function flyToEvent(eventId, options) {
-	if (!eventId || (activePanelEventId === eventId && !(options && options.force))) return;
+	if (!eventId) return;
+
+	if (activePanelEventId === eventId && !(options && options.force)) {
+		refreshCharacterPlacementMarkersForActiveEvent();
+		return;
+	}
 
 	var feature = getEventFeatureById(eventId);
 	if (!feature) return;
@@ -1396,6 +1743,7 @@ function flyToEvent(eventId, options) {
 	map.flyTo({
 		center: feature.geometry.coordinates,
 		zoom: isMobile ? 5.5 : 6,
+		pitch: getMapPitch(),
 		duration: 1200,
 		essential: true,
 	});
@@ -1463,8 +1811,31 @@ function getLocationRowsForTable() {
 }
 
 function formatEventPeopleForTable(peopleProp) {
-	var keys = parseEventPeopleKeys(peopleProp);
-	return keys.join(', ');
+	return parsePeopleArray(peopleProp).map(function(value) {
+		var key = resolvePeopleKey(value);
+		return key ? peopleNameByKey[key] : value;
+	}).join(', ');
+}
+
+function formatPeopleKeysForTable(keys) {
+	return keys.map(function(key) {
+		return peopleNameByKey[key] || key;
+	}).join(', ');
+}
+
+function orderEventProperties(properties) {
+	var ordered = {};
+	var order = ['name', 'event', 'chapter', 'segID', 'people', nextTripPeopleKey]
+		.concat(eventCharacterKeys)
+		.concat(['pointID']);
+
+	order.forEach(function(key) {
+		if (properties[key] !== undefined) ordered[key] = properties[key];
+	});
+	Object.keys(properties).forEach(function(key) {
+		if (!(key in ordered)) ordered[key] = properties[key];
+	});
+	return ordered;
 }
 
 function appendTableCell(row, text, options) {
@@ -1492,6 +1863,10 @@ function buildEventsTableRow(feature) {
 	appendTableCell(row, props.name, { editable: true });
 	appendTableCell(row, props.event, { editable: true, className: 'events-table__event' });
 	appendTableCell(row, formatEventPeopleForTable(props.people), { editable: true });
+	appendTableCell(row, formatPeopleKeysForTable(getNextTripPeopleKeys(feature)), { editable: true });
+	eventCharacterKeys.forEach(function(key) {
+		appendTableCell(row, getEventCharacterFieldValue(props, key), { editable: true });
+	});
 	appendTableCell(row, props.segID, { editable: true });
 	appendTableCell(row, props.pointID != null ? props.pointID : '', { editable: true });
 	appendTableCell(row, coords[0] != null ? coords[0] : '', { editable: true });
@@ -1545,13 +1920,13 @@ function parsePeopleCell(text) {
 	if (!text) return [];
 	if (text.charAt(0) === '[') {
 		try {
-			return parseEventPeopleKeys(JSON.parse(text));
+			return parsePeopleArray(JSON.parse(text)).map(formatPeopleValueForStorage);
 		} catch (error) {
 			return [];
 		}
 	}
 	return text.split(',').map(function(item) {
-		return item.trim();
+		return formatPeopleValueForStorage(item.trim());
 	}).filter(Boolean);
 }
 
@@ -1561,27 +1936,35 @@ function collectEventsGeojsonFromTable() {
 
 	Array.prototype.forEach.call(rows, function(row) {
 		var cells = row.cells;
-		var pointID = parseInt(cells[5].textContent.trim(), 10);
+		var pointID = parseInt(cells[11].textContent.trim(), 10);
+		var properties = {
+			name: cells[1].textContent.trim(),
+			event: cells[2].textContent.trim(),
+			chapter: cells[0].textContent.trim(),
+			segID: cells[10].textContent.trim(),
+			people: parsePeopleCell(cells[3].textContent.trim()),
+			[nextTripPeopleKey]: parsePeopleCell(cells[4].textContent.trim()),
+		};
+
+		eventCharacterKeys.forEach(function(key, index) {
+			properties[key] = cells[5 + index].textContent.trim();
+		});
+
 		var feature = {
 			type: 'Feature',
-			id: cells[8].textContent.trim(),
-			properties: {
-				name: cells[1].textContent.trim(),
-				event: cells[2].textContent.trim(),
-				chapter: cells[0].textContent.trim(),
-				segID: cells[4].textContent.trim(),
-				people: parsePeopleCell(cells[3].textContent.trim()),
-			},
+			id: cells[14].textContent.trim(),
+			properties: properties,
 			geometry: {
 				type: 'Point',
 				coordinates: [
-					parseFloat(cells[6].textContent.trim()),
-					parseFloat(cells[7].textContent.trim()),
+					parseFloat(cells[12].textContent.trim()),
+					parseFloat(cells[13].textContent.trim()),
 				],
 			},
 		};
 
 		if (!isNaN(pointID)) feature.properties.pointID = pointID;
+		feature.properties = orderEventProperties(feature.properties);
 		features.push(feature);
 	});
 
@@ -1589,6 +1972,14 @@ function collectEventsGeojsonFromTable() {
 		type: 'FeatureCollection',
 		features: features,
 	};
+}
+
+function applyEventsTableEdits() {
+	var collected = collectEventsGeojsonFromTable();
+	events = collected;
+	syncEventsWithLocations();
+	cacheEventCharacterPlacements();
+	return collected;
 }
 
 function parseKeyCell(text) {
@@ -1682,7 +2073,9 @@ function copyGeojsonToClipboard(data, button) {
 
 function exportEventsGeojson() {
 	var button = document.getElementById('events-export-btn');
-	copyGeojsonToClipboard(collectEventsGeojsonFromTable(), button);
+	var collected = applyEventsTableEdits();
+	copyGeojsonToClipboard(collected, button);
+	populateTripsTable();
 }
 
 function exportLocationsGeojson() {
@@ -1744,12 +2137,6 @@ function getTripSegmentContext(tripSegID) {
 	};
 }
 
-function getTripPeopleKeysForDisplay(tripFeature) {
-	var keys = parseEventPeopleKeys(tripFeature.properties.people);
-	if (keys.length) return keys;
-	return getDefaultTripPeopleKeysFromEvents(tripFeature.properties.segID);
-}
-
 function getTripPointCount(feature) {
 	var coords = feature.geometry && feature.geometry.coordinates;
 	if (!coords || !coords.length || !coords[0]) return 0;
@@ -1769,7 +2156,6 @@ function buildTripsTableRow(feature) {
 	appendTableCell(row, context.fromName);
 	appendTableCell(row, context.toName);
 	appendTableCell(row, context.chapter);
-	appendTableCell(row, formatEventPeopleForTable(getTripPeopleKeysForDisplay(feature)), { editable: true });
 	appendTableCell(row, props.vehicle || '', { editable: true });
 	appendTableCell(row, getTripPointCount(feature));
 	appendTableCell(row, formatTripCoordinatesForTable(feature), {
@@ -1809,16 +2195,14 @@ function collectTripsGeojsonFromTable() {
 			type: 'Feature',
 			geometry: {
 				type: 'MultiLineString',
-				coordinates: parseTripCoordinatesCell(cells[7].textContent.trim()),
+				coordinates: parseTripCoordinatesCell(cells[6].textContent.trim()),
 			},
 			properties: {
-				vehicle: cells[5].textContent.trim(),
-				people: parsePeopleCell(cells[4].textContent.trim()),
+				vehicle: cells[4].textContent.trim(),
 			},
 		};
 
 		if (!isNaN(segID)) feature.properties.segID = segID;
-		if (!feature.properties.people.length) delete feature.properties.people;
 		features.push(feature);
 	});
 
@@ -1934,7 +2318,10 @@ function setupEventsDataModal() {
 	eventsDataModalReady = true;
 	menuBtn.addEventListener('click', openEventsModal);
 	if (closeBtn) closeBtn.addEventListener('click', closeEventsModal);
-	if (eventsTab) eventsTab.addEventListener('click', function() { setEventsModalTab('events'); });
+	if (eventsTab) eventsTab.addEventListener('click', function() {
+		populateEventsTable();
+		setEventsModalTab('events');
+	});
 	if (locationsTab) locationsTab.addEventListener('click', function() { setEventsModalTab('locations'); });
 	if (tripsTab) tripsTab.addEventListener('click', function() {
 		syncTripsFromTable();
@@ -1981,12 +2368,14 @@ function setupEventPanel() {
 	});
 
 	var syncMapToScroll = function() {
-		if (panelScrollFlyLocked) return;
+		if (!panelScrollSyncReady || panelScrollFlyLocked) return;
 		var centeredItem = getCenteredEventItem(listEl);
 		if (centeredItem) flyToEvent(centeredItem.dataset.eventId);
 	};
 
-	listEl.addEventListener('scroll', function() {
+	listEl.addEventListener('scroll', function(event) {
+		if (!panelScrollSyncReady || panelScrollFlyLocked) return;
+		if (event && !event.isTrusted) return;
 		window.clearTimeout(listEl._scrollSyncTimer);
 		listEl._scrollSyncTimer = window.setTimeout(syncMapToScroll, 120);
 	}, { passive: true });
@@ -2004,12 +2393,23 @@ function initializeActiveEvent() {
 	var firstEvent = sortedPanelEvents[0];
 	if (!firstEvent) return;
 
+	var listEl = document.getElementById('event-list');
+	panelScrollSyncReady = false;
+	panelScrollFlyLocked = true;
+	if (listEl) listEl.scrollTop = 0;
+
 	if (hasUrlMapView()) {
 		setActivePanelEvent(firstEvent.id);
-		return;
+		map.once('idle', refreshCharacterPlacementMarkersForActiveEvent);
+	} else {
+		flyToEvent(firstEvent.id, { force: true });
+		map.once('moveend', refreshCharacterPlacementMarkersForActiveEvent);
 	}
 
-	flyToEvent(firstEvent.id, { force: true });
+	window.setTimeout(function() {
+		panelScrollFlyLocked = false;
+		panelScrollSyncReady = true;
+	}, 700);
 }
 
 function setupEventTooltips() {
@@ -2072,7 +2472,11 @@ function animateJourney(idActive) {
 	    // fly to this trip
 	    var radius = Math.min(turf.length(trips.features[tripIndex], { units: 'kilometers' }) * 0.2, 20);
 	    var bbox = turf.bbox(turf.buffer(trips.features[tripIndex], radius, { units: 'kilometers' }));
-	    map.fitBounds([[bbox[0], bbox[1]], [bbox[2], bbox[3]]], { padding: 40, duration: 1200 });
+	    map.fitBounds([[bbox[0], bbox[1]], [bbox[2], bbox[3]]], {
+			padding: 40,
+			pitch: getMapPitch(),
+			duration: 1200,
+		});
 	};
 
 	var counter = 0;
