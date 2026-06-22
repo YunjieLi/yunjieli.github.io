@@ -16,7 +16,8 @@
         "location": "Loreto Municipality, BCS",
         "year": 1683,
         "order": "Jesuit",
-        "region": "baja"
+        "region": "baja",
+        "hq": false
       }
     },
     {
@@ -34,7 +35,8 @@
         "location": "Loreto, BCS",
         "year": 1697,
         "order": "Jesuit",
-        "region": "baja"
+        "region": "baja",
+        "hq": true
       }
     },
     {
@@ -52,7 +54,8 @@
         "location": "San Javier, BCS",
         "year": 1699,
         "order": "Jesuit",
-        "region": "baja"
+        "region": "baja",
+        "hq": false
       }
     },
     {
@@ -70,7 +73,8 @@
         "location": "Ligüí, BCS",
         "year": 1705,
         "order": "Jesuit",
-        "region": "baja"
+        "region": "baja",
+        "hq": false
       }
     },
     {
@@ -88,7 +92,8 @@
         "location": "Mulegé, BCS",
         "year": 1705,
         "order": "Jesuit",
-        "region": "baja"
+        "region": "baja",
+        "hq": false
       }
     },
     {
@@ -106,7 +111,8 @@
         "location": "Near San José de Comondú, BCS",
         "year": 1708,
         "order": "Jesuit",
-        "region": "baja"
+        "region": "baja",
+        "hq": false
       }
     },
     {
@@ -124,7 +130,8 @@
         "location": "La Purísima, BCS",
         "year": 1720,
         "order": "Jesuit",
-        "region": "baja"
+        "region": "baja",
+        "hq": false
       }
     },
     {
@@ -142,7 +149,8 @@
         "location": "La Paz, BCS",
         "year": 1720,
         "order": "Jesuit",
-        "region": "baja"
+        "region": "baja",
+        "hq": false
       }
     },
     {
@@ -160,7 +168,8 @@
         "location": "Guadalupe, Mulegé Municipality, BCS",
         "year": 1720,
         "order": "Jesuit",
-        "region": "baja"
+        "region": "baja",
+        "hq": false
       }
     },
     {
@@ -178,7 +187,8 @@
         "location": "Dolores, Loreto Municipality, BCS",
         "year": 1721,
         "order": "Jesuit",
-        "region": "baja"
+        "region": "baja",
+        "hq": false
       }
     },
     {
@@ -196,7 +206,8 @@
         "location": "Santiago, BCS",
         "year": 1724,
         "order": "Jesuit",
-        "region": "baja"
+        "region": "baja",
+        "hq": false
       }
     },
     {
@@ -214,7 +225,8 @@
         "location": "San Ignacio, BCS",
         "year": 1728,
         "order": "Jesuit",
-        "region": "baja"
+        "region": "baja",
+        "hq": false
       }
     },
     {
@@ -232,7 +244,8 @@
         "location": "San José del Cabo, BCS",
         "year": 1730,
         "order": "Jesuit",
-        "region": "baja"
+        "region": "baja",
+        "hq": false
       }
     },
     {
@@ -250,7 +263,8 @@
         "location": "Todos Santos, BCS",
         "year": 1733,
         "order": "Jesuit",
-        "region": "baja"
+        "region": "baja",
+        "hq": false
       }
     },
     {
@@ -268,7 +282,8 @@
         "location": "San Luis Gonzaga, BCS",
         "year": 1740,
         "order": "Jesuit",
-        "region": "baja"
+        "region": "baja",
+        "hq": false
       }
     },
     {
@@ -286,7 +301,8 @@
         "location": "San Quintín Municipality, BC",
         "year": 1752,
         "order": "Jesuit",
-        "region": "baja"
+        "region": "baja",
+        "hq": false
       }
     },
     {
@@ -304,7 +320,8 @@
         "location": "San Quintín Municipality, BC",
         "year": 1762,
         "order": "Jesuit",
-        "region": "baja"
+        "region": "baja",
+        "hq": false
       }
     },
     {
@@ -322,7 +339,8 @@
         "location": "Near Cataviña, BC",
         "year": 1767,
         "order": "Jesuit",
-        "region": "baja"
+        "region": "baja",
+        "hq": false
       }
     },
     {
@@ -340,7 +358,8 @@
         "location": "Sonora, Mexico",
         "year": 1687,
         "order": "Jesuit",
-        "region": "sonora"
+        "region": "sonora",
+        "hq": false
       }
     },
     {
@@ -358,7 +377,8 @@
         "location": "San Ignacio, Sonora, Mexico",
         "year": 1687,
         "order": "Jesuit",
-        "region": "sonora"
+        "region": "sonora",
+        "hq": false
       }
     },
     {
@@ -376,7 +396,8 @@
         "location": "Sonora, Mexico",
         "year": 1687,
         "order": "Jesuit",
-        "region": "sonora"
+        "region": "sonora",
+        "hq": false
       }
     },
     {
@@ -394,7 +415,8 @@
         "location": "Tubutama, Sonora, Mexico",
         "year": 1691,
         "order": "Jesuit",
-        "region": "sonora"
+        "region": "sonora",
+        "hq": false
       }
     },
     {
@@ -412,7 +434,8 @@
         "location": "Tumacacori, Arizona, USA",
         "year": 1691,
         "order": "Jesuit",
-        "region": "sonora"
+        "region": "sonora",
+        "hq": false
       }
     },
     {
@@ -430,7 +453,8 @@
         "location": "Tucson, Arizona, USA",
         "year": 1692,
         "order": "Jesuit",
-        "region": "sonora"
+        "region": "sonora",
+        "hq": false
       }
     },
     {
@@ -448,7 +472,8 @@
         "location": "Santa Cruz, Sonora, Mexico",
         "year": 1693,
         "order": "Jesuit",
-        "region": "sonora"
+        "region": "sonora",
+        "hq": false
       }
     },
     {
@@ -466,7 +491,8 @@
         "location": "Near Nogales, Arizona, USA",
         "year": 1691,
         "order": "Jesuit",
-        "region": "sonora"
+        "region": "sonora",
+        "hq": false
       }
     },
     {
@@ -484,7 +510,8 @@
         "location": "San Quintín Municipality, BC",
         "year": 1769,
         "order": "Franciscan",
-        "region": "baja"
+        "region": "baja",
+        "hq": false
       }
     },
     {
@@ -502,7 +529,8 @@
         "location": "San Diego, CA",
         "year": 1769,
         "order": "Franciscan",
-        "region": "alta"
+        "region": "alta",
+        "hq": false
       }
     },
     {
@@ -520,7 +548,8 @@
         "location": "Carmel-by-the-Sea, CA",
         "year": 1770,
         "order": "Franciscan",
-        "region": "alta"
+        "region": "alta",
+        "hq": true
       }
     },
     {
@@ -538,7 +567,8 @@
         "location": "Near Jolon, CA",
         "year": 1771,
         "order": "Franciscan",
-        "region": "alta"
+        "region": "alta",
+        "hq": false
       }
     },
     {
@@ -556,7 +586,8 @@
         "location": "San Gabriel, CA",
         "year": 1771,
         "order": "Franciscan",
-        "region": "alta"
+        "region": "alta",
+        "hq": false
       }
     },
     {
@@ -574,7 +605,8 @@
         "location": "San Luis Obispo, CA",
         "year": 1772,
         "order": "Franciscan",
-        "region": "alta"
+        "region": "alta",
+        "hq": false
       }
     },
     {
@@ -592,7 +624,8 @@
         "location": "San Francisco, CA",
         "year": 1776,
         "order": "Franciscan",
-        "region": "alta"
+        "region": "alta",
+        "hq": false
       }
     },
     {
@@ -610,7 +643,8 @@
         "location": "San Juan Capistrano, CA",
         "year": 1776,
         "order": "Franciscan",
-        "region": "alta"
+        "region": "alta",
+        "hq": false
       }
     },
     {
@@ -628,7 +662,8 @@
         "location": "Santa Clara, CA",
         "year": 1777,
         "order": "Franciscan",
-        "region": "alta"
+        "region": "alta",
+        "hq": false
       }
     },
     {
@@ -646,7 +681,8 @@
         "location": "Ventura, CA",
         "year": 1782,
         "order": "Franciscan",
-        "region": "alta"
+        "region": "alta",
+        "hq": false
       }
     },
     {
@@ -664,7 +700,8 @@
         "location": "Santa Barbara, CA",
         "year": 1786,
         "order": "Franciscan",
-        "region": "alta"
+        "region": "alta",
+        "hq": false
       }
     },
     {
@@ -682,7 +719,8 @@
         "location": "Lompoc, CA",
         "year": 1787,
         "order": "Franciscan",
-        "region": "alta"
+        "region": "alta",
+        "hq": false
       }
     },
     {
@@ -700,7 +738,8 @@
         "location": "Santa Cruz, CA",
         "year": 1791,
         "order": "Franciscan",
-        "region": "alta"
+        "region": "alta",
+        "hq": false
       }
     },
     {
@@ -718,7 +757,8 @@
         "location": "Soledad, CA",
         "year": 1791,
         "order": "Franciscan",
-        "region": "alta"
+        "region": "alta",
+        "hq": false
       }
     },
     {
@@ -736,7 +776,8 @@
         "location": "Fremont, CA",
         "year": 1797,
         "order": "Franciscan",
-        "region": "alta"
+        "region": "alta",
+        "hq": false
       }
     },
     {
@@ -754,7 +795,8 @@
         "location": "San Juan Bautista, CA",
         "year": 1797,
         "order": "Franciscan",
-        "region": "alta"
+        "region": "alta",
+        "hq": false
       }
     },
     {
@@ -772,7 +814,8 @@
         "location": "San Miguel, CA",
         "year": 1797,
         "order": "Franciscan",
-        "region": "alta"
+        "region": "alta",
+        "hq": false
       }
     },
     {
@@ -790,7 +833,8 @@
         "location": "Los Angeles (Mission Hills), CA",
         "year": 1797,
         "order": "Franciscan",
-        "region": "alta"
+        "region": "alta",
+        "hq": false
       }
     },
     {
@@ -808,7 +852,8 @@
         "location": "Oceanside, CA",
         "year": 1798,
         "order": "Franciscan",
-        "region": "alta"
+        "region": "alta",
+        "hq": false
       }
     },
     {
@@ -826,7 +871,8 @@
         "location": "Solvang, CA",
         "year": 1804,
         "order": "Franciscan",
-        "region": "alta"
+        "region": "alta",
+        "hq": false
       }
     },
     {
@@ -844,7 +890,8 @@
         "location": "San Rafael, CA",
         "year": 1817,
         "order": "Franciscan",
-        "region": "alta"
+        "region": "alta",
+        "hq": false
       }
     },
     {
@@ -862,7 +909,8 @@
         "location": "Sonoma, CA",
         "year": 1823,
         "order": "Franciscan",
-        "region": "alta"
+        "region": "alta",
+        "hq": false
       }
     },
     {
@@ -880,7 +928,8 @@
         "location": "El Rosario, BC",
         "year": 1774,
         "order": "Dominican",
-        "region": "baja"
+        "region": "baja",
+        "hq": false
       }
     },
     {
@@ -898,7 +947,8 @@
         "location": "Near Vicente Guerrero, BC",
         "year": 1775,
         "order": "Dominican",
-        "region": "baja"
+        "region": "baja",
+        "hq": false
       }
     },
     {
@@ -916,7 +966,8 @@
         "location": "San Vicente, BC",
         "year": 1780,
         "order": "Dominican",
-        "region": "baja"
+        "region": "baja",
+        "hq": true
       }
     },
     {
@@ -934,7 +985,8 @@
         "location": "La Misión, BC",
         "year": 1787,
         "order": "Dominican",
-        "region": "baja"
+        "region": "baja",
+        "hq": false
       }
     },
     {
@@ -952,7 +1004,8 @@
         "location": "Santo Tomás, BC",
         "year": 1791,
         "order": "Dominican",
-        "region": "baja"
+        "region": "baja",
+        "hq": false
       }
     },
     {
@@ -970,7 +1023,8 @@
         "location": "Ensenada Municipality, BC",
         "year": 1794,
         "order": "Dominican",
-        "region": "baja"
+        "region": "baja",
+        "hq": false
       }
     },
     {
@@ -988,7 +1042,8 @@
         "location": "Santa Catarina, BC",
         "year": 1797,
         "order": "Dominican",
-        "region": "baja"
+        "region": "baja",
+        "hq": false
       }
     },
     {
@@ -1006,7 +1061,8 @@
         "location": "Playas de Rosarito, BC",
         "year": 1810,
         "order": "Dominican",
-        "region": "baja"
+        "region": "baja",
+        "hq": false
       }
     },
     {
@@ -1024,7 +1080,8 @@
         "location": "Valle de Guadalupe, BC",
         "year": 1834,
         "order": "Dominican",
-        "region": "baja"
+        "region": "baja",
+        "hq": false
       }
     }
   ]

@@ -1,10 +1,14 @@
 mapboxgl.accessToken = window.MAPBOX_ACCESS_TOKEN || '';
 
-var ORDER_COLORS = {
-	Jesuit: '#2a6f97',
-	Franciscan: '#bc6c25',
-	Dominican: '#606c38',
+var ORDER_HQ = {
+	Jesuit: 'Nuestra Señora de Loreto Conchó',
+	Franciscan: 'San Carlos Borromeo de Carmelo',
+	Dominican: 'San Vicente Ferrer',
 };
+
+var MISSION_ORDERS = ['Jesuit', 'Franciscan', 'Dominican'];
+var missionIconWidth = 36;
+var missionHqIconWidth = 72;
 
 var MEXICO_CITY = {
 	type: 'FeatureCollection',
@@ -19,6 +23,34 @@ var MEXICO_CITY = {
 		},
 	}],
 };
+
+function addNewSpainLayers() {
+	map.addSource('new-spain', {
+		type: 'geojson',
+		data: newSpain,
+	});
+
+	map.addLayer({
+		id: 'new-spain-fill',
+		type: 'fill',
+		source: 'new-spain',
+		paint: {
+			'fill-color': '#e9c46a',
+			'fill-opacity': 0.12,
+		},
+	});
+
+	map.addLayer({
+		id: 'new-spain-outline',
+		type: 'line',
+		source: 'new-spain',
+		paint: {
+			'line-color': '#e9c46a',
+			'line-opacity': 0.4,
+			'line-width': 1.5,
+		},
+	});
+}
 
 function addCaliforniaLayers() {
 	map.addSource('california', {
@@ -140,10 +172,14 @@ function setupMexicoCityInteractions() {
 
 var missions;
 var california;
+var newSpain;
 var map;
 var minYear = 1683;
 var maxYear = 1834;
 var selectedYear = maxYear;
+var timelinePlaying = false;
+var timelineAnimationId = null;
+var timelineStepMs = 150;
 
 function syncYearRange() {
 	if (!missions || !missions.features.length) return;
@@ -165,12 +201,50 @@ function syncYearRange() {
 		slider.max = String(maxYear);
 		slider.value = String(selectedYear);
 	}
+	renderTimelineTicks();
+	updatePlayButtonState();
 }
 
 function applyMissions(data) {
-	missions = data;
+	missions = normalizeMissions(data);
 	syncYearRange();
 	updateMissionData();
+}
+
+function isHqProperty(value) {
+	return value === true || value === 'true' || value === 1 || value === '1';
+}
+
+function formatHqForTable(value) {
+	return isHqProperty(value) ? 'TRUE' : '';
+}
+
+function parseHqCell(text) {
+	var value = String(text || '').trim().toLowerCase();
+	return value === 'true' || value === '1' || value === 'yes';
+}
+
+function normalizeMissionHq(feature) {
+	var props = feature.properties;
+	if (props.hq == null && ORDER_HQ[props.order]) {
+		props.hq = props.name === ORDER_HQ[props.order];
+		return;
+	}
+	props.hq = isHqProperty(props.hq);
+}
+
+function normalizeMissions(data) {
+	data.features.forEach(normalizeMissionHq);
+	return data;
+}
+
+function isHqExpression() {
+	return [
+		'any',
+		['==', ['get', 'hq'], true],
+		['==', ['get', 'hq'], 'true'],
+		['==', ['get', 'hq'], 1],
+	];
 }
 
 function appendTableCell(row, text, options) {
@@ -199,6 +273,7 @@ function buildMissionTableRow(feature) {
 	appendTableCell(row, props.year, { editable: true });
 	appendTableCell(row, props.order, { editable: true });
 	appendTableCell(row, props.region, { editable: true });
+	appendTableCell(row, formatHqForTable(props.hq), { editable: true });
 	appendTableCell(row, coords[0] != null ? coords[0] : '', {
 		editable: true,
 		className: 'data-table__coordinates',
@@ -242,17 +317,18 @@ function collectMissionsGeojsonFromTable() {
 				year: isNaN(year) ? cells[2].textContent.trim() : year,
 				order: cells[3].textContent.trim(),
 				region: cells[4].textContent.trim(),
+				hq: parseHqCell(cells[5].textContent.trim()),
 			},
 			geometry: {
 				type: 'Point',
 				coordinates: [
-					parseFloat(cells[5].textContent.trim()),
 					parseFloat(cells[6].textContent.trim()),
+					parseFloat(cells[7].textContent.trim()),
 				],
 			},
 		};
 
-		var idText = cells[7].textContent.trim();
+		var idText = cells[8].textContent.trim();
 		if (idText) feature.id = /^\d+$/.test(idText) ? parseInt(idText, 10) : idText;
 		else if (tr.dataset.featureId) feature.id = tr.dataset.featureId;
 
@@ -384,15 +460,90 @@ function setupDataModal() {
 	});
 }
 
-function orderColorExpression() {
+function getMissionIconId(order, isHq) {
+	return 'mission-' + String(order || '').toLowerCase() + (isHq ? '-hq' : '');
+}
+
+function getMissionIconImageExpression() {
 	return [
-		'match',
-		['get', 'order'],
-		'Jesuit', ORDER_COLORS.Jesuit,
-		'Franciscan', ORDER_COLORS.Franciscan,
-		'Dominican', ORDER_COLORS.Dominican,
-		'#888',
+		'case',
+		isHqExpression(),
+		[
+			'match',
+			['get', 'order'],
+			'Jesuit', 'mission-jesuit-hq',
+			'Franciscan', 'mission-franciscan-hq',
+			'Dominican', 'mission-dominican-hq',
+			'mission-jesuit-hq',
+		],
+		[
+			'match',
+			['get', 'order'],
+			'Jesuit', 'mission-jesuit',
+			'Franciscan', 'mission-franciscan',
+			'Dominican', 'mission-dominican',
+			'mission-jesuit',
+		],
 	];
+}
+
+function rasterizeMissionIcon(img, width) {
+	width = width || missionIconWidth;
+	var canvas = document.createElement('canvas');
+	canvas.width = width;
+	canvas.height = width;
+	var ctx = canvas.getContext('2d');
+	ctx.drawImage(img, 0, 0, width, width);
+	return ctx.getImageData(0, 0, width, width);
+}
+
+function loadMissionIconImages(callback) {
+	var icons = [];
+	MISSION_ORDERS.forEach(function(order) {
+		icons.push({ order: order, isHq: false, width: missionIconWidth });
+		icons.push({ order: order, isHq: true, width: missionHqIconWidth });
+	});
+
+	var pending = icons.length;
+	if (!pending) {
+		callback();
+		return;
+	}
+
+	icons.forEach(function(icon) {
+		var iconId = getMissionIconId(icon.order, icon.isHq);
+		var img = new Image();
+
+		img.onload = function() {
+			if (!map.hasImage(iconId)) {
+				map.addImage(iconId, rasterizeMissionIcon(img, icon.width), { pixelRatio: 1 });
+			}
+			pending -= 1;
+			if (pending === 0) callback();
+		};
+		img.onerror = function() {
+			console.error('Failed to load mission icon:', iconId);
+			pending -= 1;
+			if (pending === 0) callback();
+		};
+		img.src = './assets/' + iconId + '.svg';
+	});
+}
+
+function getMissionSymbolLayout() {
+	return {
+		'icon-image': getMissionIconImageExpression(),
+		'icon-size': 0.75,
+		'icon-anchor': 'center',
+		'icon-allow-overlap': true,
+		'icon-ignore-placement': true,
+		'symbol-sort-key': [
+			'case',
+			isHqExpression(),
+			1,
+			0,
+		],
+	};
 }
 
 function getVisibleFeatures() {
@@ -410,22 +561,115 @@ function getVisibleGeojson() {
 }
 
 function buildPopupHtml(props) {
+	var hqLabel = isHqProperty(props.hq) ? ' · HQ' : '';
 	return (
 		'<div class="mission-popup__name">' + props.name + '</div>' +
 		'<div class="mission-popup__detail">' + props.location + '</div>' +
-		'<div class="mission-popup__detail">' + props.year + ' · ' + props.order + '</div>'
+		'<div class="mission-popup__detail">' + props.year + ' · ' + props.order + hqLabel + '</div>'
 	);
 }
 
 function updateTimelineUi() {
 	var label = document.getElementById('timeline__label');
-	var meta = document.getElementById('timeline__meta');
-	var count = getVisibleFeatures().length;
-
 	if (label) label.textContent = String(selectedYear);
-	if (meta) {
-		meta.textContent = count + (count === 1 ? ' mission' : ' missions');
+	updatePlayButtonState();
+}
+
+function getDecadeTickYears() {
+	var first = Math.floor(minYear / 20) * 20;
+	var years = [];
+	for (var year = first; year <= maxYear; year += 20) {
+		years.push(year);
 	}
+	return years;
+}
+
+function renderTimelineTicks() {
+	var ticksEl = document.getElementById('timeline__ticks');
+	if (!ticksEl) return;
+
+	ticksEl.innerHTML = '';
+	var span = maxYear - minYear;
+	if (span <= 0) return;
+
+	getDecadeTickYears().forEach(function(year) {
+		var tick = document.createElement('div');
+		tick.className = 'timeline-tick';
+		tick.style.left = ((year - minYear) / span * 100) + '%';
+
+		var mark = document.createElement('span');
+		mark.className = 'timeline-tick__mark';
+		tick.appendChild(mark);
+
+		ticksEl.appendChild(tick);
+	});
+}
+
+function setTimelineYear(year) {
+	selectedYear = Math.min(Math.max(year, minYear), maxYear);
+	var slider = document.getElementById('timeline__range');
+	if (slider) slider.value = String(selectedYear);
+	updateMissionData();
+}
+
+function updatePlayButtonState() {
+	var playBtn = document.getElementById('timeline__play');
+	if (!playBtn) return;
+
+	if (timelinePlaying) {
+		playBtn.textContent = '❚❚';
+		playBtn.setAttribute('aria-label', 'Pause timeline');
+		playBtn.disabled = false;
+		return;
+	}
+
+	playBtn.textContent = '▶';
+	playBtn.setAttribute('aria-label', 'Play timeline');
+	playBtn.disabled = selectedYear >= maxYear && minYear >= maxYear;
+}
+
+function stopTimelineAnimation() {
+	timelinePlaying = false;
+	if (timelineAnimationId) {
+		cancelAnimationFrame(timelineAnimationId);
+		timelineAnimationId = null;
+	}
+	updatePlayButtonState();
+}
+
+function pauseTimelineAnimation() {
+	stopTimelineAnimation();
+}
+
+function playTimelineAnimation() {
+	if (timelinePlaying) {
+		stopTimelineAnimation();
+		return;
+	}
+
+	timelinePlaying = true;
+	setTimelineYear(minYear);
+	updatePlayButtonState();
+
+	var lastStepAt = 0;
+
+	function frame(timestamp) {
+		if (!timelinePlaying) return;
+
+		if (!lastStepAt) lastStepAt = timestamp;
+		if (timestamp - lastStepAt >= timelineStepMs) {
+			lastStepAt = timestamp;
+			if (selectedYear >= maxYear) {
+				stopTimelineAnimation();
+				return;
+			}
+			setTimelineYear(selectedYear + 1);
+		}
+
+		timelineAnimationId = requestAnimationFrame(frame);
+	}
+
+	timelineAnimationId = requestAnimationFrame(frame);
 }
 
 function updateMissionData() {
@@ -435,36 +679,44 @@ function updateMissionData() {
 	updateTimelineUi();
 }
 
-function fitMapToMissions() {
-	var features = getVisibleFeatures();
-	if (!features.length || !map) return;
+function fitMapToMissions(options) {
+	if (!map || !missions || !missions.features.length) return;
 
+	options = options || {};
 	var bounds = new mapboxgl.LngLatBounds();
-	features.forEach(function(feature) {
+	missions.features.forEach(function(feature) {
 		bounds.extend(feature.geometry.coordinates);
 	});
 
 	map.fitBounds(bounds, {
-		padding: { top: 60, bottom: 100, left: 40, right: 40 },
-		maxZoom: 7,
-		duration: 600,
+		padding: { top: 48, bottom: 96, left: 48, right: 48 },
+		duration: options.duration != null ? options.duration : 600,
 	});
 }
 
 function setupTimeline() {
 	var slider = document.getElementById('timeline__range');
+	var playBtn = document.getElementById('timeline__play');
 	if (!slider) return;
 
 	slider.min = String(minYear);
 	slider.max = String(maxYear);
 	slider.value = String(selectedYear);
+	renderTimelineTicks();
 
-	slider.addEventListener('input', function() {
-		selectedYear = Number(slider.value);
-		updateMissionData();
+	slider.addEventListener('pointerdown', function() {
+		pauseTimelineAnimation();
 	});
 
-	slider.addEventListener('change', fitMapToMissions);
+	slider.addEventListener('input', function() {
+		pauseTimelineAnimation();
+		setTimelineYear(Number(slider.value));
+	});
+
+	if (playBtn) {
+		playBtn.addEventListener('click', playTimelineAnimation);
+	}
+
 	updateTimelineUi();
 }
 
@@ -476,16 +728,16 @@ function setupMissionInteractions() {
 		className: 'mission-popup',
 	});
 
-	map.on('mouseenter', 'missions-circles', function() {
+	map.on('mouseenter', 'missions-symbols', function() {
 		map.getCanvas().style.cursor = 'pointer';
 	});
 
-	map.on('mouseleave', 'missions-circles', function() {
+	map.on('mouseleave', 'missions-symbols', function() {
 		map.getCanvas().style.cursor = '';
 		popup.remove();
 	});
 
-	map.on('mousemove', 'missions-circles', function(event) {
+	map.on('mousemove', 'missions-symbols', function(event) {
 		if (!event.features || !event.features.length) return;
 		var props = event.features[0].properties;
 		popup
@@ -506,6 +758,7 @@ function initMap() {
 	map.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
 	map.on('load', function() {
+		addNewSpainLayers();
 		addCaliforniaLayers();
 
 		map.addSource('missions', {
@@ -513,52 +766,25 @@ function initMap() {
 			data: getVisibleGeojson(),
 		});
 
-		map.addLayer({
-			id: 'missions-circles',
-			type: 'circle',
-			source: 'missions',
-			paint: {
-				'circle-radius': [
-					'interpolate',
-					['linear'],
-					['zoom'],
-					4, 5,
-					8, 8,
-					12, 11,
-				],
-				'circle-color': orderColorExpression(),
-				'circle-stroke-color': '#fff',
-				'circle-stroke-width': 2,
-				'circle-opacity': 0.92,
-			},
+		loadMissionIconImages(function() {
+			map.addLayer({
+				id: 'missions-symbols',
+				type: 'symbol',
+				source: 'missions',
+				layout: getMissionSymbolLayout(),
+				paint: {
+					'icon-opacity': 0.95,
+				},
+			});
+
+			addMexicoCityLayers();
+			setupMissionInteractions();
+			setupMexicoCityInteractions();
+			setupTimeline();
+			map.once('idle', function() {
+				fitMapToMissions({ duration: 0 });
+			});
 		});
-
-		map.addLayer({
-			id: 'missions-labels',
-			type: 'symbol',
-			source: 'missions',
-			minzoom: 7,
-			layout: {
-				'text-field': ['get', 'name'],
-				'text-size': 12,
-				'text-offset': [0, 1.1],
-				'text-anchor': 'top',
-				'text-max-width': 14,
-				'text-optional': true,
-			},
-			paint: {
-				'text-color': '#e8e8e8',
-				'text-halo-color': '#1a1a1c',
-				'text-halo-width': 1.5,
-			},
-		});
-
-		addMexicoCityLayers();
-
-		setupMissionInteractions();
-		setupMexicoCityInteractions();
-		setupTimeline();
-		fitMapToMissions();
 	});
 }
 
@@ -571,9 +797,14 @@ Promise.all([
 		if (!response.ok) throw new Error('Failed to load california.geojson');
 		return response.json();
 	}),
+	fetch('./new-spain.geojson').then(function(response) {
+		if (!response.ok) throw new Error('Failed to load new-spain.geojson');
+		return response.json();
+	}),
 ]).then(function(results) {
-	missions = results[0];
+	missions = normalizeMissions(results[0]);
 	california = results[1];
+	newSpain = results[2];
 	syncYearRange();
 	initMap();
 	setupDataModal();

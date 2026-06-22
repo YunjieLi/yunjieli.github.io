@@ -37,7 +37,7 @@
         #legend {
             position: absolute;
             left: 0.75rem;
-            bottom: 5.5rem;
+            bottom: 6rem;
             z-index: 1;
             padding: 0.625rem 0.75rem;
             border-radius: 0.5rem;
@@ -54,6 +54,10 @@
             letter-spacing: 0.06em;
             text-transform: uppercase;
             color: var(--muted);
+        }
+
+        #legend h3:not(:first-child) {
+            margin-top: 0.75rem;
         }
 
         .legend-row {
@@ -75,6 +79,22 @@
             box-shadow: 0 0 0 1px rgb(0 0 0 / 25%);
         }
 
+        .legend-icon {
+            width: 1.125rem;
+            height: 1.125rem;
+            flex-shrink: 0;
+            display: block;
+        }
+
+        .legend-region {
+            width: 1.125rem;
+            height: 0.625rem;
+            border-radius: 2px;
+            border: 1px solid rgb(255 255 255 / 35%);
+            box-shadow: 0 0 0 1px rgb(0 0 0 / 20%);
+            flex-shrink: 0;
+        }
+
         #timeline {
             position: absolute;
             left: 0.75rem;
@@ -82,8 +102,8 @@
             bottom: 0.75rem;
             z-index: 1;
             display: flex;
-            align-items: center;
-            gap: 0.875rem;
+            align-items: flex-end;
+            gap: 0.75rem;
             padding: 0.75rem 1rem;
             border-radius: 0.5rem;
             background: var(--surface);
@@ -91,28 +111,85 @@
             box-shadow: 0 2px 12px rgb(0 0 0 / 35%);
         }
 
+        #timeline__play {
+            flex-shrink: 0;
+            width: 2rem;
+            height: 2rem;
+            padding: 0;
+            border: 1px solid var(--border);
+            border-radius: 9999px;
+            background: rgb(255 255 255 / 8%);
+            color: var(--text);
+            font: 600 11px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+
+        #timeline__play:hover:not(:disabled) {
+            background: rgb(255 255 255 / 14%);
+        }
+
+        #timeline__play:disabled {
+            opacity: 0.45;
+            cursor: default;
+        }
+
         #timeline__label {
             flex-shrink: 0;
             min-width: 3.25rem;
+            padding-bottom: 0.125rem;
             font: 700 18px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             font-variant-numeric: tabular-nums;
             color: var(--text);
         }
 
-        #timeline__range {
+        #timeline__track {
             flex: 1;
             min-width: 0;
+        }
+
+        #timeline__slider-wrap {
+            position: relative;
+            height: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        #timeline__ticks {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 50%;
+            height: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .timeline-tick {
+            position: absolute;
+            top: 0;
+            transform: translate(-50%, -50%);
+        }
+
+        .timeline-tick__mark {
+            display: block;
+            width: 2px;
+            height: 0.625rem;
+            margin: 0 auto;
+            border-radius: 9999px;
+            background: rgb(255 255 255 / 45%);
+        }
+
+        #timeline__range {
+            position: relative;
+            z-index: 1;
+            width: 100%;
             height: 0.25rem;
             margin: 0;
             accent-color: #ccc;
             cursor: pointer;
-        }
-
-        #timeline__meta {
-            flex-shrink: 0;
-            font-size: 12px;
-            color: var(--muted);
-            white-space: nowrap;
+            background: transparent;
         }
 
         .mission-popup.mapboxgl-popup {
@@ -292,16 +369,16 @@
 
         @media (max-width: 640px) {
             #legend {
-                bottom: 6.25rem;
+                bottom: 6.5rem;
             }
 
             #timeline {
                 flex-wrap: wrap;
-                gap: 0.5rem;
             }
 
-            #timeline__meta {
+            #timeline__track {
                 width: 100%;
+                order: 3;
             }
         }
     </style>
@@ -312,22 +389,32 @@
         <div id="legend">
             <h3>Religious order</h3>
             <div class="legend-row">
-                <span class="legend-swatch" style="background:#2a6f97"></span>
+                <img class="legend-icon" src="./assets/mission-jesuit.svg" alt="" />
                 <span>Jesuit</span>
             </div>
             <div class="legend-row">
-                <span class="legend-swatch" style="background:#bc6c25"></span>
+                <img class="legend-icon" src="./assets/mission-franciscan.svg" alt="" />
                 <span>Franciscan</span>
             </div>
             <div class="legend-row">
-                <span class="legend-swatch" style="background:#606c38"></span>
+                <img class="legend-icon" src="./assets/mission-dominican.svg" alt="" />
                 <span>Dominican</span>
+            </div>
+            <h3>Territory</h3>
+            <div class="legend-row">
+                <span class="legend-region" style="background: rgb(233 196 106 / 55%);"></span>
+                <span>New Spain</span>
             </div>
         </div>
         <div id="timeline">
+            <button type="button" id="timeline__play" aria-label="Play timeline">▶</button>
             <span id="timeline__label">1834</span>
-            <input id="timeline__range" type="range" min="1683" max="1834" step="1" value="1834" />
-            <span id="timeline__meta">57 missions</span>
+            <div id="timeline__track">
+                <div id="timeline__slider-wrap">
+                    <div id="timeline__ticks"></div>
+                    <input id="timeline__range" type="range" min="1683" max="1834" step="1" value="1834" />
+                </div>
+            </div>
         </div>
     </div>
     <div id="data-modal" class="data-modal" aria-hidden="true">
@@ -347,6 +434,7 @@
                         <th scope="col">year</th>
                         <th scope="col">order</th>
                         <th scope="col">region</th>
+                        <th scope="col">hq</th>
                         <th scope="col">lng</th>
                         <th scope="col">lat</th>
                         <th scope="col">id</th>
