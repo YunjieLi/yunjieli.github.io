@@ -1,0 +1,1031 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": 1,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -111.243,
+          25.889
+        ]
+      },
+      "properties": {
+        "name": "San Bruno",
+        "location": "Loreto Municipality, BCS",
+        "year": 1683,
+        "order": "Jesuit",
+        "region": "baja"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 2,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -111.349,
+          26.014
+        ]
+      },
+      "properties": {
+        "name": "Nuestra Señora de Loreto Conchó",
+        "location": "Loreto, BCS",
+        "year": 1697,
+        "order": "Jesuit",
+        "region": "baja"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 3,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -111.546,
+          25.883
+        ]
+      },
+      "properties": {
+        "name": "San Francisco Javier de Viggé-Biaundó",
+        "location": "San Javier, BCS",
+        "year": 1699,
+        "order": "Jesuit",
+        "region": "baja"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 4,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -111.217,
+          25.717
+        ]
+      },
+      "properties": {
+        "name": "San Juan Bautista Malibat (Ligüí)",
+        "location": "Ligüí, BCS",
+        "year": 1705,
+        "order": "Jesuit",
+        "region": "baja"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 5,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -111.987,
+          26.897
+        ]
+      },
+      "properties": {
+        "name": "Santa Rosalía de Mulegé",
+        "location": "Mulegé, BCS",
+        "year": 1705,
+        "order": "Jesuit",
+        "region": "baja"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 6,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -111.75,
+          25.983
+        ]
+      },
+      "properties": {
+        "name": "San José de Comondú",
+        "location": "Near San José de Comondú, BCS",
+        "year": 1708,
+        "order": "Jesuit",
+        "region": "baja"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 7,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -112.133,
+          26.15
+        ]
+      },
+      "properties": {
+        "name": "La Purísima Concepción de Cadegomó",
+        "location": "La Purísima, BCS",
+        "year": 1720,
+        "order": "Jesuit",
+        "region": "baja"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 8,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -110.317,
+          24.167
+        ]
+      },
+      "properties": {
+        "name": "Nuestra Señora del Pilar de La Paz Airapí",
+        "location": "La Paz, BCS",
+        "year": 1720,
+        "order": "Jesuit",
+        "region": "baja"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 9,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -112.383,
+          26.167
+        ]
+      },
+      "properties": {
+        "name": "Nuestra Señora de Guadalupe de Huasinapi",
+        "location": "Guadalupe, Mulegé Municipality, BCS",
+        "year": 1720,
+        "order": "Jesuit",
+        "region": "baja"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 10,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -111.233,
+          25.983
+        ]
+      },
+      "properties": {
+        "name": "Nuestra Señora de los Dolores del Sur Chillá",
+        "location": "Dolores, Loreto Municipality, BCS",
+        "year": 1721,
+        "order": "Jesuit",
+        "region": "baja"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 11,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -109.717,
+          23.4
+        ]
+      },
+      "properties": {
+        "name": "Santiago de Los Coras Aiñiní",
+        "location": "Santiago, BCS",
+        "year": 1724,
+        "order": "Jesuit",
+        "region": "baja"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 12,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -112.317,
+          27.283
+        ]
+      },
+      "properties": {
+        "name": "San Ignacio Kadakaamán",
+        "location": "San Ignacio, BCS",
+        "year": 1728,
+        "order": "Jesuit",
+        "region": "baja"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 13,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -109.717,
+          23.067
+        ]
+      },
+      "properties": {
+        "name": "Estero de las Palmas de San José del Cabo Añuití",
+        "location": "San José del Cabo, BCS",
+        "year": 1730,
+        "order": "Jesuit",
+        "region": "baja"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 14,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -110.217,
+          23.45
+        ]
+      },
+      "properties": {
+        "name": "Santa Rosa de las Palmas",
+        "location": "Todos Santos, BCS",
+        "year": 1733,
+        "order": "Jesuit",
+        "region": "baja"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 15,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -110.583,
+          26.25
+        ]
+      },
+      "properties": {
+        "name": "San Luis Gonzaga Chiriyaqui",
+        "location": "San Luis Gonzaga, BCS",
+        "year": 1740,
+        "order": "Jesuit",
+        "region": "baja"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 16,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -115.283,
+          30.433
+        ]
+      },
+      "properties": {
+        "name": "Santa Gertrudis",
+        "location": "San Quintín Municipality, BC",
+        "year": 1752,
+        "order": "Jesuit",
+        "region": "baja"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 17,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -115.283,
+          30.433
+        ]
+      },
+      "properties": {
+        "name": "San Francisco Borja",
+        "location": "San Quintín Municipality, BC",
+        "year": 1762,
+        "order": "Jesuit",
+        "region": "baja"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 18,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -114.833,
+          29.85
+        ]
+      },
+      "properties": {
+        "name": "Santa María de los Ángeles",
+        "location": "Near Cataviña, BC",
+        "year": 1767,
+        "order": "Jesuit",
+        "region": "baja"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 19,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -110.866,
+          30.133
+        ]
+      },
+      "properties": {
+        "name": "Nuestra Señora de los Dolores",
+        "location": "Sonora, Mexico",
+        "year": 1687,
+        "order": "Jesuit",
+        "region": "sonora"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 20,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -110.717,
+          30.917
+        ]
+      },
+      "properties": {
+        "name": "San Ignacio de Cabórica",
+        "location": "San Ignacio, Sonora, Mexico",
+        "year": 1687,
+        "order": "Jesuit",
+        "region": "sonora"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 21,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -110.883,
+          28.933
+        ]
+      },
+      "properties": {
+        "name": "Nuestra Señora de los Remedios",
+        "location": "Sonora, Mexico",
+        "year": 1687,
+        "order": "Jesuit",
+        "region": "sonora"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 22,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -111.467,
+          30.883
+        ]
+      },
+      "properties": {
+        "name": "San Pedro y San Pablo del Tubutama",
+        "location": "Tubutama, Sonora, Mexico",
+        "year": 1691,
+        "order": "Jesuit",
+        "region": "sonora"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 23,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -111.048,
+          31.569
+        ]
+      },
+      "properties": {
+        "name": "San Cayetano de Tumacácori",
+        "location": "Tumacacori, Arizona, USA",
+        "year": 1691,
+        "order": "Jesuit",
+        "region": "sonora"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 24,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -111.008,
+          32.107
+        ]
+      },
+      "properties": {
+        "name": "San Xavier del Bac",
+        "location": "Tucson, Arizona, USA",
+        "year": 1692,
+        "order": "Jesuit",
+        "region": "sonora"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 25,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -110.35,
+          30.417
+        ]
+      },
+      "properties": {
+        "name": "Santa María Suamca",
+        "location": "Santa Cruz, Sonora, Mexico",
+        "year": 1693,
+        "order": "Jesuit",
+        "region": "sonora"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 26,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -111.083,
+          31.317
+        ]
+      },
+      "properties": {
+        "name": "Los Santos Ángeles de Guevavi",
+        "location": "Near Nogales, Arizona, USA",
+        "year": 1691,
+        "order": "Jesuit",
+        "region": "sonora"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 27,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -115.617,
+          30.533
+        ]
+      },
+      "properties": {
+        "name": "San Fernando Rey de España de Velicatá",
+        "location": "San Quintín Municipality, BC",
+        "year": 1769,
+        "order": "Franciscan",
+        "region": "baja"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 28,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -117.113,
+          32.784
+        ]
+      },
+      "properties": {
+        "name": "San Diego de Alcalá",
+        "location": "San Diego, CA",
+        "year": 1769,
+        "order": "Franciscan",
+        "region": "alta"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 29,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -121.918,
+          36.542
+        ]
+      },
+      "properties": {
+        "name": "San Carlos Borromeo de Carmelo",
+        "location": "Carmel-by-the-Sea, CA",
+        "year": 1770,
+        "order": "Franciscan",
+        "region": "alta"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 30,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -121.044,
+          36.025
+        ]
+      },
+      "properties": {
+        "name": "San Antonio de Padua",
+        "location": "Near Jolon, CA",
+        "year": 1771,
+        "order": "Franciscan",
+        "region": "alta"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 31,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -118.107,
+          34.097
+        ]
+      },
+      "properties": {
+        "name": "San Gabriel Arcángel",
+        "location": "San Gabriel, CA",
+        "year": 1771,
+        "order": "Franciscan",
+        "region": "alta"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 32,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -120.659,
+          35.281
+        ]
+      },
+      "properties": {
+        "name": "San Luis Obispo de Tolosa",
+        "location": "San Luis Obispo, CA",
+        "year": 1772,
+        "order": "Franciscan",
+        "region": "alta"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.427,
+          37.764
+        ]
+      },
+      "properties": {
+        "name": "San Francisco de Asís (Mission Dolores)",
+        "location": "San Francisco, CA",
+        "year": 1776,
+        "order": "Franciscan",
+        "region": "alta"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 34,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -117.663,
+          33.502
+        ]
+      },
+      "properties": {
+        "name": "San Juan Capistrano",
+        "location": "San Juan Capistrano, CA",
+        "year": 1776,
+        "order": "Franciscan",
+        "region": "alta"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 35,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -121.954,
+          37.349
+        ]
+      },
+      "properties": {
+        "name": "Santa Clara de Asís",
+        "location": "Santa Clara, CA",
+        "year": 1777,
+        "order": "Franciscan",
+        "region": "alta"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 36,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -119.296,
+          34.284
+        ]
+      },
+      "properties": {
+        "name": "San Buenaventura",
+        "location": "Ventura, CA",
+        "year": 1782,
+        "order": "Franciscan",
+        "region": "alta"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 37,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -119.699,
+          34.438
+        ]
+      },
+      "properties": {
+        "name": "Santa Bárbara",
+        "location": "Santa Barbara, CA",
+        "year": 1786,
+        "order": "Franciscan",
+        "region": "alta"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 38,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -120.422,
+          34.671
+        ]
+      },
+      "properties": {
+        "name": "La Purísima Concepción",
+        "location": "Lompoc, CA",
+        "year": 1787,
+        "order": "Franciscan",
+        "region": "alta"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 39,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.026,
+          36.983
+        ]
+      },
+      "properties": {
+        "name": "Santa Cruz",
+        "location": "Santa Cruz, CA",
+        "year": 1791,
+        "order": "Franciscan",
+        "region": "alta"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 40,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -121.326,
+          36.405
+        ]
+      },
+      "properties": {
+        "name": "Nuestra Señora de la Soledad",
+        "location": "Soledad, CA",
+        "year": 1791,
+        "order": "Franciscan",
+        "region": "alta"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 41,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -121.918,
+          37.532
+        ]
+      },
+      "properties": {
+        "name": "San José de Guadalupe",
+        "location": "Fremont, CA",
+        "year": 1797,
+        "order": "Franciscan",
+        "region": "alta"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 42,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -121.536,
+          36.845
+        ]
+      },
+      "properties": {
+        "name": "San Juan Bautista",
+        "location": "San Juan Bautista, CA",
+        "year": 1797,
+        "order": "Franciscan",
+        "region": "alta"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 43,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -120.698,
+          35.743
+        ]
+      },
+      "properties": {
+        "name": "San Miguel Arcángel",
+        "location": "San Miguel, CA",
+        "year": 1797,
+        "order": "Franciscan",
+        "region": "alta"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 44,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -118.459,
+          34.276
+        ]
+      },
+      "properties": {
+        "name": "San Fernando Rey de España",
+        "location": "Los Angeles (Mission Hills), CA",
+        "year": 1797,
+        "order": "Franciscan",
+        "region": "alta"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 45,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -117.322,
+          33.232
+        ]
+      },
+      "properties": {
+        "name": "San Luis Rey de Francia",
+        "location": "Oceanside, CA",
+        "year": 1798,
+        "order": "Franciscan",
+        "region": "alta"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 46,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -120.138,
+          34.594
+        ]
+      },
+      "properties": {
+        "name": "Santa Inés",
+        "location": "Solvang, CA",
+        "year": 1804,
+        "order": "Franciscan",
+        "region": "alta"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 47,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.541,
+          38.019
+        ]
+      },
+      "properties": {
+        "name": "San Rafael Arcángel",
+        "location": "San Rafael, CA",
+        "year": 1817,
+        "order": "Franciscan",
+        "region": "alta"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 48,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.455,
+          38.294
+        ]
+      },
+      "properties": {
+        "name": "San Francisco Solano",
+        "location": "Sonoma, CA",
+        "year": 1823,
+        "order": "Franciscan",
+        "region": "alta"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 49,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -115.933,
+          30.733
+        ]
+      },
+      "properties": {
+        "name": "Nuestra Señora del Santísimo Rosario de Viñadaco",
+        "location": "El Rosario, BC",
+        "year": 1774,
+        "order": "Dominican",
+        "region": "baja"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 50,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -115.983,
+          30.9
+        ]
+      },
+      "properties": {
+        "name": "Santo Domingo de la Frontera",
+        "location": "Near Vicente Guerrero, BC",
+        "year": 1775,
+        "order": "Dominican",
+        "region": "baja"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 51,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -115.95,
+          31.05
+        ]
+      },
+      "properties": {
+        "name": "San Vicente Ferrer",
+        "location": "San Vicente, BC",
+        "year": 1780,
+        "order": "Dominican",
+        "region": "baja"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 52,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -116.783,
+          32.05
+        ]
+      },
+      "properties": {
+        "name": "San Miguel Arcángel de la Frontera",
+        "location": "La Misión, BC",
+        "year": 1787,
+        "order": "Dominican",
+        "region": "baja"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 53,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -116.417,
+          31.65
+        ]
+      },
+      "properties": {
+        "name": "Santo Tomás de Aquino",
+        "location": "Santo Tomás, BC",
+        "year": 1791,
+        "order": "Dominican",
+        "region": "baja"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 54,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -116.617,
+          31.867
+        ]
+      },
+      "properties": {
+        "name": "San Pedro Mártir de Verona",
+        "location": "Ensenada Municipality, BC",
+        "year": 1794,
+        "order": "Dominican",
+        "region": "baja"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 55,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -115.533,
+          31.683
+        ]
+      },
+      "properties": {
+        "name": "Santa Catarina Virgen y Mártir",
+        "location": "Santa Catarina, BC",
+        "year": 1797,
+        "order": "Dominican",
+        "region": "baja"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 56,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -117.083,
+          32.35
+        ]
+      },
+      "properties": {
+        "name": "El Descanso (San Miguel la Nueva)",
+        "location": "Playas de Rosarito, BC",
+        "year": 1810,
+        "order": "Dominican",
+        "region": "baja"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 57,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -116.083,
+          32.117
+        ]
+      },
+      "properties": {
+        "name": "Nuestra Señora de Guadalupe del Norte Winters",
+        "location": "Valle de Guadalupe, BC",
+        "year": 1834,
+        "order": "Dominican",
+        "region": "baja"
+      }
+    }
+  ]
+}

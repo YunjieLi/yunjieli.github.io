@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Spanish Missions</title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.24.0/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.24.0/mapbox-gl.css" rel="stylesheet" />
+    <style>
+        :root {
+            --jesuit: #2a6f97;
+            --franciscan: #bc6c25;
+            --dominican: #606c38;
+            --text: #e8e8e8;
+            --muted: #b0b0b0;
+            --surface: rgb(20 20 22 / 88%);
+            --border: rgb(255 255 255 / 12%);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            color: var(--text);
+            overflow: hidden;
+        }
+
+        #map {
+            position: absolute;
+            inset: 0;
+        }
+
+        #legend {
+            position: absolute;
+            left: 0.75rem;
+            bottom: 5.5rem;
+            z-index: 1;
+            padding: 0.625rem 0.75rem;
+            border-radius: 0.5rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 12px rgb(0 0 0 / 35%);
+            font-size: 12px;
+            color: var(--text);
+        }
+
+        #legend h3 {
+            margin: 0 0 0.5rem;
+            font: 700 11px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .legend-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.3125rem;
+        }
+
+        .legend-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .legend-swatch {
+            width: 0.75rem;
+            height: 0.75rem;
+            border-radius: 9999px;
+            border: 2px solid rgb(255 255 255 / 80%);
+            box-shadow: 0 0 0 1px rgb(0 0 0 / 25%);
+        }
+
+        #timeline {
+            position: absolute;
+            left: 0.75rem;
+            right: 0.75rem;
+            bottom: 0.75rem;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 0.875rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 12px rgb(0 0 0 / 35%);
+        }
+
+        #timeline__label {
+            flex-shrink: 0;
+            min-width: 3.25rem;
+            font: 700 18px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            font-variant-numeric: tabular-nums;
+            color: var(--text);
+        }
+
+        #timeline__range {
+            flex: 1;
+            min-width: 0;
+            height: 0.25rem;
+            margin: 0;
+            accent-color: #ccc;
+            cursor: pointer;
+        }
+
+        #timeline__meta {
+            flex-shrink: 0;
+            font-size: 12px;
+            color: var(--muted);
+            white-space: nowrap;
+        }
+
+        .mission-popup.mapboxgl-popup {
+            z-index: 2;
+        }
+
+        .mission-popup .mapboxgl-popup-content {
+            padding: 0.75rem 0.875rem;
+            border-radius: 0.5rem;
+            background: #1a1a1c;
+            color: var(--text);
+            box-shadow: 0 4px 16px rgb(0 0 0 / 45%);
+            font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        .mission-popup .mapboxgl-popup-tip {
+            border-top-color: #1a1a1c;
+        }
+
+        .mission-popup__name {
+            font-weight: 700;
+            margin-bottom: 0.375rem;
+        }
+
+        .mission-popup__detail {
+            color: var(--muted);
+        }
+
+        .data-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            background: #fff;
+            color: #333;
+        }
+
+        .data-modal.is-open {
+            display: flex;
+        }
+
+        .data-modal__header {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.875rem 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .data-modal__title {
+            margin: 0;
+            font: 700 14px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            letter-spacing: 0.04em;
+            color: #444;
+        }
+
+        .data-modal__hint {
+            margin: 0.25rem 0 0;
+            font-size: 12px;
+            color: #888;
+        }
+
+        .data-modal__close {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            padding: 0;
+            border: 1px solid #ddd;
+            border-radius: 0.25rem;
+            background: #fff;
+            font: 600 1.125rem/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            color: #555;
+            cursor: pointer;
+        }
+
+        .data-modal__close:hover {
+            background: #f7f7f7;
+            border-color: #ccc;
+        }
+
+        .data-modal__panel-scroll {
+            flex: 1;
+            min-height: 0;
+            overflow: auto;
+        }
+
+        .data-modal__footer {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            border-top: 1px solid #eee;
+        }
+
+        .data-modal__btn {
+            padding: 0.4375rem 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 0.25rem;
+            background: #fff;
+            font: 600 14px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: #555;
+            cursor: pointer;
+        }
+
+        .data-modal__btn:hover {
+            background: #f7f7f7;
+            border-color: #ccc;
+        }
+
+        .data-table__cell--editable:focus {
+            outline: none;
+            background: #fffde7;
+            box-shadow: inset 0 0 0 1px #e6c200;
+        }
+
+        .data-table__cell--readonly {
+            color: #666;
+            background: #fafafa;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            color: #333;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 0.625rem 0.75rem;
+            border-bottom: 1px solid #eee;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .data-table th {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            font: 600 14px/1.2 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: #666;
+            background: #f7f7f7;
+            border-bottom: 1px solid #ddd;
+            white-space: nowrap;
+        }
+
+        .data-table tbody tr:hover {
+            background: #fafafa;
+        }
+
+        .data-table td.data-table__location {
+            min-width: 16rem;
+            max-width: 28rem;
+        }
+
+        .data-table td.data-table__coordinates {
+            min-width: 6rem;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: 14px;
+        }
+
+        .data-table td.data-table__id {
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: 14px;
+            color: #666;
+        }
+
+        @media (max-width: 640px) {
+            #legend {
+                bottom: 6.25rem;
+            }
+
+            #timeline {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+
+            #timeline__meta {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="map">
+        <div id="legend">
+            <h3>Religious order</h3>
+            <div class="legend-row">
+                <span class="legend-swatch" style="background:#2a6f97"></span>
+                <span>Jesuit</span>
+            </div>
+            <div class="legend-row">
+                <span class="legend-swatch" style="background:#bc6c25"></span>
+                <span>Franciscan</span>
+            </div>
+            <div class="legend-row">
+                <span class="legend-swatch" style="background:#606c38"></span>
+                <span>Dominican</span>
+            </div>
+        </div>
+        <div id="timeline">
+            <span id="timeline__label">1834</span>
+            <input id="timeline__range" type="range" min="1683" max="1834" step="1" value="1834" />
+            <span id="timeline__meta">57 missions</span>
+        </div>
+    </div>
+    <div id="data-modal" class="data-modal" aria-hidden="true">
+        <header class="data-modal__header">
+            <div>
+                <h2 class="data-modal__title">missions.geojson</h2>
+                <p class="data-modal__hint">Press X or Esc to close and apply changes to the map</p>
+            </div>
+            <button type="button" id="data-modal__close" class="data-modal__close" aria-label="Close">&times;</button>
+        </header>
+        <div class="data-modal__panel-scroll">
+            <table id="missions-table" class="data-table">
+                <thead>
+                    <tr>
+                        <th scope="col">name</th>
+                        <th scope="col">location</th>
+                        <th scope="col">year</th>
+                        <th scope="col">order</th>
+                        <th scope="col">region</th>
+                        <th scope="col">lng</th>
+                        <th scope="col">lat</th>
+                        <th scope="col">id</th>
+                    </tr>
+                </thead>
+                <tbody id="missions-table__body"></tbody>
+            </table>
+        </div>
+        <div class="data-modal__footer">
+            <button type="button" id="missions-export-btn" class="data-modal__btn">Copy missions.geojson</button>
+            <button type="button" id="missions-download-btn" class="data-modal__btn">Download missions.geojson</button>
+        </div>
+    </div>
+    <script src="./mapbox-config.js"></script>
+    <script src="./index.js"></script>
+</body>
+
+</html>

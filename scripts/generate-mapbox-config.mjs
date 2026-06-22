@@ -28,6 +28,7 @@ const token =
 const targets = [
   'src/maps/swordsmen/mapbox-config.js',
   'src/maps/swordsmen/archive/mapbox-config.js',
+  'src/maps/spanish-missions/mapbox-config.js',
 ]
 
 const content = [

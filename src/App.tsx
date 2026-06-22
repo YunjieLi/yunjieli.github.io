@@ -19,6 +19,7 @@ export default function App() {
         <Route path="/kings"           element={<LegacyPage src="/src/maps/kings/index.html"      title="Kings" />} />
         <Route path="/swordsmen"        element={<LegacyPage src="/src/maps/swordsmen/index.html"         title="Swordsmen" />} />
         <Route path="/swordsmen/archive" element={<LegacyPage src="/src/maps/swordsmen/archive/index.html" title="Swordsmen Archive" />} />
+        <Route path="/spanish-missions"  element={<LegacyPage src="/src/maps/spanish-missions/index.html" title="Spanish Missions" />} />
         <Route path="/deck-tests"      element={<LegacyPage src="/src/maps/deck-tests/index.html" title="Deck Tests" />} />
         <Route path="/liancheng"       element={<LegacyPage src="/src/maps/liancheng/index.html"  title="连城诀" />} />
         <Route path="/tuner"           element={<LegacyPage src="/tuner/index.html"           title="Tuner" />} />

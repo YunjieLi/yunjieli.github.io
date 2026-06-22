@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 const maps = [
   { href: '/kings',      label: 'Glorious Kings',     sub: '王者荣耀·英雄地图' },
   { href: '/swordsmen',  label: 'Smiling Swordsmen',  sub: '在地图上重读《笑傲江湖》' },
+  { href: '/spanish-missions', label: 'Spanish Missions', sub: 'California mission chain on Mapbox Outdoors' },
   { href: '/deck-tests', label: '黄金大劫案',           sub: 'Deck.gl arc map' },
   { href: '/liancheng',  label: '连城诀',               sub: 'Deck.gl arc map' },
 ]

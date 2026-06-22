@@ -32,6 +32,7 @@ export default defineConfig({
         // Maps
         { src: 'src/maps/kings',      dest: 'src/maps' },
         { src: 'src/maps/swordsmen',  dest: 'src/maps' },
+        { src: 'src/maps/spanish-missions', dest: 'src/maps' },
         { src: 'src/maps/deck-tests', dest: 'src/maps' },
         { src: 'src/maps/liancheng',  dest: 'src/maps' },
         { src: 'src/maps/mapbox',     dest: 'src/maps' },
