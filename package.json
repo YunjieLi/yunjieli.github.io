@@ -6,7 +6,6 @@
   "scripts": {
     "mapbox:config": "node scripts/generate-mapbox-config.mjs",
     "swordsmen:sync-geojson": "node scripts/sync-swordsmen-geojson.mjs --write",
-    "spanish-missions:icons": "python3 scripts/build-spanish-mission-icons.py",
     "spanish-missions:regions": "python3 scripts/build-new-spain-geojson.py",
     "dev": "npm run mapbox:config && vite",
     "build": "npm run mapbox:config && tsc && vite build",
