@@ -34,11 +34,24 @@
             inset: 0;
         }
 
-        #legend {
+        #map-ui {
             position: absolute;
             left: 0.75rem;
-            bottom: 6rem;
+            right: 0.75rem;
+            bottom: 0.75rem;
             z-index: 1;
+            display: flex;
+            align-items: flex-end;
+            gap: 0.75rem;
+            pointer-events: none;
+        }
+
+        #map-ui > * {
+            pointer-events: auto;
+        }
+
+        #legend {
+            flex-shrink: 0;
             padding: 0.625rem 0.75rem;
             border-radius: 0.5rem;
             background: var(--surface);
@@ -46,6 +59,74 @@
             box-shadow: 0 2px 12px rgb(0 0 0 / 35%);
             font-size: 12px;
             color: var(--text);
+        }
+
+        .legend-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.375rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .legend-header__title {
+            font: 700 13px/1.2 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            letter-spacing: 0.02em;
+        }
+
+        .legend-header__info {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.25rem;
+            height: 1.25rem;
+            padding: 0;
+            border: 1px solid rgb(255 255 255 / 22%);
+            border-radius: 9999px;
+            background: rgb(255 255 255 / 8%);
+            color: var(--muted);
+            font: 700 11px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            cursor: pointer;
+        }
+
+        .legend-header__info:hover {
+            color: var(--text);
+            background: rgb(255 255 255 / 14%);
+            border-color: rgb(255 255 255 / 32%);
+        }
+
+        .legend-section__toggle {
+            width: 0.85rem;
+            height: 0.85rem;
+            padding: 0;
+            border: 0;
+            background: none;
+            color: var(--muted);
+            font: 700 10px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .legend-section__toggle:hover {
+            color: var(--text);
+        }
+
+        .legend-section__details[hidden] {
+            display: none;
+        }
+
+        .legend-section + .legend-section {
+            margin-top: 0.375rem;
+        }
+
+        .legend-section__details .legend-row--sub:first-child {
+            margin-top: 0.125rem;
+        }
+
+        .legend-section__details .legend-row--sub:last-child {
+            margin-bottom: 0.125rem;
         }
 
         .legend-row--toggle:not(:first-child) {
@@ -64,9 +145,16 @@
         }
 
         .legend-row--sub .legend-icon,
-        .legend-row--sub .legend-presidio {
+        .legend-row--sub .legend-presidio:not(.legend-presidio--capital) {
             width: 1rem;
             height: 1rem;
+        }
+
+        .legend-row--sub .legend-presidio--capital {
+            width: 1.625rem;
+            height: 1.625rem;
+            border-width: 2.5px;
+            background-size: 76% auto;
         }
 
         .legend-row:last-child {
@@ -121,6 +209,16 @@
             flex-shrink: 0;
         }
 
+        .legend-region--outline {
+            background: transparent;
+            border: 1.5px solid #bc6c25;
+            box-shadow: none;
+        }
+
+        .legend-row--toggle.legend-row--sub {
+            padding-left: 1.35rem;
+        }
+
         .legend-presidio {
             width: 1.125rem;
             height: 1.125rem;
@@ -136,14 +234,22 @@
         }
 
         .legend-presidio--capital {
-            width: 1.35rem;
-            height: 1.35rem;
             border-width: 2.5px;
             background-size: 76% auto;
         }
 
         .legend-row--toggle {
             gap: 0.4rem;
+        }
+
+        .legend-row__label {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .legend-row--toggle .legend-toggle {
+            margin-left: auto;
+            flex-shrink: 0;
         }
 
         .legend-toggle {
@@ -170,13 +276,10 @@
         }
 
         #timeline {
-            position: absolute;
-            left: 0.75rem;
-            right: 0.75rem;
-            bottom: 0.75rem;
-            z-index: 1;
+            flex: 1;
+            min-width: 0;
             display: flex;
-            align-items: flex-end;
+            align-items: center;
             gap: 0.75rem;
             padding: 0.75rem 1rem;
             border-radius: 0.5rem;
@@ -185,7 +288,7 @@
             box-shadow: 0 2px 12px rgb(0 0 0 / 35%);
         }
 
-        #timeline__play {
+        .timeline__btn {
             flex-shrink: 0;
             width: 2rem;
             height: 2rem;
@@ -200,11 +303,16 @@
             cursor: pointer;
         }
 
-        #timeline__play:hover:not(:disabled) {
+        #timeline__prev,
+        #timeline__next {
+            font: 700 1.125rem/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        .timeline__btn:hover:not(:disabled) {
             background: rgb(255 255 255 / 14%);
         }
 
-        #timeline__play:disabled {
+        .timeline__btn:disabled {
             opacity: 0.45;
             cursor: default;
         }
@@ -212,7 +320,6 @@
         #timeline__label {
             flex-shrink: 0;
             min-width: 3.25rem;
-            padding-bottom: 0.125rem;
             font: 700 18px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             font-variant-numeric: tabular-nums;
             color: var(--text);
@@ -486,9 +593,144 @@
             color: #666;
         }
 
+        .readme-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            background: rgb(0 0 0 / 55%);
+        }
+
+        .readme-modal.is-open {
+            display: flex;
+        }
+
+        .readme-modal__panel {
+            position: relative;
+            width: min(42rem, 100%);
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            border-radius: 0.5rem;
+            background: #1a1a1c;
+            border: 1px solid var(--border);
+            box-shadow: 0 8px 32px rgb(0 0 0 / 45%);
+            color: var(--text);
+        }
+
+        .readme-modal__close {
+            position: absolute;
+            top: 0.625rem;
+            right: 0.625rem;
+            z-index: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            padding: 0;
+            border: 1px solid rgb(255 255 255 / 18%);
+            border-radius: 0.25rem;
+            background: rgb(255 255 255 / 8%);
+            color: var(--text);
+            font: 600 1.125rem/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            cursor: pointer;
+        }
+
+        .readme-modal__close:hover {
+            background: rgb(255 255 255 / 14%);
+        }
+
+        .readme-modal__content {
+            flex: 1;
+            min-height: 0;
+            overflow: auto;
+            padding: 1rem 3rem 1.125rem 1.125rem;
+            font-size: 14px;
+            line-height: 1.55;
+        }
+
+        .readme-modal__content h1,
+        .readme-modal__content h2,
+        .readme-modal__content h3 {
+            margin: 1.25rem 0 0.625rem;
+            line-height: 1.25;
+        }
+
+        .readme-modal__content h1 {
+            margin-top: 0;
+            font-size: 1.375rem;
+        }
+
+        .readme-modal__content h2 {
+            font-size: 1.0625rem;
+        }
+
+        .readme-modal__content h3 {
+            font-size: 0.9375rem;
+        }
+
+        .readme-modal__content p,
+        .readme-modal__content ul,
+        .readme-modal__content ol,
+        .readme-modal__content table {
+            margin: 0 0 0.75rem;
+        }
+
+        .readme-modal__content ul,
+        .readme-modal__content ol {
+            padding-left: 1.25rem;
+        }
+
+        .readme-modal__content a {
+            color: #7cb7ff;
+        }
+
+        .readme-modal__content code {
+            padding: 0.1em 0.35em;
+            border-radius: 0.25rem;
+            background: rgb(255 255 255 / 8%);
+            font: 0.92em/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+        }
+
+        .readme-modal__content pre {
+            margin: 0 0 0.75rem;
+            padding: 0.75rem;
+            overflow: auto;
+            border-radius: 0.375rem;
+            background: rgb(255 255 255 / 6%);
+        }
+
+        .readme-modal__content pre code {
+            padding: 0;
+            background: none;
+        }
+
+        .readme-modal__content table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .readme-modal__content th,
+        .readme-modal__content td {
+            padding: 0.5rem 0.625rem;
+            border: 1px solid rgb(255 255 255 / 12%);
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .readme-modal__content th {
+            background: rgb(255 255 255 / 6%);
+        }
+
         @media (max-width: 640px) {
-            #legend {
-                bottom: 6.5rem;
+            #map-ui {
+                flex-direction: column;
+                align-items: stretch;
             }
 
             #timeline {
@@ -496,8 +738,24 @@
             }
 
             #timeline__track {
-                width: 100%;
+                flex: 1 1 100%;
+                order: 1;
+            }
+
+            #timeline__prev {
+                order: 2;
+            }
+
+            #timeline__play {
                 order: 3;
+            }
+
+            #timeline__label {
+                order: 4;
+            }
+
+            #timeline__next {
+                order: 5;
             }
         }
     </style>
@@ -505,55 +763,106 @@
 
 <body>
     <div id="map">
+        <div id="map-ui">
         <div id="legend">
-            <div class="legend-row legend-row--toggle">
-                <input type="checkbox" id="layer-toggle-missions" class="legend-toggle" data-target="missions" checked />
-                <span>Religious orders</span>
+            <div class="legend-header">
+                <span class="legend-header__title">Missions &amp; New Spain</span>
+                <button type="button" id="legend__info" class="legend-header__info" aria-label="About this map">i</button>
             </div>
-            <div class="legend-row legend-row--sub">
-                <img class="legend-icon legend-icon--jesuit" src="./assets/mission-jesuit.svg" alt="" />
-                <span>Jesuit</span>
+            <div class="legend-section">
+                <div class="legend-row legend-row--toggle">
+                    <button type="button" class="legend-section__toggle" aria-expanded="false" aria-label="Show religious order details">▸</button>
+                    <span class="legend-row__label">Religious orders</span>
+                    <input type="checkbox" id="layer-toggle-missions" class="legend-toggle" data-target="missions" checked />
+                </div>
+                <div class="legend-section__details" hidden>
+                    <div class="legend-row legend-row--sub">
+                        <img class="legend-icon legend-icon--jesuit" src="./assets/mission-jesuit.svg" alt="" />
+                        <span>Jesuit</span>
+                    </div>
+                    <div class="legend-row legend-row--sub">
+                        <img class="legend-icon legend-icon--franciscan" src="./assets/mission-franciscan.svg" alt="" />
+                        <span>Franciscan</span>
+                    </div>
+                    <div class="legend-row legend-row--sub">
+                        <img class="legend-icon legend-icon--dominican" src="./assets/mission-dominican.svg" alt="" />
+                        <span>Dominican</span>
+                    </div>
+                </div>
             </div>
-            <div class="legend-row legend-row--sub">
-                <img class="legend-icon legend-icon--franciscan" src="./assets/mission-franciscan.svg" alt="" />
-                <span>Franciscan</span>
+            <div class="legend-section">
+                <div class="legend-row legend-row--toggle">
+                    <button type="button" class="legend-section__toggle" aria-expanded="false" aria-label="Show presidio details">▸</button>
+                    <span class="legend-row__label">Presidios</span>
+                    <input type="checkbox" id="layer-toggle-presidios" class="legend-toggle" data-target="presidios" checked />
+                </div>
+                <div class="legend-section__details" hidden>
+                    <div class="legend-row legend-row--sub">
+                        <span class="legend-presidio" aria-hidden="true"></span>
+                        <span>Presidio</span>
+                    </div>
+                    <div class="legend-row legend-row--sub">
+                        <span class="legend-presidio legend-presidio--capital" aria-hidden="true"></span>
+                        <span>Colonial capital</span>
+                    </div>
+                </div>
             </div>
-            <div class="legend-row legend-row--sub">
-                <img class="legend-icon legend-icon--dominican" src="./assets/mission-dominican.svg" alt="" />
-                <span>Dominican</span>
+            <div class="legend-section">
+                <div class="legend-row legend-row--toggle">
+                    <button type="button" class="legend-section__toggle" aria-expanded="false" aria-label="Show provincia zone details">▸</button>
+                    <span class="legend-row__label">Provincias mayores</span>
+                    <input type="checkbox" id="layer-toggle-provincia-mayor" class="legend-toggle" data-target="provincia-mayor" checked />
+                </div>
+                <div class="legend-section__details" hidden>
+                    <div class="legend-row legend-row--sub">
+                        <span class="legend-region" style="background: rgb(144 222 84 / 55%);"></span>
+                        <span>Core Mexico</span>
+                    </div>
+                    <div class="legend-row legend-row--sub">
+                        <span class="legend-region" style="background: rgb(0 188 163 / 55%);"></span>
+                        <span>Caribbean</span>
+                    </div>
+                    <div class="legend-row legend-row--sub">
+                        <span class="legend-region" style="background: rgb(0 145 185 / 55%);"></span>
+                        <span>Florida</span>
+                    </div>
+                    <div class="legend-row legend-row--sub">
+                        <span class="legend-region" style="background: rgb(70 88 206 / 55%);"></span>
+                        <span>Provincias Internas</span>
+                    </div>
+                </div>
             </div>
-            <div class="legend-row legend-row--toggle">
-                <input type="checkbox" id="layer-toggle-presidios" class="legend-toggle" data-target="presidios" checked />
-                <span>Presidios</span>
-            </div>
-            <div class="legend-row legend-row--sub">
-                <span class="legend-presidio" aria-hidden="true"></span>
-                <span>Presidio</span>
-            </div>
-            <div class="legend-row legend-row--sub">
-                <span class="legend-presidio legend-presidio--capital" aria-hidden="true"></span>
-                <span>Colonial capital (by year)</span>
-            </div>
-            <div class="legend-row legend-row--toggle">
-                <input type="checkbox" id="layer-toggle-california" class="legend-toggle" data-target="california" checked />
-                <span class="legend-region" style="background: rgb(188 108 37 / 55%);"></span>
-                <button type="button" class="legend-zoom" data-target="california">California</button>
-            </div>
-            <div class="legend-row legend-row--toggle">
-                <input type="checkbox" id="layer-toggle-new-spain" class="legend-toggle" data-target="new-spain" />
-                <span class="legend-region" style="background: rgb(233 196 106 / 55%);"></span>
-                <button type="button" class="legend-zoom" data-target="new-spain">New Spain 🚧</button>
+            <div class="legend-section">
+                <div class="legend-row legend-row--toggle">
+                    <button type="button" class="legend-section__toggle" aria-expanded="false" aria-label="Show United States details">▸</button>
+                    <span class="legend-row__label">United States</span>
+                    <input type="checkbox" id="layer-toggle-us-states" class="legend-toggle" data-target="us-states" checked />
+                </div>
+                <div class="legend-section__details" hidden>
+                    <div class="legend-row legend-row--sub">
+                        <span class="legend-region" style="background: rgb(231 111 81 / 55%);"></span>
+                        <span>State / territory</span>
+                    </div>
+                    <div class="legend-row legend-row--toggle legend-row--sub">
+                        <span class="legend-region legend-region--outline" aria-hidden="true"></span>
+                        <span class="legend-row__label">California</span>
+                        <input type="checkbox" id="layer-toggle-california" class="legend-toggle" data-target="california" checked />
+                    </div>
+                </div>
             </div>
         </div>
         <div id="timeline">
-            <button type="button" id="timeline__play" aria-label="Play timeline">▶</button>
-            <span id="timeline__label">1834</span>
+            <button type="button" id="timeline__prev" class="timeline__btn" aria-label="Previous year">‹</button>
+            <button type="button" id="timeline__play" class="timeline__btn" aria-label="Play timeline">▶</button>
+            <span id="timeline__label">1850</span>
             <div id="timeline__track">
                 <div id="timeline__slider-wrap">
                     <div id="timeline__ticks"></div>
-                    <input id="timeline__range" type="range" min="1683" max="1834" step="1" value="1834" />
+                    <input id="timeline__range" type="range" min="1610" max="1850" step="1" value="1850" />
                 </div>
             </div>
+            <button type="button" id="timeline__next" class="timeline__btn" aria-label="Next year">›</button>
+        </div>
         </div>
     </div>
     <div id="data-modal" class="data-modal" aria-hidden="true">
@@ -567,6 +876,7 @@
         <div class="data-modal__tabs" role="tablist">
             <button type="button" id="data-modal__tab-missions" class="data-modal__tab is-active" role="tab" aria-selected="true" aria-controls="data-modal__panel-missions">missions</button>
             <button type="button" id="data-modal__tab-presidios" class="data-modal__tab" role="tab" aria-selected="false" aria-controls="data-modal__panel-presidios">presidios</button>
+            <button type="button" id="data-modal__tab-provincia-mayor" class="data-modal__tab" role="tab" aria-selected="false" aria-controls="data-modal__panel-provincia-mayor">provincias mayores</button>
         </div>
         <div id="data-modal__panel-missions" class="data-modal__panel is-active" role="tabpanel">
             <div class="data-modal__panel-scroll">
@@ -616,7 +926,37 @@
                 <button type="button" id="presidios-download-btn" class="data-modal__btn">Download presidios.geojson</button>
             </div>
         </div>
+        <div id="data-modal__panel-provincia-mayor" class="data-modal__panel" role="tabpanel" hidden>
+            <div class="data-modal__panel-scroll">
+                <table id="provincia-mayor-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">nombre</th>
+                            <th scope="col">label</th>
+                            <th scope="col">cabecera</th>
+                            <th scope="col">year</th>
+                            <th scope="col">regional_zone</th>
+                            <th scope="col">upper_administration</th>
+                            <th scope="col">tipo</th>
+                            <th scope="col">entidad_id</th>
+                        </tr>
+                    </thead>
+                    <tbody id="provincia-mayor-table__body"></tbody>
+                </table>
+            </div>
+            <div class="data-modal__footer">
+                <button type="button" id="provincia-mayor-export-btn" class="data-modal__btn">Copy context-Provincia_mayor.geojson</button>
+                <button type="button" id="provincia-mayor-download-btn" class="data-modal__btn">Download context-Provincia_mayor.geojson</button>
+            </div>
+        </div>
     </div>
+    <div id="readme-modal" class="readme-modal" aria-hidden="true">
+        <div class="readme-modal__panel" role="dialog" aria-modal="true" aria-label="Map documentation">
+            <button type="button" id="readme-modal__close" class="readme-modal__close" aria-label="Close">&times;</button>
+            <div id="readme-modal__content" class="readme-modal__content"></div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="./mapbox-config.js"></script>
     <script src="./index.js"></script>
 </body>

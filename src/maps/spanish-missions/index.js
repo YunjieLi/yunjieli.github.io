@@ -40,45 +40,133 @@ var MEXICO_CITY = {
 	}],
 };
 
-function getNewSpainGeojson() {
-	return selectedYear >= NEW_SPAIN_BOUNDARY_YEAR ? newSpain1819 : newSpain1794;
+function getLatestContextFeaturesByYear(features, year) {
+	var byEntity = {};
+	features.forEach(function(feature) {
+		var props = feature.properties;
+		var featureYear = props.year;
+		if (featureYear == null || featureYear > year) return;
+		var entityId = props.Entidad_ID || props.Nombre;
+		var existing = byEntity[entityId];
+		if (!existing || existing.properties.year < featureYear) {
+			byEntity[entityId] = feature;
+		}
+	});
+	return Object.keys(byEntity).map(function(key) {
+		return byEntity[key];
+	});
 }
 
-function updateNewSpainData() {
-	if (!map || !map.getSource('new-spain')) return;
-	map.getSource('new-spain').setData(getNewSpainGeojson());
+function getVisibleContextGeojson(source) {
+	if (!source || !source.features) {
+		return { type: 'FeatureCollection', features: [] };
+	}
+	return {
+		type: 'FeatureCollection',
+		features: getLatestContextFeaturesByYear(source.features, selectedYear),
+	};
 }
 
-function addNewSpainLayers() {
-	map.addSource('new-spain', {
+function getVisibleProvinciaMayorGeojson() {
+	if (selectedYear > PROVINCIA_MAYOR_END_YEAR) {
+		return { type: 'FeatureCollection', features: [] };
+	}
+	return getVisibleContextGeojson(provinciaMayor);
+}
+
+var US_STATE_DECADES = [1790, 1800, 1810, 1820, 1830, 1840, 1850];
+
+function getUsStateDecadeYear(year) {
+	var decadeYear = null;
+	US_STATE_DECADES.forEach(function(decade) {
+		if (decade <= year) decadeYear = decade;
+	});
+	return decadeYear;
+}
+
+function getVisibleUsStateGeojson() {
+	var decadeYear = getUsStateDecadeYear(selectedYear);
+	if (!decadeYear || !usStateByDecade[decadeYear]) {
+		return { type: 'FeatureCollection', features: [] };
+	}
+	return usStateByDecade[decadeYear];
+}
+
+function getActiveUsStateDecadeYear() {
+	return getUsStateDecadeYear(selectedYear);
+}
+
+var PROVINCIA_ZONE_COLORS = {
+	'Core Mexico': '#90de54',
+	'Caribbean': '#00bca3',
+	'Florida': '#0091b9',
+	'Provincias Internas': '#4658ce',
+};
+
+function provinciaZoneColorExpression() {
+	return [
+		'match',
+		['get', 'regional_zone'],
+		'Core Mexico', PROVINCIA_ZONE_COLORS['Core Mexico'],
+		'Provincias Internas', PROVINCIA_ZONE_COLORS['Provincias Internas'],
+		'Caribbean', PROVINCIA_ZONE_COLORS['Caribbean'],
+		'Florida', PROVINCIA_ZONE_COLORS['Florida'],
+		'#3498db',
+	];
+}
+
+function addProvinciaMayorLayers() {
+	map.addSource('provincia-mayor', {
 		type: 'geojson',
-		data: getNewSpainGeojson(),
+		data: getVisibleProvinciaMayorGeojson(),
 	});
 
 	map.addLayer({
-		id: 'new-spain-fill',
+		id: 'provincia-mayor-fill',
 		type: 'fill',
-		source: 'new-spain',
-		layout: {
-			visibility: 'none',
-		},
+		source: 'provincia-mayor',
 		paint: {
-			'fill-color': '#e9c46a',
-			'fill-opacity': 0.12,
+			'fill-color': provinciaZoneColorExpression(),
+			'fill-opacity': 0.18,
 		},
 	});
 
 	map.addLayer({
-		id: 'new-spain-outline',
+		id: 'provincia-mayor-outline',
 		type: 'line',
-		source: 'new-spain',
-		layout: {
-			visibility: 'none',
-		},
+		source: 'provincia-mayor',
 		paint: {
-			'line-color': '#e9c46a',
-			'line-opacity': 0.4,
+			'line-color': provinciaZoneColorExpression(),
+			'line-opacity': 0.55,
 			'line-width': 1.5,
+		},
+	});
+}
+
+function addUsStateLayers() {
+	map.addSource('us-states', {
+		type: 'geojson',
+		data: getVisibleUsStateGeojson(),
+	});
+
+	map.addLayer({
+		id: 'us-states-fill',
+		type: 'fill',
+		source: 'us-states',
+		paint: {
+			'fill-color': '#e76f51',
+			'fill-opacity': 0.14,
+		},
+	});
+
+	map.addLayer({
+		id: 'us-states-outline',
+		type: 'line',
+		source: 'us-states',
+		paint: {
+			'line-color': '#e76f51',
+			'line-opacity': 0.5,
+			'line-width': 1.25,
 		},
 	});
 }
@@ -90,40 +178,91 @@ function addCaliforniaLayers() {
 	});
 
 	map.addLayer({
-		id: 'california-fill',
-		type: 'fill',
-		source: 'california',
-		paint: {
-			'fill-color': '#bc6c25',
-			'fill-opacity': 0.18,
-		},
-	});
-
-	map.addLayer({
 		id: 'california-outline',
 		type: 'line',
 		source: 'california',
 		paint: {
 			'line-color': '#bc6c25',
-			'line-opacity': 0.45,
-			'line-width': 1.5,
+			'line-opacity': 0.9,
+			'line-width': 2,
 		},
+	});
+}
+
+function buildCaliforniaPopupHtml(props) {
+	return (
+		'<div class="mission-popup__name">' + (props.name || 'California') + '</div>' +
+		'<div class="mission-popup__detail">Modern state boundary</div>'
+	);
+}
+
+function buildContextPopupHtml(props) {
+	var name = props.Nombre || props.Label || '';
+	var detailParts = [];
+	if (props.Nivel) detailParts.push(String(props.Nivel).replace(/_/g, ' '));
+	else if (props.Tipo) detailParts.push(String(props.Tipo).replace(/-/g, ' '));
+	if (props.Cabecera) detailParts.push('Cabecera: ' + props.Cabecera);
+	if (props.regional_zone) detailParts.push(props.regional_zone);
+	return (
+		'<div class="mission-popup__name">' + name + '</div>' +
+		(detailParts.length
+			? '<div class="mission-popup__detail">' + detailParts.join(' · ') + '</div>'
+			: '')
+	);
+}
+
+function buildUsStatePopupHtml(props) {
+	var name = props.STATENAM || props.name || '';
+	var decadeYear = getActiveUsStateDecadeYear();
+	var detailParts = [];
+	if (decadeYear) detailParts.push(decadeYear + 's');
+	if (props.ICPSRST != null && props.ICPSRST !== '') {
+		detailParts.push('State #' + props.ICPSRST);
+	}
+	return (
+		'<div class="mission-popup__name">' + name + '</div>' +
+		(detailParts.length
+			? '<div class="mission-popup__detail">' + detailParts.join(' · ') + '</div>'
+			: '')
+	);
+}
+
+function setupPolygonLayerInteractions(layerId, buildPopupHtmlFn) {
+	var popup = new mapboxgl.Popup({
+		closeButton: false,
+		closeOnClick: false,
+		offset: 12,
+		className: 'mission-popup',
+	});
+
+	map.on('mouseenter', layerId, function() {
+		map.getCanvas().style.cursor = 'pointer';
+	});
+
+	map.on('mouseleave', layerId, function() {
+		map.getCanvas().style.cursor = '';
+		popup.remove();
+	});
+
+	map.on('mousemove', layerId, function(event) {
+		if (!event.features || !event.features.length) return;
+		popup
+			.setLngLat(event.lngLat)
+			.setHTML(buildPopupHtmlFn(event.features[0].properties))
+			.addTo(map);
 	});
 }
 
 var LEGEND_LAYERS = {
 	missions: ['missions-symbols', 'missions-hq-symbols'],
 	presidios: ['presidios-symbols', 'presidios-capital-symbols'],
-	california: ['california-fill', 'california-outline'],
-	'new-spain': ['new-spain-fill', 'new-spain-outline'],
+	'provincia-mayor': ['provincia-mayor-fill', 'provincia-mayor-outline'],
+	'us-states': ['us-states-fill', 'us-states-outline'],
+	california: ['california-outline'],
 };
 
 var MISSION_HQ_ICON_OFFSET = [-1.25, 1.25];
 var PRESIDIO_CAPITAL_ICON_OFFSET = [1.25, -1.25];
-
-function getTerritoryGeojson(target) {
-	return target === 'california' ? california : getNewSpainGeojson();
-}
 
 function extendBoundsWithCoords(bounds, coords) {
 	if (typeof coords[0] === 'number') {
@@ -147,19 +286,16 @@ function boundsFromGeojson(geojson) {
 }
 
 function setLegendLayerVisibility(target, visible) {
+	if (target === 'provincia-mayor') {
+		visible = visible && selectedYear <= PROVINCIA_MAYOR_END_YEAR;
+	}
+	if (target === 'us-states') {
+		visible = visible && !!getActiveUsStateDecadeYear();
+	}
 	(LEGEND_LAYERS[target] || []).forEach(function(layerId) {
 		if (map.getLayer(layerId)) {
 			map.setLayoutProperty(layerId, 'visibility', visible ? 'visible' : 'none');
 		}
-	});
-}
-
-function zoomToTerritory(target) {
-	var bounds = boundsFromGeojson(getTerritoryGeojson(target));
-	if (bounds.isEmpty()) return;
-	map.fitBounds(bounds, {
-		padding: { top: 48, bottom: 96, left: 48, right: 48 },
-		duration: 600,
 	});
 }
 
@@ -171,18 +307,95 @@ function setupLegendControls() {
 			setLegendLayerVisibility(target, input.checked);
 		});
 	});
+}
 
-	var zoomButtons = document.querySelectorAll('.legend-zoom');
-	Array.prototype.forEach.call(zoomButtons, function(button) {
-		var target = button.dataset.target;
-		button.addEventListener('click', function() {
-			var input = document.querySelector('.legend-toggle[data-target="' + target + '"]');
-			if (input && !input.checked) {
-				input.checked = true;
-				setLegendLayerVisibility(target, true);
-			}
-			zoomToTerritory(target);
+function setupLegendSections() {
+	var toggles = document.querySelectorAll('.legend-section__toggle');
+	Array.prototype.forEach.call(toggles, function(button) {
+		button.addEventListener('click', function(event) {
+			event.preventDefault();
+			event.stopPropagation();
+			var section = button.closest('.legend-section');
+			if (!section) return;
+			var details = section.querySelector('.legend-section__details');
+			if (!details) return;
+			var expanded = button.getAttribute('aria-expanded') === 'true';
+			button.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+			details.hidden = expanded;
+			button.textContent = expanded ? '▸' : '▾';
 		});
+	});
+}
+
+var readmeMarkdownCache = null;
+
+function renderReadmeMarkdown(markdown) {
+	if (typeof marked !== 'undefined' && marked.parse) {
+		return marked.parse(markdown);
+	}
+	return '<pre>' + markdown.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</pre>';
+}
+
+function isReadmeModalOpen() {
+	var modal = document.getElementById('readme-modal');
+	return !!(modal && modal.classList.contains('is-open'));
+}
+
+function openReadmeModal() {
+	var modal = document.getElementById('readme-modal');
+	var content = document.getElementById('readme-modal__content');
+	if (!modal || !content) return;
+
+	function showModal(markdown) {
+		content.innerHTML = renderReadmeMarkdown(markdown);
+		modal.classList.add('is-open');
+		modal.setAttribute('aria-hidden', 'false');
+	}
+
+	if (readmeMarkdownCache) {
+		showModal(readmeMarkdownCache);
+		return;
+	}
+
+	fetch('./README.md').then(function(response) {
+		if (!response.ok) throw new Error('Failed to load README.md');
+		return response.text();
+	}).then(function(text) {
+		readmeMarkdownCache = text;
+		showModal(text);
+	}).catch(function(error) {
+		console.error(error);
+		content.innerHTML = '<p>Could not load README.md.</p>';
+		modal.classList.add('is-open');
+		modal.setAttribute('aria-hidden', 'false');
+	});
+}
+
+function closeReadmeModal() {
+	var modal = document.getElementById('readme-modal');
+	if (!modal || !modal.classList.contains('is-open')) return;
+	modal.classList.remove('is-open');
+	modal.setAttribute('aria-hidden', 'true');
+}
+
+function setupReadmeModal() {
+	var infoBtn = document.getElementById('legend__info');
+	var closeBtn = document.getElementById('readme-modal__close');
+	var modal = document.getElementById('readme-modal');
+
+	if (infoBtn) infoBtn.addEventListener('click', openReadmeModal);
+	if (closeBtn) closeBtn.addEventListener('click', closeReadmeModal);
+	if (modal) {
+		modal.addEventListener('click', function(event) {
+			if (event.target === modal) closeReadmeModal();
+		});
+	}
+
+	document.addEventListener('keydown', function(event) {
+		if (event.key === 'Escape' && isReadmeModalOpen()) {
+			event.preventDefault();
+			closeReadmeModal();
+		}
 	});
 }
 
@@ -285,36 +498,19 @@ function setupMexicoCityInteractions() {
 
 var missions;
 var presidios;
+var provinciaMayor;
 var california;
-var newSpain1794;
-var newSpain1819;
-var NEW_SPAIN_BOUNDARY_YEAR = 1819;
+var usStateByDecade = {};
+var PROVINCIA_MAYOR_END_YEAR = 1821;
 var map;
-var minYear = 1683;
-var maxYear = 1834;
+var minYear = 1610;
+var maxYear = 1850;
 var selectedYear = maxYear;
 var timelinePlaying = false;
 var timelineAnimationId = null;
 var timelineStepMs = 150;
 
 function syncYearRange() {
-	var years = [];
-
-	if (missions && missions.features.length) {
-		years = years.concat(missions.features
-			.map(function(feature) { return feature.properties.year; })
-			.filter(function(year) { return typeof year === 'number' && !isNaN(year); }));
-	}
-	if (presidios && presidios.features.length) {
-		years = years.concat(presidios.features
-			.map(function(feature) { return feature.properties.year; })
-			.filter(function(year) { return typeof year === 'number' && !isNaN(year); }));
-	}
-
-	if (!years.length) return;
-
-	minYear = Math.min.apply(null, years);
-	maxYear = Math.max.apply(null, years);
 	if (selectedYear > maxYear) selectedYear = maxYear;
 	if (selectedYear < minYear) selectedYear = minYear;
 
@@ -325,7 +521,7 @@ function syncYearRange() {
 		slider.value = String(selectedYear);
 	}
 	renderTimelineTicks();
-	updatePlayButtonState();
+	updateTimelineControls();
 }
 
 function applyMissions(data) {
@@ -342,9 +538,16 @@ function applyPresidios(data) {
 	syncDebuggingTables();
 }
 
+function applyProvinciaMayor(data) {
+	provinciaMayor = data;
+	updateMissionData();
+	syncDebuggingTables();
+}
+
 function syncDebuggingTables() {
 	populateMissionsTable();
 	populatePresidiosTable();
+	populateProvinciaMayorTable();
 }
 
 function formatYearBecameCapitalForTable(value) {
@@ -605,6 +808,43 @@ function populatePresidiosTable() {
 	});
 }
 
+function getProvinciaMayorFeatureKey(feature) {
+	var props = feature.properties;
+	return (props.Entidad_ID || props.Nombre || '') + '|' + (props.year || '');
+}
+
+function buildProvinciaMayorTableRow(feature) {
+	var props = feature.properties;
+	var row = document.createElement('tr');
+	row.dataset.featureKey = getProvinciaMayorFeatureKey(feature);
+
+	appendTableCell(row, props.Nombre, { editable: true });
+	appendTableCell(row, props.Label, { editable: true });
+	appendTableCell(row, props.Cabecera, { editable: true });
+	appendTableCell(row, props.year, { editable: true });
+	appendTableCell(row, props.regional_zone, { editable: true });
+	appendTableCell(row, props.upper_administration, { editable: true });
+	appendTableCell(row, props.Tipo, { editable: true });
+	appendTableCell(row, props.Entidad_ID, { className: 'data-table__cell--readonly data-table__id' });
+
+	return row;
+}
+
+function populateProvinciaMayorTable() {
+	var tbody = document.getElementById('provincia-mayor-table__body');
+	if (!tbody || !provinciaMayor) return;
+
+	tbody.innerHTML = '';
+
+	provinciaMayor.features.slice().sort(function(a, b) {
+		var yearDiff = (a.properties.year || 0) - (b.properties.year || 0);
+		if (yearDiff) return yearDiff;
+		return String(a.properties.Nombre || '').localeCompare(String(b.properties.Nombre || ''));
+	}).forEach(function(feature) {
+		tbody.appendChild(buildProvinciaMayorTableRow(feature));
+	});
+}
+
 function collectMissionsGeojsonFromTable() {
 	var features = [];
 	var tableRows = document.querySelectorAll('#missions-table__body tr');
@@ -701,6 +941,47 @@ function getPresidiosGeojsonText() {
 	return JSON.stringify(presidios, null, 2) + '\n';
 }
 
+function collectProvinciaMayorGeojsonFromTable() {
+	var featureByKey = {};
+	if (provinciaMayor && provinciaMayor.features) {
+		provinciaMayor.features.forEach(function(feature) {
+			featureByKey[getProvinciaMayorFeatureKey(feature)] = feature;
+		});
+	}
+
+	var features = [];
+	var tableRows = document.querySelectorAll('#provincia-mayor-table__body tr');
+
+	Array.prototype.forEach.call(tableRows, function(tr) {
+		var original = featureByKey[tr.dataset.featureKey];
+		if (!original) return;
+
+		var cells = tr.cells;
+		if (!cells.length) return;
+
+		var year = parseInt(cells[3].textContent.trim(), 10);
+		var feature = cloneFeature(original);
+		feature.properties.Nombre = cells[0].textContent.trim();
+		feature.properties.Label = cells[1].textContent.trim();
+		feature.properties.Cabecera = cells[2].textContent.trim();
+		feature.properties.year = isNaN(year) ? cells[3].textContent.trim() : year;
+		feature.properties.regional_zone = cells[4].textContent.trim();
+		feature.properties.upper_administration = cells[5].textContent.trim();
+		feature.properties.Tipo = cells[6].textContent.trim();
+		features.push(feature);
+	});
+
+	return {
+		type: 'FeatureCollection',
+		features: features,
+	};
+}
+
+function getProvinciaMayorGeojsonText() {
+	if (!provinciaMayor) return '{"type":"FeatureCollection","features":[]}\n';
+	return JSON.stringify(provinciaMayor, null, 2) + '\n';
+}
+
 function copyTextToClipboard(text, button, defaultLabel) {
 	function showCopied() {
 		if (!button) return;
@@ -768,6 +1049,24 @@ function downloadPresidiosGeojson() {
 	URL.revokeObjectURL(url);
 }
 
+function exportProvinciaMayorGeojson() {
+	var button = document.getElementById('provincia-mayor-export-btn');
+	copyTextToClipboard(getProvinciaMayorGeojsonText(), button, 'Copy context-Provincia_mayor.geojson');
+}
+
+function downloadProvinciaMayorGeojson() {
+	var text = getProvinciaMayorGeojsonText();
+	var blob = new Blob([text], { type: 'application/geo+json;charset=utf-8' });
+	var url = URL.createObjectURL(blob);
+	var link = document.createElement('a');
+	link.href = url;
+	link.download = 'context-Provincia_mayor.geojson';
+	document.body.appendChild(link);
+	link.click();
+	document.body.removeChild(link);
+	URL.revokeObjectURL(url);
+}
+
 function isDataModalOpen() {
 	var modal = document.getElementById('data-modal');
 	return !!(modal && modal.classList.contains('is-open'));
@@ -784,10 +1083,23 @@ function shouldIgnoreDataModalShortcut(event) {
 	return false;
 }
 
+function shouldIgnoreTimelineShortcut(event) {
+	var target = event.target;
+	if (!target) return false;
+
+	var tag = target.tagName;
+	if (tag === 'TEXTAREA' || tag === 'SELECT' || tag === 'BUTTON') return true;
+	if (tag === 'INPUT' && target.type !== 'range') return true;
+	if (target.isContentEditable) return true;
+
+	return false;
+}
+
 function setDataModalTab(tabName) {
 	var tabs = [
 		{ name: 'missions', tabId: 'data-modal__tab-missions', panelId: 'data-modal__panel-missions' },
 		{ name: 'presidios', tabId: 'data-modal__tab-presidios', panelId: 'data-modal__panel-presidios' },
+		{ name: 'provincia-mayor', tabId: 'data-modal__tab-provincia-mayor', panelId: 'data-modal__panel-provincia-mayor' },
 	];
 
 	tabs.forEach(function(item) {
@@ -819,6 +1131,7 @@ function closeDataModal() {
 
 	applyMissions(collectMissionsGeojsonFromTable());
 	applyPresidios(collectPresidiosGeojsonFromTable());
+	applyProvinciaMayor(collectProvinciaMayorGeojsonFromTable());
 	modal.classList.remove('is-open');
 	modal.setAttribute('aria-hidden', 'true');
 }
@@ -835,18 +1148,24 @@ function setupDataModal() {
 	var closeBtn = document.getElementById('data-modal__close');
 	var missionsTab = document.getElementById('data-modal__tab-missions');
 	var presidiosTab = document.getElementById('data-modal__tab-presidios');
+	var provinciaMayorTab = document.getElementById('data-modal__tab-provincia-mayor');
 	var exportBtn = document.getElementById('missions-export-btn');
 	var downloadBtn = document.getElementById('missions-download-btn');
 	var presidiosExportBtn = document.getElementById('presidios-export-btn');
 	var presidiosDownloadBtn = document.getElementById('presidios-download-btn');
+	var provinciaMayorExportBtn = document.getElementById('provincia-mayor-export-btn');
+	var provinciaMayorDownloadBtn = document.getElementById('provincia-mayor-download-btn');
 
 	if (closeBtn) closeBtn.addEventListener('click', closeDataModal);
 	if (missionsTab) missionsTab.addEventListener('click', function() { setDataModalTab('missions'); });
 	if (presidiosTab) presidiosTab.addEventListener('click', function() { setDataModalTab('presidios'); });
+	if (provinciaMayorTab) provinciaMayorTab.addEventListener('click', function() { setDataModalTab('provincia-mayor'); });
 	if (exportBtn) exportBtn.addEventListener('click', exportMissionsGeojson);
 	if (downloadBtn) downloadBtn.addEventListener('click', downloadMissionsGeojson);
 	if (presidiosExportBtn) presidiosExportBtn.addEventListener('click', exportPresidiosGeojson);
 	if (presidiosDownloadBtn) presidiosDownloadBtn.addEventListener('click', downloadPresidiosGeojson);
+	if (provinciaMayorExportBtn) provinciaMayorExportBtn.addEventListener('click', exportProvinciaMayorGeojson);
+	if (provinciaMayorDownloadBtn) provinciaMayorDownloadBtn.addEventListener('click', downloadProvinciaMayorGeojson);
 
 	document.addEventListener('keydown', function(event) {
 		if (event.key === 'Escape' && isDataModalOpen()) {
@@ -1097,13 +1416,13 @@ function buildPopupHtml(props) {
 function updateTimelineUi() {
 	var label = document.getElementById('timeline__label');
 	if (label) label.textContent = String(selectedYear);
-	updatePlayButtonState();
+	updateTimelineControls();
 }
 
 function getDecadeTickYears() {
-	var first = Math.floor(minYear / 20) * 20;
+	var first = Math.ceil(minYear / 10) * 10;
 	var years = [];
-	for (var year = first; year <= maxYear; year += 20) {
+	for (var year = first; year <= maxYear; year += 10) {
 		years.push(year);
 	}
 	return years;
@@ -1137,8 +1456,19 @@ function setTimelineYear(year) {
 	updateMissionData();
 }
 
-function updatePlayButtonState() {
+function stepTimelineYear(delta) {
+	pauseTimelineAnimation();
+	setTimelineYear(selectedYear + delta);
+}
+
+function updateTimelineControls() {
 	var playBtn = document.getElementById('timeline__play');
+	var prevBtn = document.getElementById('timeline__prev');
+	var nextBtn = document.getElementById('timeline__next');
+
+	if (prevBtn) prevBtn.disabled = selectedYear <= minYear;
+	if (nextBtn) nextBtn.disabled = selectedYear >= maxYear;
+
 	if (!playBtn) return;
 
 	if (timelinePlaying) {
@@ -1159,7 +1489,7 @@ function stopTimelineAnimation() {
 		cancelAnimationFrame(timelineAnimationId);
 		timelineAnimationId = null;
 	}
-	updatePlayButtonState();
+	updateTimelineControls();
 }
 
 function pauseTimelineAnimation() {
@@ -1173,8 +1503,7 @@ function playTimelineAnimation() {
 	}
 
 	timelinePlaying = true;
-	setTimelineYear(minYear);
-	updatePlayButtonState();
+	updateTimelineControls();
 
 	var lastStepAt = 0;
 
@@ -1207,7 +1536,13 @@ function updateMissionData() {
 	if (map.getSource('presidios')) {
 		map.getSource('presidios').setData(markerData.presidios);
 	}
-	updateNewSpainData();
+	if (map.getSource('provincia-mayor')) {
+		map.getSource('provincia-mayor').setData(getVisibleProvinciaMayorGeojson());
+	}
+	if (map.getSource('us-states')) {
+		map.getSource('us-states').setData(getVisibleUsStateGeojson());
+	}
+	applyLegendToggleDefaults();
 	updateTimelineUi();
 }
 
@@ -1229,8 +1564,6 @@ function fitMapToCustomLayers(options) {
 	unionBoundsFromGeojson(bounds, missions);
 	unionBoundsFromGeojson(bounds, presidios);
 	unionBoundsFromGeojson(bounds, california);
-	unionBoundsFromGeojson(bounds, newSpain1794);
-	unionBoundsFromGeojson(bounds, newSpain1819);
 	unionBoundsFromGeojson(bounds, MEXICO_CITY);
 
 	if (bounds.isEmpty()) return;
@@ -1244,6 +1577,8 @@ function fitMapToCustomLayers(options) {
 function setupTimeline() {
 	var slider = document.getElementById('timeline__range');
 	var playBtn = document.getElementById('timeline__play');
+	var prevBtn = document.getElementById('timeline__prev');
+	var nextBtn = document.getElementById('timeline__next');
 	if (!slider) return;
 
 	slider.min = String(minYear);
@@ -1263,6 +1598,26 @@ function setupTimeline() {
 	if (playBtn) {
 		playBtn.addEventListener('click', playTimelineAnimation);
 	}
+
+	if (prevBtn) {
+		prevBtn.addEventListener('click', function() {
+			stepTimelineYear(-1);
+		});
+	}
+
+	if (nextBtn) {
+		nextBtn.addEventListener('click', function() {
+			stepTimelineYear(1);
+		});
+	}
+
+	document.addEventListener('keydown', function(event) {
+		if (event.key !== '[' && event.key !== ']') return;
+		if (shouldIgnoreTimelineShortcut(event)) return;
+
+		event.preventDefault();
+		stepTimelineYear(event.key === '[' ? -1 : 1);
+	});
 
 	updateTimelineUi();
 }
@@ -1337,9 +1692,14 @@ function initMap() {
 	map.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
 	map.on('load', function() {
-		addNewSpainLayers();
+		addProvinciaMayorLayers();
+		addUsStateLayers();
 		addCaliforniaLayers();
+		setupPolygonLayerInteractions('provincia-mayor-fill', buildContextPopupHtml);
+		setupPolygonLayerInteractions('us-states-fill', buildUsStatePopupHtml);
+		setupPolygonLayerInteractions('california-outline', buildCaliforniaPopupHtml);
 		setupLegendControls();
+		setupLegendSections();
 
 		map.addSource('missions', {
 			type: 'geojson',
@@ -1412,30 +1772,35 @@ Promise.all([
 		if (!response.ok) throw new Error('Failed to load missions.geojson');
 		return response.json();
 	}),
-	fetch('./california.geojson').then(function(response) {
-		if (!response.ok) throw new Error('Failed to load california.geojson');
-		return response.json();
-	}),
-	fetch('./new-spain-1794.geojson').then(function(response) {
-		if (!response.ok) throw new Error('Failed to load new-spain-1794.geojson');
-		return response.json();
-	}),
-	fetch('./new-spain-1819.geojson').then(function(response) {
-		if (!response.ok) throw new Error('Failed to load new-spain-1819.geojson');
-		return response.json();
-	}),
 	fetch('./presidios.geojson').then(function(response) {
 		if (!response.ok) throw new Error('Failed to load presidios.geojson');
 		return response.json();
 	}),
-]).then(function(results) {
+	fetch('./context-Provincia_mayor.geojson').then(function(response) {
+		if (!response.ok) throw new Error('Failed to load context-Provincia_mayor.geojson');
+		return response.json();
+	}),
+	fetch('./california.geojson').then(function(response) {
+		if (!response.ok) throw new Error('Failed to load california.geojson');
+		return response.json();
+	}),
+].concat(US_STATE_DECADES.map(function(decade) {
+	return fetch('./context-us_state_' + decade + '.geojson').then(function(response) {
+		if (!response.ok) throw new Error('Failed to load context-us_state_' + decade + '.geojson');
+		return response.json();
+	});
+}))).then(function(results) {
 	applyMissions(results[0]);
-	california = results[1];
-	newSpain1794 = results[2];
-	newSpain1819 = results[3];
-	applyPresidios(results[4]);
+	applyPresidios(results[1]);
+	provinciaMayor = results[2];
+	california = results[3];
+	usStateByDecade = {};
+	US_STATE_DECADES.forEach(function(decade, index) {
+		usStateByDecade[decade] = results[4 + index];
+	});
 	initMap();
 	setupDataModal();
+	setupReadmeModal();
 }).catch(function(error) {
 	console.error(error);
 });
