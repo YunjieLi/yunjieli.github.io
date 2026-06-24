@@ -97,40 +97,10 @@
             border-color: rgb(255 255 255 / 32%);
         }
 
-        .legend-section__toggle {
-            width: 0.85rem;
-            height: 0.85rem;
-            padding: 0;
+        .legend-divider {
+            margin: 0.4375rem 0;
             border: 0;
-            background: none;
-            color: var(--muted);
-            font: 700 10px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            cursor: pointer;
-            flex-shrink: 0;
-        }
-
-        .legend-section__toggle:hover {
-            color: var(--text);
-        }
-
-        .legend-section__details[hidden] {
-            display: none;
-        }
-
-        .legend-section + .legend-section {
-            margin-top: 0.375rem;
-        }
-
-        .legend-section__details .legend-row--sub:first-child {
-            margin-top: 0.125rem;
-        }
-
-        .legend-section__details .legend-row--sub:last-child {
-            margin-bottom: 0.125rem;
-        }
-
-        .legend-row--toggle:not(:first-child) {
-            margin-top: 0.375rem;
+            border-top: 1px solid var(--border);
         }
 
         .legend-row {
@@ -140,33 +110,8 @@
             margin-bottom: 0.3125rem;
         }
 
-        .legend-row--sub {
-            padding-left: 1.35rem;
-        }
-
-        .legend-row--sub .legend-icon,
-        .legend-row--sub .legend-presidio:not(.legend-presidio--capital) {
-            width: 1rem;
-            height: 1rem;
-        }
-
-        .legend-row--sub .legend-presidio--capital {
-            width: 1.625rem;
-            height: 1.625rem;
-            border-width: 2.5px;
-            background-size: 76% auto;
-        }
-
         .legend-row:last-child {
             margin-bottom: 0;
-        }
-
-        .legend-row + .legend-row--sub {
-            margin-top: -0.125rem;
-        }
-
-        .legend-row--toggle + .legend-row--sub {
-            margin-bottom: 0.375rem;
         }
 
         .legend-swatch {
@@ -177,27 +122,25 @@
             box-shadow: 0 0 0 1px rgb(0 0 0 / 25%);
         }
 
-        .legend-icon {
-            width: 1.125rem;
-            height: 1.125rem;
-            flex-shrink: 0;
-            display: block;
-            border: 2px solid #9ca3af;
+        .legend-order {
+            width: 0.75rem;
+            height: 0.75rem;
             border-radius: 9999px;
-            background: #fff;
-            box-sizing: border-box;
+            border: 1px solid rgb(255 255 255 / 35%);
+            box-shadow: 0 0 0 1px rgb(0 0 0 / 20%);
+            flex-shrink: 0;
         }
 
-        .legend-icon--jesuit {
-            border-color: var(--jesuit);
+        .legend-order--jesuit {
+            background: rgb(42 111 151 / 80%);
         }
 
-        .legend-icon--franciscan {
-            border-color: var(--franciscan);
+        .legend-order--franciscan {
+            background: rgb(188 108 37 / 80%);
         }
 
-        .legend-icon--dominican {
-            border-color: var(--dominican);
+        .legend-order--dominican {
+            background: rgb(96 108 56 / 80%);
         }
 
         .legend-region {
@@ -215,10 +158,6 @@
             box-shadow: none;
         }
 
-        .legend-row--toggle.legend-row--sub {
-            padding-left: 1.35rem;
-        }
-
         .legend-presidio {
             width: 1.125rem;
             height: 1.125rem;
@@ -233,21 +172,12 @@
             flex-shrink: 0;
         }
 
-        .legend-presidio--capital {
-            border-width: 2.5px;
-            background-size: 76% auto;
-        }
-
-        .legend-row--toggle {
-            gap: 0.4rem;
-        }
-
         .legend-row__label {
             flex: 1;
             min-width: 0;
         }
 
-        .legend-row--toggle .legend-toggle {
+        .legend-row .legend-toggle {
             margin-left: auto;
             flex-shrink: 0;
         }
@@ -769,86 +699,46 @@
                 <span class="legend-header__title">Missions &amp; New Spain</span>
                 <button type="button" id="legend__info" class="legend-header__info" aria-label="About this map">i</button>
             </div>
-            <div class="legend-section">
-                <div class="legend-row legend-row--toggle">
-                    <button type="button" class="legend-section__toggle" aria-expanded="false" aria-label="Show religious order details">▸</button>
-                    <span class="legend-row__label">Religious orders</span>
-                    <input type="checkbox" id="layer-toggle-missions" class="legend-toggle" data-target="missions" checked />
-                </div>
-                <div class="legend-section__details" hidden>
-                    <div class="legend-row legend-row--sub">
-                        <img class="legend-icon legend-icon--jesuit" src="./assets/mission-jesuit.svg" alt="" />
-                        <span>Jesuit</span>
-                    </div>
-                    <div class="legend-row legend-row--sub">
-                        <img class="legend-icon legend-icon--franciscan" src="./assets/mission-franciscan.svg" alt="" />
-                        <span>Franciscan</span>
-                    </div>
-                    <div class="legend-row legend-row--sub">
-                        <img class="legend-icon legend-icon--dominican" src="./assets/mission-dominican.svg" alt="" />
-                        <span>Dominican</span>
-                    </div>
-                </div>
+            <div class="legend-row">
+                <span class="legend-order legend-order--jesuit" aria-hidden="true"></span>
+                <span class="legend-row__label">Mission - Jesuit</span>
+                <input type="checkbox" id="layer-toggle-missions-jesuit" class="legend-toggle" data-order="Jesuit" checked />
             </div>
-            <div class="legend-section">
-                <div class="legend-row legend-row--toggle">
-                    <button type="button" class="legend-section__toggle" aria-expanded="false" aria-label="Show presidio details">▸</button>
-                    <span class="legend-row__label">Presidios</span>
-                    <input type="checkbox" id="layer-toggle-presidios" class="legend-toggle" data-target="presidios" checked />
-                </div>
-                <div class="legend-section__details" hidden>
-                    <div class="legend-row legend-row--sub">
-                        <span class="legend-presidio" aria-hidden="true"></span>
-                        <span>Presidio</span>
-                    </div>
-                    <div class="legend-row legend-row--sub">
-                        <span class="legend-presidio legend-presidio--capital" aria-hidden="true"></span>
-                        <span>Colonial capital</span>
-                    </div>
-                </div>
+            <div class="legend-row">
+                <span class="legend-order legend-order--franciscan" aria-hidden="true"></span>
+                <span class="legend-row__label">Mission - Franciscan</span>
+                <input type="checkbox" id="layer-toggle-missions-franciscan" class="legend-toggle" data-order="Franciscan" checked />
             </div>
-            <div class="legend-section">
-                <div class="legend-row legend-row--toggle">
-                    <button type="button" class="legend-section__toggle" aria-expanded="false" aria-label="Show provincia zone details">▸</button>
-                    <span class="legend-row__label">Provincias mayores</span>
-                    <input type="checkbox" id="layer-toggle-provincia-mayor" class="legend-toggle" data-target="provincia-mayor" checked />
-                </div>
-                <div class="legend-section__details" hidden>
-                    <div class="legend-row legend-row--sub">
-                        <span class="legend-region" style="background: rgb(144 222 84 / 55%);"></span>
-                        <span>Core Mexico</span>
-                    </div>
-                    <div class="legend-row legend-row--sub">
-                        <span class="legend-region" style="background: rgb(0 188 163 / 55%);"></span>
-                        <span>Caribbean</span>
-                    </div>
-                    <div class="legend-row legend-row--sub">
-                        <span class="legend-region" style="background: rgb(0 145 185 / 55%);"></span>
-                        <span>Florida</span>
-                    </div>
-                    <div class="legend-row legend-row--sub">
-                        <span class="legend-region" style="background: rgb(70 88 206 / 55%);"></span>
-                        <span>Provincias Internas</span>
-                    </div>
-                </div>
+            <div class="legend-row">
+                <span class="legend-order legend-order--dominican" aria-hidden="true"></span>
+                <span class="legend-row__label">Mission - Dominican</span>
+                <input type="checkbox" id="layer-toggle-missions-dominican" class="legend-toggle" data-order="Dominican" checked />
             </div>
-            <div class="legend-section">
-                <div class="legend-row legend-row--toggle">
-                    <button type="button" class="legend-section__toggle" aria-expanded="false" aria-label="Show United States details">▸</button>
-                    <span class="legend-row__label">United States</span>
-                    <input type="checkbox" id="layer-toggle-us-states" class="legend-toggle" data-target="us-states" checked />
-                </div>
-                <div class="legend-section__details" hidden>
-                    <div class="legend-row legend-row--sub">
-                        <span class="legend-region" style="background: rgb(231 111 81 / 55%);"></span>
-                        <span>State / territory</span>
-                    </div>
-                    <div class="legend-row legend-row--toggle legend-row--sub">
-                        <span class="legend-region legend-region--outline" aria-hidden="true"></span>
-                        <span class="legend-row__label">California</span>
-                        <input type="checkbox" id="layer-toggle-california" class="legend-toggle" data-target="california" checked />
-                    </div>
-                </div>
+            <div class="legend-row">
+                <span class="legend-presidio" aria-hidden="true"></span>
+                <span class="legend-row__label">Presidio</span>
+                <input type="checkbox" id="layer-toggle-presidios" class="legend-toggle" data-target="presidios" checked />
+            </div>
+            <hr class="legend-divider" />
+            <div class="legend-row">
+                <span class="legend-region" style="background: rgb(70 88 206 / 55%);"></span>
+                <span class="legend-row__label">New Spain</span>
+                <input type="checkbox" id="layer-toggle-provincia-mayor" class="legend-toggle" data-target="provincia-mayor" checked />
+            </div>
+            <div class="legend-row">
+                <span class="legend-region" style="background: rgb(231 111 81 / 55%);"></span>
+                <span class="legend-row__label">United States</span>
+                <input type="checkbox" id="layer-toggle-us-states" class="legend-toggle" data-target="us-states" checked />
+            </div>
+            <div class="legend-row">
+                <span class="legend-region" style="background: rgb(42 157 143 / 55%);"></span>
+                <span class="legend-row__label">Mexico</span>
+                <input type="checkbox" id="layer-toggle-mexico" class="legend-toggle" data-target="mexico" checked />
+            </div>
+            <div class="legend-row">
+                <span class="legend-region" style="background: rgb(233 196 106 / 55%);"></span>
+                <span class="legend-row__label">Texas</span>
+                <input type="checkbox" id="layer-toggle-texas" class="legend-toggle" data-target="texas" checked />
             </div>
         </div>
         <div id="timeline">
@@ -876,7 +766,7 @@
         <div class="data-modal__tabs" role="tablist">
             <button type="button" id="data-modal__tab-missions" class="data-modal__tab is-active" role="tab" aria-selected="true" aria-controls="data-modal__panel-missions">missions</button>
             <button type="button" id="data-modal__tab-presidios" class="data-modal__tab" role="tab" aria-selected="false" aria-controls="data-modal__panel-presidios">presidios</button>
-            <button type="button" id="data-modal__tab-provincia-mayor" class="data-modal__tab" role="tab" aria-selected="false" aria-controls="data-modal__panel-provincia-mayor">provincias mayores</button>
+            <button type="button" id="data-modal__tab-provincia-mayor" class="data-modal__tab" role="tab" aria-selected="false" aria-controls="data-modal__panel-provincia-mayor">New Spain</button>
         </div>
         <div id="data-modal__panel-missions" class="data-modal__panel is-active" role="tabpanel">
             <div class="data-modal__panel-scroll">

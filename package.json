@@ -8,6 +8,7 @@
     "swordsmen:sync-geojson": "node scripts/sync-swordsmen-geojson.mjs --write",
     "spanish-missions:regions": "python3 scripts/build-new-spain-geojson.py",
     "spanish-missions:presidios": "python3 scripts/build-presidios-geojson.py",
+    "spanish-missions:mexico": ".venv/bin/python scripts/build-mexico-geojson.py",
     "dev": "npm run mapbox:config && vite",
     "build": "npm run mapbox:config && tsc && vite build",
     "preview": "vite preview"
