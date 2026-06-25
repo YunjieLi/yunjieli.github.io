@@ -72,7 +72,7 @@
         }
 
         .legend-header__title {
-            font: 700 13px/1.2 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            font: 700 14px/1.2 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             letter-spacing: 0.02em;
         }
 
@@ -87,7 +87,7 @@
             border-radius: 9999px;
             background: rgb(255 255 255 / 8%);
             color: var(--muted);
-            font: 700 11px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            font: 700 12px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             cursor: pointer;
         }
 
@@ -122,63 +122,68 @@
             box-shadow: 0 0 0 1px rgb(0 0 0 / 25%);
         }
 
-        .legend-order {
+        .legend-mission {
+            position: relative;
             width: 0.75rem;
             height: 0.75rem;
             border-radius: 9999px;
-            border: 1px solid rgb(255 255 255 / 35%);
-            box-shadow: 0 0 0 1px rgb(0 0 0 / 20%);
+            background: #bc6c25;
             flex-shrink: 0;
         }
 
-        .legend-order--jesuit {
-            background: rgb(42 111 151 / 80%);
-        }
-
-        .legend-order--franciscan {
-            background: rgb(188 108 37 / 80%);
-        }
-
-        .legend-order--dominican {
-            background: rgb(96 108 56 / 80%);
+        .legend-mission::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(#fff, #fff) center / 16% 62% no-repeat,
+                linear-gradient(#fff, #fff) center / 62% 16% no-repeat;
         }
 
         .legend-region {
             width: 1.125rem;
             height: 0.625rem;
             border-radius: 2px;
-            border: 1px solid rgb(255 255 255 / 35%);
-            box-shadow: 0 0 0 1px rgb(0 0 0 / 20%);
             flex-shrink: 0;
         }
 
-        .legend-region--outline {
-            background: transparent;
-            border: 1.5px solid #bc6c25;
-            box-shadow: none;
+        .legend-region--new-spain {
+            background: rgb(70 88 206 / 18%);
+            border: 1.5px solid rgb(70 88 206 / 55%);
+        }
+
+        .legend-region--us-states {
+            background: rgb(231 111 81 / 14%);
+            border: 1.5px solid rgb(231 111 81 / 50%);
+        }
+
+        .legend-region--mexico {
+            background: rgb(42 157 143 / 14%);
+            border: 1.5px solid rgb(42 157 143 / 55%);
+        }
+
+        .legend-region--texas {
+            background: rgb(233 196 106 / 16%);
+            border: 1.5px solid rgb(233 196 106 / 65%);
         }
 
         .legend-presidio {
             width: 1.125rem;
-            height: 1.125rem;
-            border-radius: 9999px;
-            border: 2px solid #9ca3af;
-            background-color: #fff;
-            background-image: url("./assets/new-spain.svg");
+            height: 0.75rem;
+            background-image: url("./assets/presidio.svg");
             background-repeat: no-repeat;
             background-position: center;
-            background-size: 72% auto;
-            box-shadow: 0 0 0 1px rgb(0 0 0 / 20%);
+            background-size: contain;
             flex-shrink: 0;
         }
 
         .legend-row__label {
             flex: 1;
             min-width: 0;
+            font-size: 12px;
         }
 
         .legend-row .legend-toggle {
-            margin-left: auto;
             flex-shrink: 0;
         }
 
@@ -187,8 +192,9 @@
             height: 0.85rem;
             margin: 0;
             flex-shrink: 0;
-            accent-color: #e9c46a;
+            accent-color: rgb(176 176 176 / 85%);
             cursor: pointer;
+            opacity: 0.8;
         }
 
         .legend-zoom {
@@ -265,6 +271,7 @@
             height: 1.5rem;
             display: flex;
             align-items: center;
+            overflow: visible;
         }
 
         #timeline__ticks {
@@ -275,6 +282,16 @@
             height: 0;
             pointer-events: none;
             z-index: 0;
+        }
+
+        #timeline__events {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 50%;
+            height: 0;
+            z-index: 2;
+            pointer-events: none;
         }
 
         .timeline-tick {
@@ -290,6 +307,84 @@
             margin: 0 auto;
             border-radius: 9999px;
             background: rgb(255 255 255 / 45%);
+        }
+
+        .timeline-event {
+            position: absolute;
+            top: 0;
+            transform: translate(-50%, -50%);
+            padding: 0;
+            border: 0;
+            background: none;
+            pointer-events: auto;
+            cursor: pointer;
+        }
+
+        .timeline-event__mark {
+            display: block;
+            width: 2px;
+            height: 1rem;
+            margin: 0 auto;
+            border-radius: 9999px;
+            background: #e9c46a;
+            border: none;
+            box-shadow: none;
+            transition: height 120ms ease, opacity 120ms ease;
+        }
+
+        .timeline-event:hover .timeline-event__mark,
+        .timeline-event:focus-visible .timeline-event__mark {
+            height: 1.125rem;
+            opacity: 0.95;
+        }
+
+        .timeline-event__tooltip {
+            position: absolute;
+            left: 50%;
+            bottom: calc(100% + 0.5rem);
+            transform: translateX(-50%);
+            width: max-content;
+            max-width: 16rem;
+            padding: 0.5rem 0.625rem;
+            border-radius: 0.375rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 16px rgb(0 0 0 / 45%);
+            color: var(--text);
+            font-size: 12px;
+            line-height: 1.4;
+            text-align: left;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 120ms ease, visibility 120ms ease;
+            z-index: 3;
+        }
+
+        .timeline-event:hover .timeline-event__tooltip,
+        .timeline-event:focus-visible .timeline-event__tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .timeline-event__year {
+            display: block;
+            margin-bottom: 0.125rem;
+            font: 700 12px/1.2 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            color: #e9c46a;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .timeline-event__name {
+            display: block;
+            margin-bottom: 0.25rem;
+            font: 600 14px/1.3 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        .timeline-event__desc {
+            display: block;
+            font: 12px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            color: var(--muted);
         }
 
         #timeline__range {
@@ -321,11 +416,15 @@
         }
 
         .mission-popup__name {
+            font-size: 14px;
             font-weight: 700;
+            line-height: 1.3;
             margin-bottom: 0.375rem;
         }
 
         .mission-popup__detail {
+            font-size: 12px;
+            line-height: 1.4;
             color: var(--muted);
         }
 
@@ -700,45 +799,35 @@
                 <button type="button" id="legend__info" class="legend-header__info" aria-label="About this map">i</button>
             </div>
             <div class="legend-row">
-                <span class="legend-order legend-order--jesuit" aria-hidden="true"></span>
-                <span class="legend-row__label">Mission - Jesuit</span>
-                <input type="checkbox" id="layer-toggle-missions-jesuit" class="legend-toggle" data-order="Jesuit" checked />
+                <input type="checkbox" id="layer-toggle-missions" class="legend-toggle" data-missions checked />
+                <span class="legend-mission" aria-hidden="true"></span>
+                <span class="legend-row__label">Mission</span>
             </div>
             <div class="legend-row">
-                <span class="legend-order legend-order--franciscan" aria-hidden="true"></span>
-                <span class="legend-row__label">Mission - Franciscan</span>
-                <input type="checkbox" id="layer-toggle-missions-franciscan" class="legend-toggle" data-order="Franciscan" checked />
-            </div>
-            <div class="legend-row">
-                <span class="legend-order legend-order--dominican" aria-hidden="true"></span>
-                <span class="legend-row__label">Mission - Dominican</span>
-                <input type="checkbox" id="layer-toggle-missions-dominican" class="legend-toggle" data-order="Dominican" checked />
-            </div>
-            <div class="legend-row">
+                <input type="checkbox" id="layer-toggle-presidios" class="legend-toggle" data-target="presidios" checked />
                 <span class="legend-presidio" aria-hidden="true"></span>
                 <span class="legend-row__label">Presidio</span>
-                <input type="checkbox" id="layer-toggle-presidios" class="legend-toggle" data-target="presidios" checked />
             </div>
             <hr class="legend-divider" />
             <div class="legend-row">
-                <span class="legend-region" style="background: rgb(70 88 206 / 55%);"></span>
-                <span class="legend-row__label">New Spain</span>
                 <input type="checkbox" id="layer-toggle-provincia-mayor" class="legend-toggle" data-target="provincia-mayor" checked />
+                <span class="legend-region legend-region--new-spain" aria-hidden="true"></span>
+                <span class="legend-row__label">New Spain</span>
             </div>
             <div class="legend-row">
-                <span class="legend-region" style="background: rgb(231 111 81 / 55%);"></span>
-                <span class="legend-row__label">United States</span>
                 <input type="checkbox" id="layer-toggle-us-states" class="legend-toggle" data-target="us-states" checked />
+                <span class="legend-region legend-region--us-states" aria-hidden="true"></span>
+                <span class="legend-row__label">United States</span>
             </div>
             <div class="legend-row">
-                <span class="legend-region" style="background: rgb(42 157 143 / 55%);"></span>
-                <span class="legend-row__label">Mexico</span>
                 <input type="checkbox" id="layer-toggle-mexico" class="legend-toggle" data-target="mexico" checked />
+                <span class="legend-region legend-region--mexico" aria-hidden="true"></span>
+                <span class="legend-row__label">Mexico</span>
             </div>
             <div class="legend-row">
-                <span class="legend-region" style="background: rgb(233 196 106 / 55%);"></span>
-                <span class="legend-row__label">Texas</span>
                 <input type="checkbox" id="layer-toggle-texas" class="legend-toggle" data-target="texas" checked />
+                <span class="legend-region legend-region--texas" aria-hidden="true"></span>
+                <span class="legend-row__label">Texas</span>
             </div>
         </div>
         <div id="timeline">
@@ -748,6 +837,7 @@
             <div id="timeline__track">
                 <div id="timeline__slider-wrap">
                     <div id="timeline__ticks"></div>
+                    <div id="timeline__events"></div>
                     <input id="timeline__range" type="range" min="1610" max="1850" step="1" value="1850" />
                 </div>
             </div>

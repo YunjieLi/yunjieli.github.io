@@ -12,38 +12,27 @@ var ORDER_COLORS = {
 	Franciscan: '#bc6c25',
 	Dominican: '#606c38',
 };
-var MARKER_SIZE = 36;
-var MARKER_HIGHLIGHT_SIZE = 72;
-var MARKER_STROKE_WIDTH = 2.5;
-var MARKER_BORDER_COLOR = '#9ca3af';
-var MARKER_INNER_FILL = 0.82;
-var markerIconSize = 0.75;
-var markerHighlightIconSize = 0.75;
-var MARKER_SYMBOL_SCALE = 0.6;
+var MARKER_REFERENCE_ZOOM = 7;
+var MARKER_ICON_SIZE_SCALE = 1.5;
 var MISSION_CIRCLE_RADIUS = 6;
-var MISSION_HQ_CIRCLE_RADIUS = 8;
+var MISSION_HQ_CIRCLE_RADIUS = 12;
+var PRESIDIO_CAPITAL_CIRCLE_RADIUS = 8;
 var MISSION_MARKER_OPACITY = 0.9;
-var MISSION_CIRCLE_STROKE_WIDTH = 3;
-var MISSION_CIRCLE_STROKE_COLOR = '#ffffff';
-var MISSION_CIRCLE_STROKE_OPACITY = 1;
-var presidioIconSize = markerIconSize * 0.8 * MARKER_SYMBOL_SCALE;
-var presidioRegularIconSize = presidioIconSize * MARKER_SIZE / MARKER_HIGHLIGHT_SIZE;
-var presidioCapitalIconSize = markerHighlightIconSize * 0.8 * MARKER_SYMBOL_SCALE;
-var MARKER_SYMBOL_URL = './assets/new-spain.svg';
-
-var MEXICO_CITY = {
-	type: 'FeatureCollection',
-	features: [{
-		type: 'Feature',
-		geometry: {
-			type: 'Point',
-			coordinates: [-99.1332, 19.4326],
-		},
-		properties: {
-			name: 'Mexico City',
-		},
-	}],
+var MISSION_MARKER_LOGICAL_SIZE = 48;
+var PRESIDIO_MARKER_LOGICAL_SIZE = MISSION_MARKER_LOGICAL_SIZE;
+var PRESIDIO_SYMBOL_URL = './assets/presidio.svg';
+var NATIONAL_CAPITAL_MARKER_LOGICAL_SIZE = 96;
+var NATIONAL_CAPITAL_MARKER_RADIUS = 28;
+var NATIONAL_CAPITAL_SIZE_SCALE = 0.6;
+var NATIONAL_CAPITAL_ICONS = {
+	'capital-new-spain': './assets/viceroyalty-of-New-Spain.svg',
+	'capital-mexico': './assets/mexico.svg',
+	'capital-texas': './assets/texas.svg',
+	'capital-usa': './assets/usa.svg',
 };
+var MEXICO_CITY_COORDS = [-99.1332, 19.4326];
+var AUSTIN_COORDS = [-97.7431, 30.2672];
+var MISSION_CROSS_PATH = 'M26 17H40V21H26V45H22V21H8V17H22V4H26V17Z';
 
 function getLatestContextFeaturesByYear(features, year) {
 	var byEntity = {};
@@ -79,7 +68,12 @@ function getVisibleProvinciaMayorGeojson() {
 	return getVisibleContextGeojson(provinciaMayor);
 }
 
-var US_STATE_DECADES = [1790, 1800, 1810, 1820, 1830, 1840, 1850];
+var US_STATE_DECADES = [1776, 1790, 1800, 1810, 1820, 1830, 1840, 1850];
+
+function getUsStateGeojsonUrl(decade) {
+	if (decade === 1776) return './context-us_1776.geojson';
+	return './context-us_state_' + decade + '.geojson';
+}
 
 function getUsStateDecadeYear(year) {
 	if (year >= 1848) return 1850;
@@ -355,12 +349,16 @@ var LEGEND_LAYERS = {
 	'us-states': ['us-states-fill', 'us-states-outline'],
 };
 
-var MISSION_LAYER_IDS = ['missions-symbols', 'missions-hq-symbols'];
-var missionOrderVisibility = {
-	Jesuit: true,
-	Franciscan: true,
-	Dominican: true,
+var legendLayerVisibility = {
+	presidios: true,
+	'provincia-mayor': true,
+	mexico: true,
+	texas: true,
+	'us-states': true,
 };
+
+var MISSION_LAYER_IDS = ['missions-symbols', 'missions-hq-symbols'];
+var missionsVisible = true;
 
 var MISSION_HQ_ICON_OFFSET = [-1.25, 1.25];
 var PRESIDIO_CAPITAL_ICON_OFFSET = [1.25, -1.25];
@@ -387,18 +385,14 @@ function boundsFromGeojson(geojson) {
 }
 
 function getMissionOrderFilter() {
-	var matches = Object.keys(missionOrderVisibility).filter(function(order) {
-		return missionOrderVisibility[order];
-	});
-	if (!matches.length) {
+	if (!missionsVisible) {
 		return ['==', ['get', 'order'], ''];
 	}
-	if (matches.length === 1) {
-		return ['==', ['get', 'order'], matches[0]];
-	}
-	return ['any'].concat(matches.map(function(order) {
-		return ['==', ['get', 'order'], order];
-	}));
+	return ['any',
+		['==', ['get', 'order'], 'Jesuit'],
+		['==', ['get', 'order'], 'Franciscan'],
+		['==', ['get', 'order'], 'Dominican'],
+	];
 }
 
 function updateMissionLayerFilters() {
@@ -410,41 +404,50 @@ function updateMissionLayerFilters() {
 	});
 }
 
-function setMissionOrderVisibility(order, visible) {
-	if (!Object.prototype.hasOwnProperty.call(missionOrderVisibility, order)) return;
-	missionOrderVisibility[order] = visible;
+function setMissionsVisibility(visible) {
+	missionsVisible = visible;
 	updateMissionLayerFilters();
 }
 
 function setLegendLayerVisibility(target, visible) {
+	if (target && Object.prototype.hasOwnProperty.call(legendLayerVisibility, target)) {
+		legendLayerVisibility[target] = visible;
+	}
+	var layerVisible = visible;
 	if (target === 'provincia-mayor') {
-		visible = visible && selectedYear <= PROVINCIA_MAYOR_END_YEAR;
+		layerVisible = visible && selectedYear <= PROVINCIA_MAYOR_END_YEAR;
+	}
+	if (target === 'presidios') {
+		layerVisible = visible && selectedYear <= PROVINCIA_MAYOR_END_YEAR;
 	}
 	if (target === 'mexico') {
-		visible = visible && !!getActiveMexicoPeriodYear();
+		layerVisible = visible && !!getActiveMexicoPeriodYear();
 	}
 	if (target === 'texas') {
-		visible = visible && isTexasPeriodActive();
+		layerVisible = visible && isTexasPeriodActive();
 	}
 	if (target === 'us-states') {
-		visible = visible && !!getActiveUsStateDecadeYear();
+		layerVisible = visible && !!getActiveUsStateDecadeYear();
 	}
 	(LEGEND_LAYERS[target] || []).forEach(function(layerId) {
 		if (map.getLayer(layerId)) {
-			map.setLayoutProperty(layerId, 'visibility', visible ? 'visible' : 'none');
+			map.setLayoutProperty(layerId, 'visibility', layerVisible ? 'visible' : 'none');
 		}
 	});
+	updateNationalCapitals();
 }
 
 function setupLegendControls() {
 	var toggles = document.querySelectorAll('.legend-toggle');
 	Array.prototype.forEach.call(toggles, function(input) {
 		input.addEventListener('change', function() {
-			if (input.dataset.order) {
-				setMissionOrderVisibility(input.dataset.order, input.checked);
+			if (input.hasAttribute('data-missions')) {
+				setMissionsVisibility(input.checked);
 				return;
 			}
-			setLegendLayerVisibility(input.dataset.target, input.checked);
+			if (input.dataset.target) {
+				setLegendLayerVisibility(input.dataset.target, input.checked);
+			}
 		});
 	});
 }
@@ -524,81 +527,124 @@ function setupReadmeModal() {
 function applyLegendToggleDefaults() {
 	var toggles = document.querySelectorAll('.legend-toggle');
 	Array.prototype.forEach.call(toggles, function(input) {
-		if (input.dataset.order) {
-			missionOrderVisibility[input.dataset.order] = input.checked;
+		if (input.hasAttribute('data-missions')) {
+			missionsVisible = input.checked;
 			return;
 		}
-		setLegendLayerVisibility(input.dataset.target, input.checked);
+		if (input.dataset.target) {
+			setLegendLayerVisibility(input.dataset.target, input.checked);
+		}
 	});
 	updateMissionLayerFilters();
 }
 
-function addMexicoCityLayers() {
-	map.addSource('mexico-city', {
+function isNewSpainCapitalVisible() {
+	return legendLayerVisibility['provincia-mayor'] && selectedYear <= PROVINCIA_MAYOR_END_YEAR;
+}
+
+function isMexicoCapitalVisible() {
+	return legendLayerVisibility.mexico && !!getActiveMexicoPeriodYear();
+}
+
+function isTexasCapitalVisible() {
+	return legendLayerVisibility.texas && isTexasPeriodActive();
+}
+
+function isUsCapitalVisible() {
+	return legendLayerVisibility['us-states'] && !!getActiveUsStateDecadeYear();
+}
+
+function getUsCapitalForYear(year) {
+	if (year >= 1800) {
+		return { name: 'Washington, D.C.', coordinates: [-77.0369, 38.9072] };
+	}
+	if (year >= 1790) {
+		return { name: 'Philadelphia', coordinates: [-75.1652, 39.9526] };
+	}
+	if (year >= 1785) {
+		return { name: 'New York City', coordinates: [-74.006, 40.7128] };
+	}
+	if (year >= 1774) {
+		return { name: 'Philadelphia', coordinates: [-75.1652, 39.9526] };
+	}
+	return null;
+}
+
+function getVisibleNationalCapitalsGeojson() {
+	var features = [];
+
+	if (isNewSpainCapitalVisible()) {
+		features.push({
+			type: 'Feature',
+			geometry: { type: 'Point', coordinates: MEXICO_CITY_COORDS },
+			properties: { name: 'Mexico City', iconImage: 'capital-new-spain' },
+		});
+	}
+
+	if (isMexicoCapitalVisible()) {
+		features.push({
+			type: 'Feature',
+			geometry: { type: 'Point', coordinates: MEXICO_CITY_COORDS },
+			properties: { name: 'Mexico City', iconImage: 'capital-mexico' },
+		});
+	}
+
+	if (isTexasCapitalVisible()) {
+		features.push({
+			type: 'Feature',
+			geometry: { type: 'Point', coordinates: AUSTIN_COORDS },
+			properties: { name: 'Austin', iconImage: 'capital-texas' },
+		});
+	}
+
+	if (isUsCapitalVisible()) {
+		var usCapital = getUsCapitalForYear(selectedYear);
+		if (usCapital) {
+			features.push({
+				type: 'Feature',
+				geometry: { type: 'Point', coordinates: usCapital.coordinates },
+				properties: { name: usCapital.name, iconImage: 'capital-usa' },
+			});
+		}
+	}
+
+	return {
+		type: 'FeatureCollection',
+		features: features,
+	};
+}
+
+function updateNationalCapitals() {
+	if (!map || !map.getSource('national-capitals')) return;
+	map.getSource('national-capitals').setData(getVisibleNationalCapitalsGeojson());
+}
+
+function addNationalCapitalLayers() {
+	map.addSource('national-capitals', {
 		type: 'geojson',
-		data: MEXICO_CITY,
+		data: getVisibleNationalCapitalsGeojson(),
 	});
 
 	map.addLayer({
-		id: 'mexico-city-halo',
-		type: 'circle',
-		source: 'mexico-city',
-		paint: {
-			'circle-radius': [
-				'interpolate',
-				['linear'],
-				['zoom'],
-				4, 10,
-				8, 14,
-				12, 18,
-			],
-			'circle-color': '#e9c46a',
-			'circle-opacity': 0.25,
-			'circle-stroke-width': 0,
-		},
-	});
-
-	map.addLayer({
-		id: 'mexico-city-dot',
-		type: 'circle',
-		source: 'mexico-city',
-		paint: {
-			'circle-radius': [
-				'interpolate',
-				['linear'],
-				['zoom'],
-				4, 4,
-				8, 6,
-				12, 8,
-			],
-			'circle-color': '#e9c46a',
-			'circle-stroke-color': '#fff',
-			'circle-stroke-width': 2,
-			'circle-opacity': 1,
-		},
-	});
-
-	map.addLayer({
-		id: 'mexico-city-label',
+		id: 'national-capitals-symbols',
 		type: 'symbol',
-		source: 'mexico-city',
-		minzoom: 4,
+		source: 'national-capitals',
 		layout: {
-			'text-field': ['get', 'name'],
-			'text-size': 12,
-			'text-offset': [0, 1.2],
-			'text-anchor': 'top',
-			'text-letter-spacing': 0.02,
+			'icon-image': ['get', 'iconImage'],
+			'icon-size': getZoomScaledIconSizeExpression(
+				getMarkerIconSizeAtReferenceZoom(NATIONAL_CAPITAL_MARKER_RADIUS, NATIONAL_CAPITAL_MARKER_LOGICAL_SIZE) * NATIONAL_CAPITAL_SIZE_SCALE
+			),
+			'icon-anchor': 'center',
+			'icon-allow-overlap': true,
+			'icon-ignore-placement': true,
 		},
 		paint: {
-			'text-color': '#e9c46a',
-			'text-halo-color': '#1a1a1c',
-			'text-halo-width': 1.5,
+			'icon-opacity': 0.95,
 		},
 	});
 }
 
-function setupMexicoCityInteractions() {
+function setupNationalCapitalInteractions() {
 	var popup = new mapboxgl.Popup({
 		closeButton: false,
 		closeOnClick: false,
@@ -606,19 +652,21 @@ function setupMexicoCityInteractions() {
 		className: 'mission-popup',
 	});
 
-	map.on('mouseenter', 'mexico-city-dot', function() {
+	map.on('mouseenter', 'national-capitals-symbols', function() {
 		map.getCanvas().style.cursor = 'pointer';
 	});
 
-	map.on('mouseleave', 'mexico-city-dot', function() {
+	map.on('mouseleave', 'national-capitals-symbols', function() {
 		map.getCanvas().style.cursor = '';
 		popup.remove();
 	});
 
-	map.on('mousemove', 'mexico-city-dot', function(event) {
+	map.on('mousemove', 'national-capitals-symbols', function(event) {
+		if (!event.features || !event.features.length) return;
+		var name = event.features[0].properties.name;
 		popup
 			.setLngLat(event.lngLat)
-			.setHTML('<div class="mission-popup__name">Mexico City</div>')
+			.setHTML('<div class="mission-popup__name">' + name + '</div>')
 			.addTo(map);
 	});
 }
@@ -638,6 +686,33 @@ var selectedYear = maxYear;
 var timelinePlaying = false;
 var timelineAnimationId = null;
 var timelineStepMs = 150;
+var TIMELINE_EVENTS = [
+	{
+		year: 1769,
+		name: 'Founding of San Diego Presidio and mission',
+		description: 'The first permanent Spanish settlement and fort built in Alta California, anchoring Spain\'s expansion up the Pacific Coast.',
+	},
+	{
+		year: 1776,
+		name: 'United States Independence',
+		description: 'The Continental Congress adopts the Declaration of Independence in Philadelphia, severing ties with Great Britain.',
+	},
+	{
+		year: 1803,
+		name: 'The Louisiana Purchase',
+		description: 'The United States buys the massive Louisiana Territory from France, doubling the nation\'s size and moving its border to Spanish territory.',
+	},
+	{
+		year: 1821,
+		name: 'Mexican Independence',
+		description: 'Mexico successfully concludes its war of independence against Spain, taking political control of the vast Spanish northern frontier.',
+	},
+	{
+		year: 1848,
+		name: 'Treaty of Guadalupe Hidalgo',
+		description: 'The treaty ending the Mexican-American War cedes California and the broader Southwest territory to the United States.',
+	},
+];
 
 function syncYearRange() {
 	if (selectedYear > maxYear) selectedYear = maxYear;
@@ -650,6 +725,7 @@ function syncYearRange() {
 		slider.value = String(selectedYear);
 	}
 	renderTimelineTicks();
+	renderTimelineEvents();
 	updateTimelineControls();
 }
 
@@ -1311,45 +1387,7 @@ function setupDataModal() {
 	});
 }
 
-function getMissionCircleColorExpression() {
-	return [
-		'match',
-		['get', 'order'],
-		'Jesuit', ORDER_COLORS.Jesuit,
-		'Franciscan', ORDER_COLORS.Franciscan,
-		'Dominican', ORDER_COLORS.Dominican,
-		ORDER_COLORS.Franciscan,
-	];
-}
-
-function getMissionCircleRadiusExpression(baseRadius) {
-	return [
-		'interpolate',
-		['linear'],
-		['zoom'],
-		4, baseRadius * 0.75,
-		7, baseRadius,
-		10, baseRadius * 1.15,
-	];
-}
-
-function getMissionCirclePaint(radius) {
-	return {
-		'circle-radius': getMissionCircleRadiusExpression(radius),
-		'circle-color': getMissionCircleColorExpression(),
-		'circle-opacity': MISSION_MARKER_OPACITY,
-		'circle-stroke-width': MISSION_CIRCLE_STROKE_WIDTH,
-		'circle-stroke-color': MISSION_CIRCLE_STROKE_COLOR,
-		'circle-stroke-opacity': MISSION_CIRCLE_STROKE_OPACITY,
-	};
-}
-
-function getMarkerPixelRatio() {
-	if (typeof window === 'undefined' || !window.devicePixelRatio) return 1;
-	return Math.min(window.devicePixelRatio, 3);
-}
-
-function rasterizeCircledMarker(img, logicalSize, borderColor, pixelRatio) {
+function rasterizeMissionMarker(fillColor, logicalSize, pixelRatio) {
 	pixelRatio = pixelRatio || 1;
 	var size = Math.round(logicalSize * pixelRatio);
 	var canvas = document.createElement('canvas');
@@ -1359,34 +1397,132 @@ function rasterizeCircledMarker(img, logicalSize, borderColor, pixelRatio) {
 	ctx.imageSmoothingEnabled = true;
 	ctx.imageSmoothingQuality = 'high';
 	var radius = size / 2;
-	var strokeWidth = MARKER_STROKE_WIDTH * pixelRatio;
-	var inset = strokeWidth / 2;
-	var innerRadius = radius - inset;
 
 	ctx.beginPath();
-	ctx.arc(radius, radius, innerRadius, 0, Math.PI * 2);
-	ctx.fillStyle = '#ffffff';
+	ctx.arc(radius, radius, radius, 0, Math.PI * 2);
+	ctx.fillStyle = fillColor;
 	ctx.fill();
-	ctx.strokeStyle = borderColor || MARKER_BORDER_COLOR;
-	ctx.lineWidth = strokeWidth;
-	ctx.stroke();
 
-	var clipRadius = innerRadius - strokeWidth * 0.55;
+	ctx.fillStyle = '#ffffff';
+	var scale = size / MISSION_MARKER_LOGICAL_SIZE;
 	ctx.save();
-	ctx.beginPath();
-	ctx.arc(radius, radius, clipRadius, 0, Math.PI * 2);
-	ctx.clip();
-
-	var srcW = img.naturalWidth || img.width;
-	var srcH = img.naturalHeight || img.height;
-	var maxSize = clipRadius * 2 * MARKER_INNER_FILL;
-	var scale = Math.min(maxSize / srcW, maxSize / srcH);
-	var dstW = srcW * scale;
-	var dstH = srcH * scale;
-	ctx.drawImage(img, radius - dstW / 2, radius - dstH / 2, dstW, dstH);
+	ctx.scale(scale, scale);
+	ctx.fill(new Path2D(MISSION_CROSS_PATH));
 	ctx.restore();
 
 	return ctx.getImageData(0, 0, size, size);
+}
+
+function loadMissionIconImages(callback) {
+	var dpr = getMarkerPixelRatio();
+	Object.keys(ORDER_COLORS).forEach(function(order) {
+		var imageId = 'mission-' + order.toLowerCase();
+		if (!map.hasImage(imageId)) {
+			map.addImage(
+				imageId,
+				rasterizeMissionMarker(ORDER_COLORS[order], MISSION_MARKER_LOGICAL_SIZE, dpr),
+				{ pixelRatio: dpr }
+			);
+		}
+	});
+	callback();
+}
+
+function getMarkerIconSizeAtReferenceZoom(markerRadius, imageLogicalSize) {
+	return (markerRadius * 2) / imageLogicalSize;
+}
+
+function getZoomScaledIconSizeExpression(baseSizeAtReferenceZoom) {
+	var size = baseSizeAtReferenceZoom * MARKER_ICON_SIZE_SCALE;
+	return [
+		'interpolate',
+		['linear'],
+		['zoom'],
+		4, size * 0.55,
+		MARKER_REFERENCE_ZOOM, size,
+		10, size * 1.5,
+		14, size * 2.25,
+	];
+}
+
+function getMissionIconImageExpression() {
+	return [
+		'match',
+		['get', 'order'],
+		'Jesuit', 'mission-jesuit',
+		'Franciscan', 'mission-franciscan',
+		'Dominican', 'mission-dominican',
+		'mission-franciscan',
+	];
+}
+
+function getMissionSymbolLayout(baseRadius) {
+	return {
+		'icon-image': getMissionIconImageExpression(),
+		'icon-size': getZoomScaledIconSizeExpression(
+			getMarkerIconSizeAtReferenceZoom(baseRadius, MISSION_MARKER_LOGICAL_SIZE)
+		),
+		'icon-anchor': 'center',
+		'icon-offset': iconOffsetExpression(),
+		'icon-allow-overlap': true,
+		'icon-ignore-placement': true,
+	};
+}
+
+function getMarkerPixelRatio() {
+	if (typeof window === 'undefined' || !window.devicePixelRatio) return 1;
+	return Math.min(window.devicePixelRatio, 3);
+}
+
+function rasterizePresidioMarker(img, logicalHeight, pixelRatio) {
+	pixelRatio = pixelRatio || 1;
+	var srcW = img.naturalWidth || img.width;
+	var srcH = img.naturalHeight || img.height;
+	var height = Math.round(logicalHeight * pixelRatio);
+	var width = Math.round(height * (srcW / srcH));
+	var canvas = document.createElement('canvas');
+	canvas.width = width;
+	canvas.height = height;
+	var ctx = canvas.getContext('2d');
+	ctx.imageSmoothingEnabled = true;
+	ctx.imageSmoothingQuality = 'high';
+	ctx.drawImage(img, 0, 0, width, height);
+	return ctx.getImageData(0, 0, width, height);
+}
+
+function loadNationalCapitalIconImages(callback) {
+	var dpr = getMarkerPixelRatio();
+	var icons = Object.keys(NATIONAL_CAPITAL_ICONS).map(function(id) {
+		return { id: id, url: NATIONAL_CAPITAL_ICONS[id] };
+	});
+	var pending = icons.length;
+
+	icons.forEach(function(icon) {
+		if (map.hasImage(icon.id)) {
+			pending -= 1;
+			if (pending === 0) callback();
+			return;
+		}
+
+		var img = new Image();
+		img.onload = function() {
+			if (!map.hasImage(icon.id)) {
+				map.addImage(
+					icon.id,
+					rasterizePresidioMarker(img, NATIONAL_CAPITAL_MARKER_LOGICAL_SIZE, dpr),
+					{ pixelRatio: dpr }
+				);
+			}
+			pending -= 1;
+			if (pending === 0) callback();
+		};
+		img.onerror = function() {
+			console.error('Failed to load capital symbol:', icon.url);
+			pending -= 1;
+			if (pending === 0) callback();
+		};
+		img.src = icon.url;
+	});
 }
 
 function loadPresidioIconImages(callback) {
@@ -1396,27 +1532,29 @@ function loadPresidioIconImages(callback) {
 			var dpr = getMarkerPixelRatio();
 			map.addImage(
 				'presidio',
-				rasterizeCircledMarker(img, MARKER_HIGHLIGHT_SIZE, null, dpr),
+				rasterizePresidioMarker(img, PRESIDIO_MARKER_LOGICAL_SIZE, dpr),
 				{ pixelRatio: dpr }
 			);
 		}
 		callback();
 	};
 	img.onerror = function() {
-		console.error('Failed to load presidio symbol:', MARKER_SYMBOL_URL);
+		console.error('Failed to load presidio symbol:', PRESIDIO_SYMBOL_URL);
 		callback();
 	};
-	img.src = MARKER_SYMBOL_URL;
+	img.src = PRESIDIO_SYMBOL_URL;
 }
 
 function getPresidioIconImageExpression() {
 	return 'presidio';
 }
 
-function getPresidioSymbolLayout(iconSize) {
+function getPresidioSymbolLayout(baseRadius) {
 	return {
 		'icon-image': getPresidioIconImageExpression(),
-		'icon-size': iconSize != null ? iconSize : markerIconSize,
+		'icon-size': getZoomScaledIconSizeExpression(
+			getMarkerIconSizeAtReferenceZoom(baseRadius, PRESIDIO_MARKER_LOGICAL_SIZE)
+		),
 		'icon-anchor': 'center',
 		'icon-offset': iconOffsetExpression(),
 		'icon-allow-overlap': true,
@@ -1480,6 +1618,7 @@ function getVisibleGeojson() {
 
 function getVisiblePresidioFeatures() {
 	if (!presidios) return [];
+	if (selectedYear > PROVINCIA_MAYOR_END_YEAR) return [];
 	return presidios.features.filter(function(feature) {
 		return (feature.properties.year || 0) <= selectedYear;
 	});
@@ -1549,6 +1688,57 @@ function renderTimelineTicks() {
 		tick.appendChild(mark);
 
 		ticksEl.appendChild(tick);
+	});
+}
+
+function renderTimelineEvents() {
+	var eventsEl = document.getElementById('timeline__events');
+	if (!eventsEl) return;
+
+	eventsEl.innerHTML = '';
+	var span = maxYear - minYear;
+	if (span <= 0) return;
+
+	TIMELINE_EVENTS.forEach(function(event) {
+		if (event.year < minYear || event.year > maxYear) return;
+
+		var button = document.createElement('button');
+		button.type = 'button';
+		button.className = 'timeline-event';
+		button.style.left = ((event.year - minYear) / span * 100) + '%';
+		button.setAttribute('aria-label', event.year + ': ' + event.name);
+
+		var mark = document.createElement('span');
+		mark.className = 'timeline-event__mark';
+		mark.setAttribute('aria-hidden', 'true');
+		button.appendChild(mark);
+
+		var tooltip = document.createElement('span');
+		tooltip.className = 'timeline-event__tooltip';
+		tooltip.setAttribute('role', 'tooltip');
+
+		var yearEl = document.createElement('strong');
+		yearEl.className = 'timeline-event__year';
+		yearEl.textContent = String(event.year);
+		tooltip.appendChild(yearEl);
+
+		var nameEl = document.createElement('span');
+		nameEl.className = 'timeline-event__name';
+		nameEl.textContent = event.name;
+		tooltip.appendChild(nameEl);
+
+		var descEl = document.createElement('span');
+		descEl.className = 'timeline-event__desc';
+		descEl.textContent = event.description;
+		tooltip.appendChild(descEl);
+
+		button.appendChild(tooltip);
+		button.addEventListener('click', function() {
+			pauseTimelineAnimation();
+			setTimelineYear(event.year);
+		});
+
+		eventsEl.appendChild(button);
 	});
 }
 
@@ -1651,6 +1841,7 @@ function updateMissionData() {
 	if (map.getSource('us-states')) {
 		map.getSource('us-states').setData(getVisibleUsStateGeojson());
 	}
+	updateNationalCapitals();
 	applyLegendToggleDefaults();
 	updateTimelineUi();
 }
@@ -1673,7 +1864,7 @@ function fitMapToCustomLayers(options) {
 	unionBoundsFromGeojson(bounds, missions);
 	unionBoundsFromGeojson(bounds, presidios);
 	unionBoundsFromGeojson(bounds, california);
-	unionBoundsFromGeojson(bounds, MEXICO_CITY);
+	unionBoundsFromGeojson(bounds, getVisibleNationalCapitalsGeojson());
 
 	if (bounds.isEmpty()) return;
 
@@ -1694,6 +1885,7 @@ function setupTimeline() {
 	slider.max = String(maxYear);
 	slider.value = String(selectedYear);
 	renderTimelineTicks();
+	renderTimelineEvents();
 
 	slider.addEventListener('pointerdown', function() {
 		pauseTimelineAnimation();
@@ -1790,20 +1982,24 @@ function setupMissionInteractions() {
 }
 
 function addMissionLayers() {
+	var missionPaint = { 'icon-opacity': MISSION_MARKER_OPACITY };
+
 	map.addLayer({
 		id: 'missions-symbols',
-		type: 'circle',
+		type: 'symbol',
 		source: 'missions',
 		filter: ['all', notHqFilter(), getMissionOrderFilter()],
-		paint: getMissionCirclePaint(MISSION_CIRCLE_RADIUS),
+		layout: getMissionSymbolLayout(MISSION_CIRCLE_RADIUS),
+		paint: missionPaint,
 	});
 
 	map.addLayer({
 		id: 'missions-hq-symbols',
-		type: 'circle',
+		type: 'symbol',
 		source: 'missions',
 		filter: ['all', isHqExpression(), getMissionOrderFilter()],
-		paint: getMissionCirclePaint(MISSION_HQ_CIRCLE_RADIUS),
+		layout: getMissionSymbolLayout(MISSION_HQ_CIRCLE_RADIUS),
+		paint: missionPaint,
 	});
 }
 
@@ -1842,6 +2038,8 @@ function initMap() {
 		});
 
 		loadPresidioIconImages(function() {
+			loadMissionIconImages(function() {
+			loadNationalCapitalIconImages(function() {
 			var symbolPaint = { 'icon-opacity': 0.95 };
 
 			map.addLayer({
@@ -1849,7 +2047,7 @@ function initMap() {
 				type: 'symbol',
 				source: 'presidios',
 				filter: notCapitalFilter(),
-				layout: getPresidioSymbolLayout(presidioRegularIconSize),
+				layout: getPresidioSymbolLayout(MISSION_CIRCLE_RADIUS),
 				paint: symbolPaint,
 			});
 
@@ -1858,22 +2056,24 @@ function initMap() {
 				type: 'symbol',
 				source: 'presidios',
 				filter: isCapitalExpression(),
-				layout: getPresidioSymbolLayout(presidioCapitalIconSize),
+				layout: getPresidioSymbolLayout(PRESIDIO_CAPITAL_CIRCLE_RADIUS),
 				paint: symbolPaint,
 			});
 
 			addMissionLayers();
 
-			addMexicoCityLayers();
+			addNationalCapitalLayers();
 			setupMissionInteractions();
 			setupPresidioInteractions();
-			setupMexicoCityInteractions();
+			setupNationalCapitalInteractions();
 			setupTimeline();
 			applyLegendToggleDefaults();
 			map.once('idle', function() {
 				if (!window.location.hash) {
 					fitMapToCustomLayers({ duration: 0 });
 				}
+			});
+			});
 			});
 		});
 	});
@@ -1907,8 +2107,8 @@ Promise.all([
 		return response.json();
 	}),
 ]).concat(US_STATE_DECADES.map(function(decade) {
-	return fetch('./context-us_state_' + decade + '.geojson').then(function(response) {
-		if (!response.ok) throw new Error('Failed to load context-us_state_' + decade + '.geojson');
+	return fetch(getUsStateGeojsonUrl(decade)).then(function(response) {
+		if (!response.ok) throw new Error('Failed to load ' + getUsStateGeojsonUrl(decade));
 		return response.json();
 	});
 }))).then(function(results) {
