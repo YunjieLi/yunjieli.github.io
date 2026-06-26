@@ -12,12 +12,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from svg_geom import parse_svg  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
-ASSETS = ROOT / "src/maps/spanish-missions/assets"
+REFERENCES = ROOT / "src/maps/spanish-missions/references"
 
 
 @lru_cache(maxsize=4)
 def _parsed(year: str, step: float):
-    return parse_svg(ASSETS / f"ref-new-spain-{year}.svg", step=step)
+    return parse_svg(REFERENCES / f"ref-new-spain-{year}.svg", step=step)
 
 
 def coastline_polylines(year: str = "1794", step: float = 3.0):

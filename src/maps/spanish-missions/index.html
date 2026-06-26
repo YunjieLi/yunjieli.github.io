@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 
 <head>
     <meta charset="utf-8" />
     <title>Spanish Missions</title>
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource-variable/inter@5.2.5/index.css" />
     <script src="https://api.mapbox.com/mapbox-gl-js/v3.24.0/mapbox-gl.js"></script>
     <link href="https://api.mapbox.com/mapbox-gl-js/v3.24.0/mapbox-gl.css" rel="stylesheet" />
     <style>
@@ -12,10 +13,29 @@
             --jesuit: #2a6f97;
             --franciscan: #bc6c25;
             --dominican: #606c38;
-            --text: #e8e8e8;
-            --muted: #b0b0b0;
-            --surface: rgb(20 20 22 / 88%);
-            --border: rgb(255 255 255 / 12%);
+            --background: oklch(0.141 0.005 285.823);
+            --foreground: oklch(0.985 0 0);
+            --card: oklch(0.21 0.006 285.885);
+            --card-foreground: oklch(0.985 0 0);
+            --popover: oklch(0.21 0.006 285.885);
+            --popover-foreground: oklch(0.985 0 0);
+            --primary: oklch(0.437 0.078 188.216);
+            --primary-foreground: oklch(0.984 0.014 180.72);
+            --secondary: oklch(0.274 0.006 286.033);
+            --secondary-foreground: oklch(0.985 0 0);
+            --muted: oklch(0.274 0.006 286.033);
+            --muted-foreground: oklch(0.705 0.015 286.067);
+            --accent: oklch(0.274 0.006 286.033);
+            --accent-foreground: oklch(0.985 0 0);
+            --border: oklch(1 0 0 / 10%);
+            --input: oklch(1 0 0 / 15%);
+            --ring: oklch(0.552 0.016 285.938);
+            --radius: 0.45rem;
+            --radius-sm: calc(var(--radius) * 0.6);
+            --radius-md: calc(var(--radius) * 0.8);
+            --radius-lg: var(--radius);
+            --text: var(--foreground);
+            --surface: oklch(0.21 0.006 285.885 / 92%);
         }
 
         * {
@@ -24,14 +44,215 @@
 
         body {
             margin: 0;
-            font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            color: var(--text);
+            font-family: "Inter Variable", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            font-size: 0.875rem;
+            line-height: 1.25rem;
+            color: var(--foreground);
             overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .icon {
+            width: 1rem;
+            height: 1rem;
+            flex-shrink: 0;
+            pointer-events: none;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.375rem;
+            border-radius: var(--radius-lg);
+            border: 1px solid transparent;
+            background: transparent;
+            padding: 0 0.625rem;
+            min-height: 2rem;
+            font-family: inherit;
+            font-size: 0.875rem;
+            font-weight: 500;
+            line-height: 1;
+            color: var(--foreground);
+            white-space: nowrap;
+            cursor: pointer;
+            transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+            user-select: none;
+        }
+
+        .btn:focus-visible {
+            outline: none;
+            border-color: var(--ring);
+            box-shadow: 0 0 0 3px oklch(0.552 0.016 285.938 / 50%);
+        }
+
+        .btn:disabled {
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        .btn-icon {
+            width: 2rem;
+            min-height: 2rem;
+            padding: 0;
+        }
+
+        .btn-icon-sm {
+            width: 1.75rem;
+            min-height: 1.75rem;
+        }
+
+        .btn-ghost:hover:not(:disabled) {
+            background: oklch(0.274 0.006 286.033 / 50%);
+        }
+
+        .btn-outline {
+            border-color: var(--input);
+            background: oklch(1 0 0 / 8%);
+        }
+
+        .btn-outline:hover:not(:disabled) {
+            background: oklch(1 0 0 / 14%);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: var(--secondary-foreground);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: oklch(0.274 0.006 286.033 / 80%);
+        }
+
+        .text-xs {
+            font-size: 0.75rem;
+            line-height: 1rem;
+        }
+
+        .text-sm {
+            font-size: 0.875rem;
+            line-height: 1.25rem;
+        }
+
+        .text-lg {
+            font-size: 1.125rem;
+            line-height: 1.75rem;
+        }
+
+        .font-medium {
+            font-weight: 500;
+        }
+
+        .font-semibold {
+            font-weight: 600;
+        }
+
+        .text-muted-foreground {
+            color: var(--muted-foreground);
+        }
+
+        .leading-none {
+            line-height: 1;
+        }
+
+        .tabular-nums {
+            font-variant-numeric: tabular-nums;
+        }
+
+        .checkbox {
+            appearance: none;
+            width: 1rem;
+            height: 1rem;
+            margin: 0;
+            flex-shrink: 0;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--muted);
+            cursor: pointer;
+            position: relative;
+            transition: background-color 150ms ease, border-color 150ms ease;
+        }
+
+        .checkbox:checked {
+            background: var(--muted);
+            border-color: oklch(0.705 0.015 286.067 / 55%);
+        }
+
+        .checkbox:checked::after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            top: 44%;
+            width: 0.2rem;
+            height: 0.45rem;
+            border: solid var(--muted-foreground);
+            border-width: 0 2px 2px 0;
+            transform: translate(-50%, -50%) rotate(45deg);
+        }
+
+        .checkbox:focus-visible {
+            outline: none;
+            border-color: var(--ring);
+            box-shadow: 0 0 0 3px oklch(0.552 0.016 285.938 / 50%);
         }
 
         #map {
             position: absolute;
             inset: 0;
+        }
+
+        .mapboxgl-ctrl-logo {
+            display: none !important;
+        }
+
+        .mapboxgl-ctrl-group {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 1px 2px rgb(0 0 0 / 20%);
+            overflow: hidden;
+        }
+
+        .mapboxgl-ctrl-group button {
+            background-color: transparent;
+            border-color: var(--border);
+        }
+
+        .mapboxgl-ctrl-group button + button {
+            border-top: 1px solid var(--border);
+        }
+
+        .mapboxgl-ctrl-group button .mapboxgl-ctrl-icon {
+            filter: brightness(0) invert(1) opacity(0.85);
+        }
+
+        .mapboxgl-ctrl-group button:hover {
+            background-color: rgb(255 255 255 / 8%);
+        }
+
+        .mapboxgl-ctrl-bottom-right {
+            bottom: 0.75rem;
+            right: 0.75rem;
+            z-index: 2;
+        }
+
+        .mapboxgl-ctrl-attrib.mapboxgl-compact {
+            box-sizing: content-box;
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            box-shadow: 0 1px 2px rgb(0 0 0 / 20%);
+        }
+
+        .mapboxgl-ctrl-attrib.mapboxgl-compact-show {
+            background-color: var(--surface);
+        }
+
+        .mapboxgl-ctrl-attrib a {
+            color: var(--muted-foreground);
+        }
+
+        .mapboxgl-ctrl-attrib.mapboxgl-compact .mapboxgl-ctrl-attrib-button {
+            filter: brightness(0) invert(1) opacity(0.65);
         }
 
         #map-ui {
@@ -52,55 +273,31 @@
 
         #legend {
             flex-shrink: 0;
-            padding: 0.625rem 0.75rem;
-            border-radius: 0.5rem;
+            width: 240px;
+            padding: 0.75rem;
+            border-radius: var(--radius-lg);
             background: var(--surface);
             border: 1px solid var(--border);
-            box-shadow: 0 2px 12px rgb(0 0 0 / 35%);
-            font-size: 12px;
-            color: var(--text);
+            box-shadow: 0 1px 2px rgb(0 0 0 / 20%);
+            color: var(--foreground);
         }
 
-        .legend-header {
+        #legend > div:first-child {
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 0.5rem;
             margin-bottom: 0.5rem;
-            padding-bottom: 0.375rem;
-            border-bottom: 1px solid var(--border);
         }
 
-        .legend-header__title {
-            font: 700 14px/1.2 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            letter-spacing: 0.02em;
-        }
-
-        .legend-header__info {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 1.25rem;
-            height: 1.25rem;
-            padding: 0;
-            border: 1px solid rgb(255 255 255 / 22%);
-            border-radius: 9999px;
-            background: rgb(255 255 255 / 8%);
-            color: var(--muted);
-            font: 700 12px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            cursor: pointer;
-        }
-
-        .legend-header__info:hover {
-            color: var(--text);
-            background: rgb(255 255 255 / 14%);
-            border-color: rgb(255 255 255 / 32%);
-        }
-
-        .legend-divider {
-            margin: 0.4375rem 0;
-            border: 0;
-            border-top: 1px solid var(--border);
+        #legend h2 {
+            flex: 1;
+            min-width: 0;
+            margin: 0 0 0.25rem;
+            font-size: 1.125rem;
+            font-weight: 600;
+            line-height: 1.5rem;
+            letter-spacing: -0.01em;
         }
 
         .legend-row {
@@ -114,6 +311,30 @@
             margin-bottom: 0;
         }
 
+        .legend-row__symbol {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.125rem;
+            flex-shrink: 0;
+            margin: 0;
+            padding: 0;
+            border: 0;
+            background: none;
+            cursor: pointer;
+            border-radius: var(--radius-sm);
+            color: inherit;
+        }
+
+        .legend-row__symbol:hover {
+            opacity: 0.8;
+        }
+
+        .legend-row__symbol:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 2px var(--ring);
+        }
+
         .legend-swatch {
             width: 0.75rem;
             height: 0.75rem;
@@ -123,21 +344,13 @@
         }
 
         .legend-mission {
-            position: relative;
             width: 0.75rem;
             height: 0.75rem;
-            border-radius: 9999px;
-            background: #bc6c25;
+            background-image: url("./markers/mission-marker.svg");
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
             flex-shrink: 0;
-        }
-
-        .legend-mission::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background:
-                linear-gradient(#fff, #fff) center / 16% 62% no-repeat,
-                linear-gradient(#fff, #fff) center / 62% 16% no-repeat;
         }
 
         .legend-region {
@@ -167,10 +380,15 @@
             border: 1.5px solid rgb(233 196 106 / 65%);
         }
 
+        .legend-region--california {
+            background: transparent;
+            border: 1.5px dotted #bc6c25;
+        }
+
         .legend-presidio {
             width: 1.125rem;
             height: 0.75rem;
-            background-image: url("./assets/presidio.svg");
+            background-image: url("./markers/presidio.svg");
             background-repeat: no-repeat;
             background-position: center;
             background-size: contain;
@@ -180,21 +398,9 @@
         .legend-row__label {
             flex: 1;
             min-width: 0;
-            font-size: 12px;
-        }
-
-        .legend-row .legend-toggle {
-            flex-shrink: 0;
-        }
-
-        .legend-toggle {
-            width: 0.85rem;
-            height: 0.85rem;
-            margin: 0;
-            flex-shrink: 0;
-            accent-color: rgb(176 176 176 / 85%);
-            cursor: pointer;
-            opacity: 0.8;
+            font-size: 0.875rem;
+            font-weight: 400;
+            line-height: 1.25rem;
         }
 
         .legend-zoom {
@@ -216,49 +422,22 @@
             min-width: 0;
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem 1rem;
-            border-radius: 0.5rem;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            border-radius: var(--radius-lg);
             background: var(--surface);
             border: 1px solid var(--border);
-            box-shadow: 0 2px 12px rgb(0 0 0 / 35%);
-        }
-
-        .timeline__btn {
-            flex-shrink: 0;
-            width: 2rem;
-            height: 2rem;
-            padding: 0;
-            border: 1px solid var(--border);
-            border-radius: 9999px;
-            background: rgb(255 255 255 / 8%);
-            color: var(--text);
-            font: 600 11px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-            cursor: pointer;
-        }
-
-        #timeline__prev,
-        #timeline__next {
-            font: 700 1.125rem/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        }
-
-        .timeline__btn:hover:not(:disabled) {
-            background: rgb(255 255 255 / 14%);
-        }
-
-        .timeline__btn:disabled {
-            opacity: 0.45;
-            cursor: default;
+            box-shadow: 0 1px 2px rgb(0 0 0 / 20%);
         }
 
         #timeline__label {
             flex-shrink: 0;
             min-width: 3.25rem;
-            font: 700 18px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            font-size: 0.875rem;
+            font-weight: 400;
+            line-height: 1.25rem;
             font-variant-numeric: tabular-nums;
-            color: var(--text);
+            color: var(--foreground);
         }
 
         #timeline__track {
@@ -306,7 +485,11 @@
             height: 0.625rem;
             margin: 0 auto;
             border-radius: 9999px;
-            background: rgb(255 255 255 / 45%);
+            background: rgb(255 255 255 / 22%);
+        }
+
+        .timeline-tick.is-past .timeline-tick__mark {
+            background: rgb(255 255 255 / 72%);
         }
 
         .timeline-event {
@@ -322,8 +505,8 @@
 
         .timeline-event__mark {
             display: block;
-            width: 2px;
-            height: 1rem;
+            width: 3px;
+            height: 1.5rem;
             margin: 0 auto;
             border-radius: 9999px;
             background: #e9c46a;
@@ -334,7 +517,7 @@
 
         .timeline-event:hover .timeline-event__mark,
         .timeline-event:focus-visible .timeline-event__mark {
-            height: 1.125rem;
+            height: 1.625rem;
             opacity: 0.95;
         }
 
@@ -345,14 +528,14 @@
             transform: translateX(-50%);
             width: max-content;
             max-width: 16rem;
-            padding: 0.5rem 0.625rem;
-            border-radius: 0.375rem;
-            background: var(--surface);
+            padding: 0.75rem;
+            border-radius: var(--radius-lg);
+            background: var(--popover);
             border: 1px solid var(--border);
-            box-shadow: 0 4px 16px rgb(0 0 0 / 45%);
-            color: var(--text);
-            font-size: 12px;
-            line-height: 1.4;
+            box-shadow: 0 4px 12px rgb(0 0 0 / 35%);
+            color: var(--popover-foreground);
+            font-size: 0.875rem;
+            line-height: 1.25rem;
             text-align: left;
             opacity: 0;
             visibility: hidden;
@@ -370,7 +553,9 @@
         .timeline-event__year {
             display: block;
             margin-bottom: 0.125rem;
-            font: 700 12px/1.2 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+            line-height: 1;
             color: #e9c46a;
             font-variant-numeric: tabular-nums;
         }
@@ -378,13 +563,16 @@
         .timeline-event__name {
             display: block;
             margin-bottom: 0.25rem;
-            font: 600 14px/1.3 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            font-size: 0.875rem;
+            font-weight: 600;
+            line-height: 1.25rem;
         }
 
         .timeline-event__desc {
             display: block;
-            font: 12px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            color: var(--muted);
+            font-size: 0.75rem;
+            line-height: 1.25rem;
+            color: var(--muted-foreground);
         }
 
         #timeline__range {
@@ -393,7 +581,7 @@
             width: 100%;
             height: 0.25rem;
             margin: 0;
-            accent-color: #ccc;
+            accent-color: var(--foreground);
             cursor: pointer;
             background: transparent;
         }
@@ -403,29 +591,49 @@
         }
 
         .mission-popup .mapboxgl-popup-content {
-            padding: 0.75rem 0.875rem;
-            border-radius: 0.5rem;
-            background: #1a1a1c;
-            color: var(--text);
-            box-shadow: 0 4px 16px rgb(0 0 0 / 45%);
-            font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            padding: 0.75rem;
+            border-radius: var(--radius-lg);
+            background: var(--popover);
+            color: var(--popover-foreground);
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 12px rgb(0 0 0 / 35%);
+            font-size: 0.875rem;
+            line-height: 1.25rem;
         }
 
         .mission-popup .mapboxgl-popup-tip {
-            border-top-color: #1a1a1c;
+            border-top-color: var(--popover);
         }
 
         .mission-popup__name {
-            font-size: 14px;
-            font-weight: 700;
-            line-height: 1.3;
-            margin-bottom: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            line-height: 1.25rem;
+            margin-bottom: 0.25rem;
         }
 
         .mission-popup__detail {
-            font-size: 12px;
-            line-height: 1.4;
-            color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            font-size: 0.75rem;
+            line-height: 1.25rem;
+            color: var(--muted-foreground);
+        }
+
+        .mission-popup__detail + .mission-popup__detail {
+            margin-top: 0.125rem;
+        }
+
+        .mission-popup__icon {
+            width: 0.875rem;
+            height: 0.875rem;
+            flex-shrink: 0;
+            opacity: 0.75;
+        }
+
+        .mission-popup__field {
+            font-weight: 500;
         }
 
         .data-modal {
@@ -434,8 +642,8 @@
             z-index: 1000;
             display: none;
             flex-direction: column;
-            background: #fff;
-            color: #333;
+            background: var(--background);
+            color: var(--foreground);
         }
 
         .data-modal.is-open {
@@ -449,73 +657,74 @@
             justify-content: space-between;
             gap: 1rem;
             padding: 0.875rem 1rem;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid var(--border);
         }
 
         .data-modal__title {
             margin: 0;
-            font: 700 14px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            letter-spacing: 0.04em;
-            color: #444;
+            font-size: 0.875rem;
+            font-weight: 600;
+            line-height: 1.25rem;
+            color: var(--foreground);
         }
 
         .data-modal__hint {
             margin: 0.25rem 0 0;
-            font-size: 12px;
-            color: #888;
-        }
-
-        .data-modal__close {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 2rem;
-            height: 2rem;
-            padding: 0;
-            border: 1px solid #ddd;
-            border-radius: 0.25rem;
-            background: #fff;
-            font: 600 1.125rem/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            color: #555;
-            cursor: pointer;
-        }
-
-        .data-modal__close:hover {
-            background: #f7f7f7;
-            border-color: #ccc;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            color: var(--muted-foreground);
         }
 
         .data-modal__tabs {
             flex-shrink: 0;
             display: flex;
-            gap: 0.375rem;
-            padding: 0.625rem 1rem 0;
-            border-bottom: 1px solid #eee;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem 0;
+            border-bottom: 1px solid var(--border);
         }
 
-        .data-modal__tab {
-            padding: 0.4375rem 0.75rem;
+        .tabs-list {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-lg);
+            padding: 3px;
+            background: var(--muted);
+            color: var(--muted-foreground);
+        }
+
+        .tabs-trigger {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             border: 1px solid transparent;
-            border-bottom: none;
-            border-radius: 0.25rem 0.25rem 0 0;
+            border-radius: var(--radius-md);
+            padding: 0.25rem 0.625rem;
             background: transparent;
-            font: 600 14px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-            color: #777;
+            font-family: inherit;
+            font-size: 0.875rem;
+            font-weight: 500;
+            line-height: 1.25rem;
+            color: var(--muted-foreground);
             cursor: pointer;
+            transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
         }
 
-        .data-modal__tab:hover {
-            color: #444;
-            background: #fafafa;
+        .tabs-trigger:hover {
+            color: var(--foreground);
         }
 
-        .data-modal__tab.is-active {
-            color: #444;
-            background: #fff;
-            border-color: #eee;
-            margin-bottom: -1px;
+        .tabs-trigger.is-active {
+            background: oklch(1 0 0 / 12%);
+            border-color: var(--input);
+            color: var(--foreground);
+            box-shadow: 0 1px 2px rgb(0 0 0 / 15%);
+        }
+
+        .tabs-trigger:focus-visible {
+            outline: none;
+            border-color: var(--ring);
+            box-shadow: 0 0 0 3px oklch(0.552 0.016 285.938 / 50%);
         }
 
         .data-modal__panel {
@@ -542,48 +751,32 @@
             align-items: center;
             gap: 0.5rem;
             padding: 0.75rem 1rem;
-            border-top: 1px solid #eee;
-        }
-
-        .data-modal__btn {
-            padding: 0.4375rem 0.75rem;
-            border: 1px solid #ddd;
-            border-radius: 0.25rem;
-            background: #fff;
-            font: 600 14px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-            color: #555;
-            cursor: pointer;
-        }
-
-        .data-modal__btn:hover {
-            background: #f7f7f7;
-            border-color: #ccc;
+            border-top: 1px solid var(--border);
         }
 
         .data-table__cell--editable:focus {
             outline: none;
-            background: #fffde7;
-            box-shadow: inset 0 0 0 1px #e6c200;
+            background: oklch(0.437 0.078 188.216 / 12%);
+            box-shadow: inset 0 0 0 1px var(--primary);
         }
 
         .data-table__cell--readonly {
-            color: #666;
-            background: #fafafa;
+            color: var(--muted-foreground);
+            background: oklch(1 0 0 / 4%);
         }
 
         .data-table {
             width: 100%;
             border-collapse: collapse;
-            font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            color: #333;
+            font-size: 0.875rem;
+            line-height: 1.25rem;
+            color: var(--foreground);
         }
 
         .data-table th,
         .data-table td {
             padding: 0.625rem 0.75rem;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid var(--border);
             text-align: left;
             vertical-align: top;
         }
@@ -592,17 +785,17 @@
             position: sticky;
             top: 0;
             z-index: 1;
-            font: 600 14px/1.2 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-            color: #666;
-            background: #f7f7f7;
-            border-bottom: 1px solid #ddd;
+            font-size: 0.875rem;
+            font-weight: 500;
+            line-height: 1.25rem;
+            color: var(--muted-foreground);
+            background: var(--muted);
+            border-bottom: 1px solid var(--border);
             white-space: nowrap;
         }
 
         .data-table tbody tr:hover {
-            background: #fafafa;
+            background: oklch(1 0 0 / 4%);
         }
 
         .data-table td.data-table__location {
@@ -612,14 +805,6 @@
 
         .data-table td.data-table__coordinates {
             min-width: 6rem;
-            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-            font-size: 14px;
-        }
-
-        .data-table td.data-table__id {
-            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-            font-size: 14px;
-            color: #666;
         }
 
         .readme-modal {
@@ -643,34 +828,11 @@
             max-height: 85vh;
             display: flex;
             flex-direction: column;
-            border-radius: 0.5rem;
-            background: #1a1a1c;
+            border-radius: var(--radius-lg);
+            background: var(--popover);
             border: 1px solid var(--border);
             box-shadow: 0 8px 32px rgb(0 0 0 / 45%);
-            color: var(--text);
-        }
-
-        .readme-modal__close {
-            position: absolute;
-            top: 0.625rem;
-            right: 0.625rem;
-            z-index: 1;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 2rem;
-            height: 2rem;
-            padding: 0;
-            border: 1px solid rgb(255 255 255 / 18%);
-            border-radius: 0.25rem;
-            background: rgb(255 255 255 / 8%);
-            color: var(--text);
-            font: 600 1.125rem/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            cursor: pointer;
-        }
-
-        .readme-modal__close:hover {
-            background: rgb(255 255 255 / 14%);
+            color: var(--popover-foreground);
         }
 
         .readme-modal__content {
@@ -678,8 +840,8 @@
             min-height: 0;
             overflow: auto;
             padding: 1rem 3rem 1.125rem 1.125rem;
-            font-size: 14px;
-            line-height: 1.55;
+            font-size: 0.875rem;
+            line-height: 1.5;
         }
 
         .readme-modal__content h1,
@@ -687,19 +849,34 @@
         .readme-modal__content h3 {
             margin: 1.25rem 0 0.625rem;
             line-height: 1.25;
+            font-weight: 600;
+            letter-spacing: -0.01em;
         }
 
         .readme-modal__content h1 {
             margin-top: 0;
-            font-size: 1.375rem;
+            font-size: 1.25rem;
         }
 
         .readme-modal__content h2 {
-            font-size: 1.0625rem;
+            font-size: 1rem;
         }
 
-        .readme-modal__content h3 {
-            font-size: 0.9375rem;
+        .data-table td.data-table__coordinates,
+        .data-table td.data-table__id {
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: 0.8125rem;
+        }
+
+        .data-table td.data-table__id {
+            color: var(--muted-foreground);
+        }
+
+        .readme-modal__close {
+            position: absolute;
+            top: 0.625rem;
+            right: 0.625rem;
+            z-index: 1;
         }
 
         .readme-modal__content p,
@@ -715,7 +892,7 @@
         }
 
         .readme-modal__content a {
-            color: #7cb7ff;
+            color: var(--primary);
         }
 
         .readme-modal__content code {
@@ -794,54 +971,51 @@
     <div id="map">
         <div id="map-ui">
         <div id="legend">
-            <div class="legend-header">
-                <span class="legend-header__title">Missions &amp; New Spain</span>
-                <button type="button" id="legend__info" class="legend-header__info" aria-label="About this map">i</button>
+            <div>
+                <h2></h2>
+                <button type="button" id="legend__info" class="btn btn-icon btn-icon-sm btn-ghost" aria-label="About this map"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><path d="M12 17h.01"></path></svg></button>
             </div>
             <div class="legend-row">
-                <input type="checkbox" id="layer-toggle-missions" class="legend-toggle" data-missions checked />
-                <span class="legend-mission" aria-hidden="true"></span>
+                <button type="button" class="legend-row__symbol" data-locate="missions" aria-label="Zoom to Mission"><span class="legend-mission" aria-hidden="true"></span></button>
                 <span class="legend-row__label">Mission</span>
             </div>
             <div class="legend-row">
-                <input type="checkbox" id="layer-toggle-presidios" class="legend-toggle" data-target="presidios" checked />
-                <span class="legend-presidio" aria-hidden="true"></span>
+                <button type="button" class="legend-row__symbol" data-locate="presidios" aria-label="Zoom to Presidio"><span class="legend-presidio" aria-hidden="true"></span></button>
                 <span class="legend-row__label">Presidio</span>
             </div>
-            <hr class="legend-divider" />
             <div class="legend-row">
-                <input type="checkbox" id="layer-toggle-provincia-mayor" class="legend-toggle" data-target="provincia-mayor" checked />
-                <span class="legend-region legend-region--new-spain" aria-hidden="true"></span>
+                <button type="button" class="legend-row__symbol" data-locate="provincia-mayor" aria-label="Zoom to New Spain"><span class="legend-region legend-region--new-spain" aria-hidden="true"></span></button>
                 <span class="legend-row__label">New Spain</span>
             </div>
             <div class="legend-row">
-                <input type="checkbox" id="layer-toggle-us-states" class="legend-toggle" data-target="us-states" checked />
-                <span class="legend-region legend-region--us-states" aria-hidden="true"></span>
+                <button type="button" class="legend-row__symbol" data-locate="us-states" aria-label="Zoom to United States"><span class="legend-region legend-region--us-states" aria-hidden="true"></span></button>
                 <span class="legend-row__label">United States</span>
             </div>
             <div class="legend-row">
-                <input type="checkbox" id="layer-toggle-mexico" class="legend-toggle" data-target="mexico" checked />
-                <span class="legend-region legend-region--mexico" aria-hidden="true"></span>
+                <button type="button" class="legend-row__symbol" data-locate="mexico" aria-label="Zoom to Mexico"><span class="legend-region legend-region--mexico" aria-hidden="true"></span></button>
                 <span class="legend-row__label">Mexico</span>
             </div>
             <div class="legend-row">
-                <input type="checkbox" id="layer-toggle-texas" class="legend-toggle" data-target="texas" checked />
-                <span class="legend-region legend-region--texas" aria-hidden="true"></span>
+                <button type="button" class="legend-row__symbol" data-locate="texas" aria-label="Zoom to Texas"><span class="legend-region legend-region--texas" aria-hidden="true"></span></button>
                 <span class="legend-row__label">Texas</span>
+            </div>
+            <div class="legend-row">
+                <button type="button" class="legend-row__symbol" data-locate="california" aria-label="Zoom to California today"><span class="legend-region legend-region--california" aria-hidden="true"></span></button>
+                <span class="legend-row__label">California today</span>
             </div>
         </div>
         <div id="timeline">
-            <button type="button" id="timeline__prev" class="timeline__btn" aria-label="Previous year">‹</button>
-            <button type="button" id="timeline__play" class="timeline__btn" aria-label="Play timeline">▶</button>
-            <span id="timeline__label">1850</span>
+            <button type="button" id="timeline__prev" class="btn btn-icon btn-ghost" aria-label="Previous milestone"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button>
+            <button type="button" id="timeline__play" class="btn btn-icon btn-ghost" aria-label="Play timeline"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5a1 1 0 0 1 1.528-.852l12 7a1 1 0 0 1 0 1.704l-12 7A1 1 0 0 1 5 19z"></path></svg></button>
+            <span id="timeline__label">1610</span>
             <div id="timeline__track">
                 <div id="timeline__slider-wrap">
                     <div id="timeline__ticks"></div>
                     <div id="timeline__events"></div>
-                    <input id="timeline__range" type="range" min="1610" max="1850" step="1" value="1850" />
+                    <input id="timeline__range" type="range" min="1610" max="1850" step="1" value="1610" />
                 </div>
             </div>
-            <button type="button" id="timeline__next" class="timeline__btn" aria-label="Next year">›</button>
+            <button type="button" id="timeline__next" class="btn btn-icon btn-ghost" aria-label="Next milestone"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></button>
         </div>
         </div>
     </div>
@@ -851,12 +1025,14 @@
                 <h2 class="data-modal__title">Map data</h2>
                 <p class="data-modal__hint">Press X or Esc to close and apply changes to the map</p>
             </div>
-            <button type="button" id="data-modal__close" class="data-modal__close" aria-label="Close">&times;</button>
+            <button type="button" id="data-modal__close" class="btn btn-icon btn-ghost" aria-label="Close"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
         </header>
         <div class="data-modal__tabs" role="tablist">
-            <button type="button" id="data-modal__tab-missions" class="data-modal__tab is-active" role="tab" aria-selected="true" aria-controls="data-modal__panel-missions">missions</button>
-            <button type="button" id="data-modal__tab-presidios" class="data-modal__tab" role="tab" aria-selected="false" aria-controls="data-modal__panel-presidios">presidios</button>
-            <button type="button" id="data-modal__tab-provincia-mayor" class="data-modal__tab" role="tab" aria-selected="false" aria-controls="data-modal__panel-provincia-mayor">New Spain</button>
+            <div class="tabs-list">
+                <button type="button" id="data-modal__tab-missions" class="tabs-trigger is-active" role="tab" aria-selected="true" aria-controls="data-modal__panel-missions">Missions</button>
+                <button type="button" id="data-modal__tab-presidios" class="tabs-trigger" role="tab" aria-selected="false" aria-controls="data-modal__panel-presidios">Presidios</button>
+                <button type="button" id="data-modal__tab-provincia-mayor" class="tabs-trigger" role="tab" aria-selected="false" aria-controls="data-modal__panel-provincia-mayor">New Spain</button>
+            </div>
         </div>
         <div id="data-modal__panel-missions" class="data-modal__panel is-active" role="tabpanel">
             <div class="data-modal__panel-scroll">
@@ -878,8 +1054,8 @@
                 </table>
             </div>
             <div class="data-modal__footer">
-                <button type="button" id="missions-export-btn" class="data-modal__btn">Copy missions.geojson</button>
-                <button type="button" id="missions-download-btn" class="data-modal__btn">Download missions.geojson</button>
+                <button type="button" id="missions-export-btn" class="btn btn-outline">Copy missions.geojson</button>
+                <button type="button" id="missions-download-btn" class="btn btn-outline">Download missions.geojson</button>
             </div>
         </div>
         <div id="data-modal__panel-presidios" class="data-modal__panel" role="tabpanel" hidden>
@@ -902,8 +1078,8 @@
                 </table>
             </div>
             <div class="data-modal__footer">
-                <button type="button" id="presidios-export-btn" class="data-modal__btn">Copy presidios.geojson</button>
-                <button type="button" id="presidios-download-btn" class="data-modal__btn">Download presidios.geojson</button>
+                <button type="button" id="presidios-export-btn" class="btn btn-outline">Copy presidios.geojson</button>
+                <button type="button" id="presidios-download-btn" class="btn btn-outline">Download presidios.geojson</button>
             </div>
         </div>
         <div id="data-modal__panel-provincia-mayor" class="data-modal__panel" role="tabpanel" hidden>
@@ -925,18 +1101,19 @@
                 </table>
             </div>
             <div class="data-modal__footer">
-                <button type="button" id="provincia-mayor-export-btn" class="data-modal__btn">Copy context-Provincia_mayor.geojson</button>
-                <button type="button" id="provincia-mayor-download-btn" class="data-modal__btn">Download context-Provincia_mayor.geojson</button>
+                <button type="button" id="provincia-mayor-export-btn" class="btn btn-outline">Copy context-Provincia_mayor.geojson</button>
+                <button type="button" id="provincia-mayor-download-btn" class="btn btn-outline">Download context-Provincia_mayor.geojson</button>
             </div>
         </div>
     </div>
     <div id="readme-modal" class="readme-modal" aria-hidden="true">
         <div class="readme-modal__panel" role="dialog" aria-modal="true" aria-label="Map documentation">
-            <button type="button" id="readme-modal__close" class="readme-modal__close" aria-label="Close">&times;</button>
+            <button type="button" id="readme-modal__close" class="btn btn-icon btn-ghost readme-modal__close" aria-label="Close"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
             <div id="readme-modal__content" class="readme-modal__content"></div>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7.2.0/turf.min.js"></script>
     <script src="./mapbox-config.js"></script>
     <script src="./index.js"></script>
 </body>

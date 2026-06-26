@@ -57,7 +57,7 @@ def main() -> int:
         ax.fill(arr[:, 0], arr[:, 1], facecolor="#e9c46a", edgecolor="#c1121f",
                 lw=0.8, alpha=0.35, zorder=2)
 
-    missions = MAPS / "missions.geojson"
+    missions = MAPS / "layers/missions.geojson"
     if missions.exists():
         md = json.load(open(missions))
         pts = np.array([f["geometry"]["coordinates"] for f in md["features"]], float)

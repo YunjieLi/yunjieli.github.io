@@ -10,7 +10,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 CSV_PATH = ROOT / "src/maps/spanish-missions/references/presidios-frontier-districts.csv"
-OUT_PATH = ROOT / "src/maps/spanish-missions/presidios.geojson"
+OUT_PATH = ROOT / "src/maps/spanish-missions/layers/presidios.geojson"
 
 # Historic presidio sites (lon, lat). Keys match the presidio column in the CSV.
 COORDS: dict[str, tuple[float, float]] = {

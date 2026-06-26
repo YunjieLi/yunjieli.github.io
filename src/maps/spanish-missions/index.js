@@ -1,5 +1,40 @@
 mapboxgl.accessToken = window.MAPBOX_ACCESS_TOKEN || '';
 
+var UI_ICONS = {
+	play: '<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5a1 1 0 0 1 1.528-.852l12 7a1 1 0 0 1 0 1.704l-12 7A1 1 0 0 1 5 19z"></path></svg>',
+	pause: '<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="14" y="3" width="5" height="18" rx="1"></rect><rect x="5" y="3" width="5" height="18" rx="1"></rect></svg>',
+};
+
+var POPUP_ICONS = {
+	mapPin: '<path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="10" r="3"></circle>',
+	clock: '<circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path>',
+	church: '<path d="M10 9h4"></path><path d="M12 7v5"></path><path d="M14 22v-4a2 2 0 0 0-4 0v4"></path><path d="M18 22V5.618a1 1 0 0 0-.553-.894l-4-2a1 1 0 0 0-.894 0l-4 2A1 1 0 0 0 6 5.618V22"></path><path d="m18 22-4-4-4 4"></path><path d="m10 22 4-4 4 4"></path>',
+	flag: '<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" x2="4" y1="22" y2="15"></line>',
+};
+
+function popupIcon(iconName) {
+	return (
+		'<svg class="mission-popup__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+		POPUP_ICONS[iconName] +
+		'</svg>'
+	);
+}
+
+function popupDetailRow(iconName, text) {
+	return '<div class="mission-popup__detail">' + popupIcon(iconName) + '<span>' + text + '</span></div>';
+}
+
+function popupFieldRow(label, value) {
+	if (!value) return '';
+	return '<div class="mission-popup__detail"><span class="mission-popup__field">' + label + ':</span> ' + value + '</div>';
+}
+
+function setButtonIcon(button, iconName) {
+	if (button && UI_ICONS[iconName]) {
+		button.innerHTML = UI_ICONS[iconName];
+	}
+}
+
 var ORDER_HQ = {
 	Jesuit: 'Nuestra Señora de Loreto Conchó',
 	Franciscan: 'San Carlos Borromeo de Carmelo',
@@ -20,27 +55,34 @@ var PRESIDIO_CAPITAL_CIRCLE_RADIUS = 8;
 var MISSION_MARKER_OPACITY = 0.9;
 var MISSION_MARKER_LOGICAL_SIZE = 48;
 var PRESIDIO_MARKER_LOGICAL_SIZE = MISSION_MARKER_LOGICAL_SIZE;
-var PRESIDIO_SYMBOL_URL = './assets/presidio.svg';
+var PRESIDIO_SYMBOL_URL = './markers/presidio.svg';
 var NATIONAL_CAPITAL_MARKER_LOGICAL_SIZE = 96;
 var NATIONAL_CAPITAL_MARKER_RADIUS = 28;
 var NATIONAL_CAPITAL_SIZE_SCALE = 0.6;
+var NEW_SPAIN_CAPITAL_SIZE_SCALE = 1.6;
 var NATIONAL_CAPITAL_ICONS = {
-	'capital-new-spain': './assets/viceroyalty-of-New-Spain.svg',
-	'capital-mexico': './assets/mexico.svg',
-	'capital-texas': './assets/texas.svg',
-	'capital-usa': './assets/usa.svg',
+	'capital-new-spain': './markers/viceroyalty-of-New-Spain.svg',
+	'capital-mexico': './markers/mexico.svg',
+	'capital-texas': './markers/texas.svg',
+	'capital-usa': './markers/usa.svg',
+};
+var NATIONAL_CAPITAL_COUNTRY_LABELS = {
+	'capital-new-spain': 'New Spain',
+	'capital-mexico': 'Mexico',
+	'capital-texas': 'Republic of Texas',
+	'capital-usa': 'United States',
 };
 var MEXICO_CITY_COORDS = [-99.1332, 19.4326];
 var AUSTIN_COORDS = [-97.7431, 30.2672];
 var MISSION_CROSS_PATH = 'M26 17H40V21H26V45H22V21H8V17H22V4H26V17Z';
 
-function getLatestContextFeaturesByYear(features, year) {
+function getLatestFeaturesByYear(features, year, getEntityId) {
 	var byEntity = {};
 	features.forEach(function(feature) {
 		var props = feature.properties;
 		var featureYear = props.year;
 		if (featureYear == null || featureYear > year) return;
-		var entityId = props.Entidad_ID || props.Nombre;
+		var entityId = getEntityId(props);
 		var existing = byEntity[entityId];
 		if (!existing || existing.properties.year < featureYear) {
 			byEntity[entityId] = feature;
@@ -48,6 +90,12 @@ function getLatestContextFeaturesByYear(features, year) {
 	});
 	return Object.keys(byEntity).map(function(key) {
 		return byEntity[key];
+	});
+}
+
+function getLatestContextFeaturesByYear(features, year) {
+	return getLatestFeaturesByYear(features, year, function(props) {
+		return props.Entidad_ID || props.Nombre;
 	});
 }
 
@@ -62,17 +110,69 @@ function getVisibleContextGeojson(source) {
 }
 
 function getVisibleProvinciaMayorGeojson() {
-	if (selectedYear > PROVINCIA_MAYOR_END_YEAR) {
+	if (selectedYear > PROVINCIA_MAYOR_END_YEAR || !provinciaMayor) {
 		return { type: 'FeatureCollection', features: [] };
 	}
-	return getVisibleContextGeojson(provinciaMayor);
+	return {
+		type: 'FeatureCollection',
+		features: getLatestContextFeaturesByYear(provinciaMayor.features, selectedYear).filter(function(feature) {
+			return feature.properties.regional_zone === PROVINCIAS_INTERNAS_ZONE;
+		}),
+	};
+}
+
+function getVisibleProvinciaRegionGeojson() {
+	if (selectedYear > PROVINCIA_MAYOR_END_YEAR || !provinciaMayor) {
+		return { type: 'FeatureCollection', features: [] };
+	}
+	if (provinciaRegionGeojsonCache[selectedYear]) {
+		return provinciaRegionGeojsonCache[selectedYear];
+	}
+
+	var features = getLatestContextFeaturesByYear(provinciaMayor.features, selectedYear);
+	var byZone = {};
+	features.forEach(function(feature) {
+		var zone = feature.properties.regional_zone;
+		if (!zone) return;
+		if (!byZone[zone]) byZone[zone] = [];
+		byZone[zone].push(feature);
+	});
+
+	var regionalFeatures = Object.keys(byZone).map(function(zone) {
+		var merged = unionProvinciaGeometries(byZone[zone]);
+		return {
+			type: 'Feature',
+			properties: { regional_zone: zone },
+			geometry: merged.geometry,
+		};
+	});
+
+	var result = { type: 'FeatureCollection', features: regionalFeatures };
+	provinciaRegionGeojsonCache[selectedYear] = result;
+	return result;
+}
+
+function unionProvinciaGeometries(features) {
+	if (!features.length) return null;
+	if (features.length === 1 || typeof turf === 'undefined') {
+		return {
+			type: 'Feature',
+			properties: {},
+			geometry: features[0].geometry,
+		};
+	}
+
+	var collection = turf.featureCollection(features.map(function(feature) {
+		return turf.feature(feature.geometry);
+	}));
+	return turf.union(collection);
 }
 
 var US_STATE_DECADES = [1776, 1790, 1800, 1810, 1820, 1830, 1840, 1850];
 
 function getUsStateGeojsonUrl(decade) {
-	if (decade === 1776) return './context-us_1776.geojson';
-	return './context-us_state_' + decade + '.geojson';
+	if (decade === 1776) return './layers/context-us_1776.geojson';
+	return './layers/context-us_state_' + decade + '.geojson';
 }
 
 function getUsStateDecadeYear(year) {
@@ -126,6 +226,35 @@ function getVisibleTexasGeojson() {
 }
 
 var PROVINCIA_MAYOR_COLOR = '#4658ce';
+var PROVINCIAS_INTERNAS_ZONE = 'Provincias Internas';
+
+function addProvinciaRegionLayers() {
+	map.addSource('provincia-regions', {
+		type: 'geojson',
+		data: getVisibleProvinciaRegionGeojson(),
+	});
+
+	map.addLayer({
+		id: 'provincia-regions-fill',
+		type: 'fill',
+		source: 'provincia-regions',
+		paint: {
+			'fill-color': PROVINCIA_MAYOR_COLOR,
+			'fill-opacity': 0.18,
+		},
+	});
+
+	map.addLayer({
+		id: 'provincia-regions-outline',
+		type: 'line',
+		source: 'provincia-regions',
+		paint: {
+			'line-color': PROVINCIA_MAYOR_COLOR,
+			'line-opacity': 0.55,
+			'line-width': 1.5,
+		},
+	});
+}
 
 function addProvinciaMayorLayers() {
 	map.addSource('provincia-mayor', {
@@ -251,9 +380,9 @@ function addCaliforniaLayers() {
 		source: 'california',
 		paint: {
 			'line-color': '#bc6c25',
-			'line-opacity': 0.75,
-			'line-width': 1.5,
-			'line-dasharray': [1.5, 1.5],
+			'line-opacity': 0.5,
+			'line-width': 1.25,
+			'line-dasharray': [1, 2],
 		},
 	});
 }
@@ -265,54 +394,23 @@ function buildCaliforniaPopupHtml(props) {
 	);
 }
 
+function buildProvinciaRegionPopupHtml(props) {
+	return popupFieldRow('region', props.regional_zone);
+}
+
 function buildContextPopupHtml(props) {
 	var name = props.Nombre || props.Label || '';
-	var detailParts = [];
-	if (props.Nivel) detailParts.push(String(props.Nivel).replace(/_/g, ' '));
-	else if (props.Tipo) detailParts.push(String(props.Tipo).replace(/-/g, ' '));
-	if (props.Cabecera) detailParts.push('Cabecera: ' + props.Cabecera);
-	detailParts.push('Provincia mayor');
 	return (
-		'<div class="mission-popup__name">' + name + '</div>' +
-		(detailParts.length
-			? '<div class="mission-popup__detail">' + detailParts.join(' · ') + '</div>'
-			: '')
+		popupFieldRow('provincia', name) +
+		popupFieldRow('region', props.regional_zone) +
+		popupFieldRow('cabecera', props.Cabecera) +
+		popupFieldRow('tipo', props.Tipo ? String(props.Tipo).replace(/[-_]/g, ' ') : '')
 	);
 }
 
 function buildUsStatePopupHtml(props) {
 	var name = props.STATENAM || props.name || '';
-	var decadeYear = getActiveUsStateDecadeYear();
-	var detailParts = [];
-	if (decadeYear) detailParts.push(decadeYear + 's');
-	if (props.ICPSRST != null && props.ICPSRST !== '') {
-		detailParts.push('State #' + props.ICPSRST);
-	}
-	return (
-		'<div class="mission-popup__name">' + name + '</div>' +
-		(detailParts.length
-			? '<div class="mission-popup__detail">' + detailParts.join(' · ') + '</div>'
-			: '')
-	);
-}
-
-function buildMexicoPopupHtml(props) {
-	var periodYear = getActiveMexicoPeriodYear();
-	var detailParts = [];
-	if (periodYear) detailParts.push('Boundary as of ' + periodYear);
-	return (
-		'<div class="mission-popup__name">' + (props.name || 'Mexico') + '</div>' +
-		(detailParts.length
-			? '<div class="mission-popup__detail">' + detailParts.join(' · ') + '</div>'
-			: '')
-	);
-}
-
-function buildTexasPopupHtml(props) {
-	return (
-		'<div class="mission-popup__name">' + (props.name || 'Texas') + '</div>' +
-		'<div class="mission-popup__detail">Republic of Texas · 1836–1847</div>'
-	);
+	return name ? '<div class="mission-popup__detail">' + name + '</div>' : '';
 }
 
 function setupPolygonLayerInteractions(layerId, buildPopupHtmlFn) {
@@ -343,10 +441,16 @@ function setupPolygonLayerInteractions(layerId, buildPopupHtmlFn) {
 
 var LEGEND_LAYERS = {
 	presidios: ['presidios-symbols', 'presidios-capital-symbols'],
-	'provincia-mayor': ['provincia-mayor-fill', 'provincia-mayor-outline'],
+	'provincia-mayor': [
+		'provincia-regions-fill',
+		'provincia-regions-outline',
+		'provincia-mayor-fill',
+		'provincia-mayor-outline',
+	],
 	mexico: ['mexico-fill', 'mexico-outline'],
 	texas: ['texas-fill', 'texas-outline'],
 	'us-states': ['us-states-fill', 'us-states-outline'],
+	california: ['california-outline'],
 };
 
 var legendLayerVisibility = {
@@ -355,6 +459,7 @@ var legendLayerVisibility = {
 	mexico: true,
 	texas: true,
 	'us-states': true,
+	california: true,
 };
 
 var MISSION_LAYER_IDS = ['missions-symbols', 'missions-hq-symbols'];
@@ -438,21 +543,102 @@ function setLegendLayerVisibility(target, visible) {
 }
 
 function setupLegendControls() {
-	var toggles = document.querySelectorAll('.legend-toggle');
-	Array.prototype.forEach.call(toggles, function(input) {
-		input.addEventListener('change', function() {
-			if (input.hasAttribute('data-missions')) {
-				setMissionsVisibility(input.checked);
-				return;
-			}
-			if (input.dataset.target) {
-				setLegendLayerVisibility(input.dataset.target, input.checked);
-			}
+	setupLegendSymbolZoom();
+}
+
+function setupLegendSymbolZoom() {
+	var symbols = document.querySelectorAll('.legend-row__symbol[data-locate]');
+	Array.prototype.forEach.call(symbols, function(button) {
+		button.addEventListener('click', function() {
+			locateLegendLayer(button.dataset.locate);
 		});
 	});
 }
 
+function mergeFeatureCollections(collections) {
+	var features = [];
+	collections.forEach(function(collection) {
+		if (!collection || !collection.features) return;
+		features = features.concat(collection.features);
+	});
+	return {
+		type: 'FeatureCollection',
+		features: features,
+	};
+}
+
+function getLegendLocateGeojson(target) {
+	switch (target) {
+		case 'missions':
+			return getVisibleMarkerGeojson().missions;
+		case 'presidios':
+			return getVisiblePresidiosGeojson();
+		case 'provincia-mayor':
+			return mergeFeatureCollections([
+				getVisibleProvinciaRegionGeojson(),
+				getVisibleProvinciaMayorGeojson(),
+			]);
+		case 'us-states':
+			return getVisibleUsStateGeojson();
+		case 'mexico':
+			return getVisibleMexicoGeojson();
+		case 'texas':
+			return getVisibleTexasGeojson();
+		case 'california':
+			return california;
+		default:
+			return null;
+	}
+}
+
+function fitMapToGeojson(geojson, options) {
+	if (!map) return;
+
+	options = options || {};
+	var bounds = new mapboxgl.LngLatBounds();
+	unionBoundsFromGeojson(bounds, geojson);
+	if (bounds.isEmpty()) return;
+
+	map.fitBounds(bounds, {
+		padding: { top: 48, bottom: 96, left: 48, right: 48 },
+		duration: options.duration != null ? options.duration : 600,
+	});
+}
+
+function locateLegendLayer(target) {
+	fitMapToGeojson(getLegendLocateGeojson(target));
+}
+
 var readmeMarkdownCache = null;
+
+function extractFirstMarkdownHeading(markdown) {
+	var lines = markdown.split(/\r?\n/);
+	for (var i = 0; i < lines.length; i++) {
+		var match = lines[i].match(/^#{1,6}\s+(.+)$/);
+		if (match) return match[1].trim();
+	}
+	return null;
+}
+
+function applyLegendTitleFromReadme(markdown) {
+	var title = extractFirstMarkdownHeading(markdown);
+	if (!title) return;
+	var titleEl = document.querySelector('#legend h2');
+	if (titleEl) titleEl.textContent = title;
+}
+
+function loadReadmeMarkdown() {
+	if (readmeMarkdownCache) {
+		return Promise.resolve(readmeMarkdownCache);
+	}
+	return fetch('./README.md').then(function(response) {
+		if (!response.ok) throw new Error('Failed to load README.md');
+		return response.text();
+	}).then(function(text) {
+		readmeMarkdownCache = text;
+		return text;
+	});
+}
 
 function renderReadmeMarkdown(markdown) {
 	if (typeof marked !== 'undefined' && marked.parse) {
@@ -477,16 +663,7 @@ function openReadmeModal() {
 		modal.setAttribute('aria-hidden', 'false');
 	}
 
-	if (readmeMarkdownCache) {
-		showModal(readmeMarkdownCache);
-		return;
-	}
-
-	fetch('./README.md').then(function(response) {
-		if (!response.ok) throw new Error('Failed to load README.md');
-		return response.text();
-	}).then(function(text) {
-		readmeMarkdownCache = text;
+	loadReadmeMarkdown().then(function(text) {
 		showModal(text);
 	}).catch(function(error) {
 		console.error(error);
@@ -524,18 +701,11 @@ function setupReadmeModal() {
 	});
 }
 
-function applyLegendToggleDefaults() {
-	var toggles = document.querySelectorAll('.legend-toggle');
-	Array.prototype.forEach.call(toggles, function(input) {
-		if (input.hasAttribute('data-missions')) {
-			missionsVisible = input.checked;
-			return;
-		}
-		if (input.dataset.target) {
-			setLegendLayerVisibility(input.dataset.target, input.checked);
-		}
+function syncLegendLayerVisibility() {
+	setMissionsVisibility(true);
+	Object.keys(legendLayerVisibility).forEach(function(target) {
+		setLegendLayerVisibility(target, legendLayerVisibility[target]);
 	});
-	updateMissionLayerFilters();
 }
 
 function isNewSpainCapitalVisible() {
@@ -615,33 +785,73 @@ function getVisibleNationalCapitalsGeojson() {
 }
 
 function updateNationalCapitals() {
-	if (!map || !map.getSource('national-capitals')) return;
+	if (!map) return;
+	ensureNationalCapitalLayers();
+	if (!map.getSource('national-capitals')) return;
 	map.getSource('national-capitals').setData(getVisibleNationalCapitalsGeojson());
 }
 
-function addNationalCapitalLayers() {
-	map.addSource('national-capitals', {
-		type: 'geojson',
-		data: getVisibleNationalCapitalsGeojson(),
-	});
+function getNationalCapitalBaseIconSize() {
+	return getMarkerIconSizeAtReferenceZoom(
+		NATIONAL_CAPITAL_MARKER_RADIUS,
+		NATIONAL_CAPITAL_MARKER_LOGICAL_SIZE
+	) * NATIONAL_CAPITAL_SIZE_SCALE;
+}
 
-	map.addLayer({
-		id: 'national-capitals-symbols',
-		type: 'symbol',
-		source: 'national-capitals',
-		layout: {
-			'icon-image': ['get', 'iconImage'],
-			'icon-size': getZoomScaledIconSizeExpression(
-				getMarkerIconSizeAtReferenceZoom(NATIONAL_CAPITAL_MARKER_RADIUS, NATIONAL_CAPITAL_MARKER_LOGICAL_SIZE) * NATIONAL_CAPITAL_SIZE_SCALE
-			),
-			'icon-anchor': 'center',
-			'icon-allow-overlap': true,
-			'icon-ignore-placement': true,
-		},
-		paint: {
-			'icon-opacity': 0.95,
-		},
-	});
+function getNationalCapitalSymbolLayout(sizeMultiplier) {
+	return {
+		'icon-image': ['get', 'iconImage'],
+		'icon-size': getZoomScaledIconSizeExpression(getNationalCapitalBaseIconSize() * sizeMultiplier),
+		'icon-anchor': 'center',
+		'icon-allow-overlap': true,
+		'icon-ignore-placement': true,
+	};
+}
+
+function ensureNationalCapitalLayers() {
+	if (!map.getSource('national-capitals')) {
+		map.addSource('national-capitals', {
+			type: 'geojson',
+			data: getVisibleNationalCapitalsGeojson(),
+		});
+	}
+
+	var symbolPaint = { 'icon-opacity': 0.95 };
+
+	if (!map.getLayer('national-capitals-symbols')) {
+		map.addLayer({
+			id: 'national-capitals-symbols',
+			type: 'symbol',
+			source: 'national-capitals',
+			filter: ['!=', ['get', 'iconImage'], 'capital-new-spain'],
+			layout: getNationalCapitalSymbolLayout(1),
+			paint: symbolPaint,
+		});
+	}
+
+	if (!map.getLayer('national-capitals-new-spain-symbols')) {
+		map.addLayer({
+			id: 'national-capitals-new-spain-symbols',
+			type: 'symbol',
+			source: 'national-capitals',
+			filter: ['==', ['get', 'iconImage'], 'capital-new-spain'],
+			layout: getNationalCapitalSymbolLayout(NEW_SPAIN_CAPITAL_SIZE_SCALE),
+			paint: symbolPaint,
+		});
+	}
+}
+
+function addNationalCapitalLayers() {
+	ensureNationalCapitalLayers();
+}
+
+function buildCapitalPopupHtml(props) {
+	var country = NATIONAL_CAPITAL_COUNTRY_LABELS[props.iconImage] || '';
+	var capital = props.name || '';
+	return (
+		'<div class="mission-popup__name">' + country + '</div>' +
+		(capital ? '<div class="mission-popup__detail">' + capital + '</div>' : '')
+	);
 }
 
 function setupNationalCapitalInteractions() {
@@ -652,28 +862,31 @@ function setupNationalCapitalInteractions() {
 		className: 'mission-popup',
 	});
 
-	map.on('mouseenter', 'national-capitals-symbols', function() {
-		map.getCanvas().style.cursor = 'pointer';
-	});
+	['national-capitals-symbols', 'national-capitals-new-spain-symbols'].forEach(function(layerId) {
+		map.on('mouseenter', layerId, function() {
+			map.getCanvas().style.cursor = 'pointer';
+		});
 
-	map.on('mouseleave', 'national-capitals-symbols', function() {
-		map.getCanvas().style.cursor = '';
-		popup.remove();
-	});
+		map.on('mouseleave', layerId, function() {
+			map.getCanvas().style.cursor = '';
+			popup.remove();
+		});
 
-	map.on('mousemove', 'national-capitals-symbols', function(event) {
-		if (!event.features || !event.features.length) return;
-		var name = event.features[0].properties.name;
-		popup
-			.setLngLat(event.lngLat)
-			.setHTML('<div class="mission-popup__name">' + name + '</div>')
-			.addTo(map);
+		map.on('mousemove', layerId, function(event) {
+			if (!event.features || !event.features.length) return;
+			var props = event.features[0].properties;
+			popup
+				.setLngLat(event.lngLat)
+				.setHTML(buildCapitalPopupHtml(props))
+				.addTo(map);
+		});
 	});
 }
 
 var missions;
 var presidios;
 var provinciaMayor;
+var provinciaRegionGeojsonCache = {};
 var california;
 var mexicoByPeriod = {};
 var texasGeojson;
@@ -682,37 +895,72 @@ var PROVINCIA_MAYOR_END_YEAR = 1820;
 var map;
 var minYear = 1610;
 var maxYear = 1850;
-var selectedYear = maxYear;
+var selectedYear = minYear;
 var timelinePlaying = false;
 var timelineAnimationId = null;
 var timelineStepMs = 150;
-var TIMELINE_EVENTS = [
-	{
-		year: 1769,
-		name: 'Founding of San Diego Presidio and mission',
-		description: 'The first permanent Spanish settlement and fort built in Alta California, anchoring Spain\'s expansion up the Pacific Coast.',
-	},
-	{
-		year: 1776,
-		name: 'United States Independence',
-		description: 'The Continental Congress adopts the Declaration of Independence in Philadelphia, severing ties with Great Britain.',
-	},
-	{
-		year: 1803,
-		name: 'The Louisiana Purchase',
-		description: 'The United States buys the massive Louisiana Territory from France, doubling the nation\'s size and moving its border to Spanish territory.',
-	},
-	{
-		year: 1821,
-		name: 'Mexican Independence',
-		description: 'Mexico successfully concludes its war of independence against Spain, taking political control of the vast Spanish northern frontier.',
-	},
-	{
-		year: 1848,
-		name: 'Treaty of Guadalupe Hidalgo',
-		description: 'The treaty ending the Mexican-American War cedes California and the broader Southwest territory to the United States.',
-	},
-];
+var timelineEvents = [];
+
+function parseCsvLine(line) {
+	var fields = [];
+	var current = '';
+	var inQuotes = false;
+
+	for (var i = 0; i < line.length; i++) {
+		var ch = line[i];
+		if (ch === '"') {
+			if (inQuotes && line[i + 1] === '"') {
+				current += '"';
+				i += 1;
+			} else {
+				inQuotes = !inQuotes;
+			}
+			continue;
+		}
+		if (ch === ',' && !inQuotes) {
+			fields.push(current.trim());
+			current = '';
+			continue;
+		}
+		current += ch;
+	}
+
+	fields.push(current.trim());
+	return fields;
+}
+
+function parseMilestonesCsv(text) {
+	var lines = text.replace(/^\uFEFF/, '').split(/\r?\n/);
+	var events = [];
+
+	for (var i = 0; i < lines.length; i++) {
+		var line = lines[i].trim();
+		if (!line || /^year\s*,/i.test(line)) continue;
+
+		var fields = parseCsvLine(line);
+		if (fields.length < 3) continue;
+
+		var year = parseInt(fields[0], 10);
+		if (isNaN(year)) continue;
+
+		events.push({
+			year: year,
+			name: fields[1],
+			description: fields[2],
+		});
+	}
+
+	events.sort(function(a, b) {
+		return a.year - b.year;
+	});
+
+	return events;
+}
+
+function applyTimelineEvents(events) {
+	timelineEvents = events;
+	renderTimelineEvents();
+}
 
 function syncYearRange() {
 	if (selectedYear > maxYear) selectedYear = maxYear;
@@ -745,6 +993,7 @@ function applyPresidios(data) {
 
 function applyProvinciaMayor(data) {
 	provinciaMayor = data;
+	provinciaRegionGeojsonCache = {};
 	updateMissionData();
 	syncDebuggingTables();
 }
@@ -1635,30 +1884,47 @@ function buildPresidioPopupHtml(props) {
 	var capitalLabel = '';
 	if (isCapitalProperty(props.capital) && props.year_became_capital != null) {
 		capitalLabel = props.year_ended_as_capital != null
-			? ' · Capital (' + props.year_became_capital + '–' + props.year_ended_as_capital + ')'
-			: ' · Capital (since ' + props.year_became_capital + ')';
+			? 'Royal capital (' + props.year_became_capital + '–' + props.year_ended_as_capital + ')'
+			: 'Royal capital (since ' + props.year_became_capital + ')';
 	}
 	var regionLabel = props.region ? String(props.region).charAt(0).toUpperCase() + String(props.region).slice(1) : '';
+	var typeParts = [];
+	if (regionLabel) typeParts.push(regionLabel);
+	if (capitalLabel) typeParts.push(capitalLabel);
 	return (
 		'<div class="mission-popup__name">' + props.name + '</div>' +
-		'<div class="mission-popup__detail">' + props.location + '</div>' +
-		'<div class="mission-popup__detail">' + props.year + ' · ' + regionLabel + capitalLabel + '</div>'
+		popupDetailRow('mapPin', props.location) +
+		popupDetailRow('clock', String(props.year)) +
+		(typeParts.length ? popupDetailRow('flag', typeParts.join(' · ')) : '')
 	);
 }
 
 function buildPopupHtml(props) {
-	var hqLabel = isHqProperty(props.hq) ? ' · HQ' : '';
+	var orderLabel = props.order + (isHqProperty(props.hq) ? ' · HQ' : '');
 	return (
 		'<div class="mission-popup__name">' + props.name + '</div>' +
-		'<div class="mission-popup__detail">' + props.location + '</div>' +
-		'<div class="mission-popup__detail">' + props.year + ' · ' + props.order + hqLabel + '</div>'
+		popupDetailRow('mapPin', props.location) +
+		popupDetailRow('clock', String(props.year)) +
+		popupDetailRow('church', orderLabel)
 	);
 }
 
 function updateTimelineUi() {
 	var label = document.getElementById('timeline__label');
 	if (label) label.textContent = String(selectedYear);
+	updateTimelineTickStates();
 	updateTimelineControls();
+}
+
+function updateTimelineTickStates() {
+	var ticksEl = document.getElementById('timeline__ticks');
+	if (!ticksEl) return;
+
+	Array.prototype.forEach.call(ticksEl.children, function(tick) {
+		var year = Number(tick.dataset.year);
+		if (isNaN(year)) return;
+		tick.classList.toggle('is-past', year <= selectedYear);
+	});
 }
 
 function getDecadeTickYears() {
@@ -1680,7 +1946,8 @@ function renderTimelineTicks() {
 
 	getDecadeTickYears().forEach(function(year) {
 		var tick = document.createElement('div');
-		tick.className = 'timeline-tick';
+		tick.className = 'timeline-tick' + (year <= selectedYear ? ' is-past' : '');
+		tick.dataset.year = String(year);
 		tick.style.left = ((year - minYear) / span * 100) + '%';
 
 		var mark = document.createElement('span');
@@ -1699,7 +1966,7 @@ function renderTimelineEvents() {
 	var span = maxYear - minYear;
 	if (span <= 0) return;
 
-	TIMELINE_EVENTS.forEach(function(event) {
+	timelineEvents.forEach(function(event) {
 		if (event.year < minYear || event.year > maxYear) return;
 
 		var button = document.createElement('button');
@@ -1754,24 +2021,62 @@ function stepTimelineYear(delta) {
 	setTimelineYear(selectedYear + delta);
 }
 
+function getTimelineMilestoneYears() {
+	var years = [];
+	var seen = {};
+	timelineEvents.forEach(function(event) {
+		if (event.year < minYear || event.year > maxYear) return;
+		if (seen[event.year]) return;
+		seen[event.year] = true;
+		years.push(event.year);
+	});
+	years.sort(function(a, b) {
+		return a - b;
+	});
+	return years;
+}
+
+function getAdjacentMilestoneYear(delta) {
+	var years = getTimelineMilestoneYears();
+	if (!years.length) return null;
+
+	if (delta > 0) {
+		for (var i = 0; i < years.length; i++) {
+			if (years[i] > selectedYear) return years[i];
+		}
+		return null;
+	}
+
+	for (var j = years.length - 1; j >= 0; j--) {
+		if (years[j] < selectedYear) return years[j];
+	}
+	return null;
+}
+
+function stepTimelineMilestone(delta) {
+	pauseTimelineAnimation();
+	var year = getAdjacentMilestoneYear(delta);
+	if (year != null) setTimelineYear(year);
+}
+
 function updateTimelineControls() {
 	var playBtn = document.getElementById('timeline__play');
 	var prevBtn = document.getElementById('timeline__prev');
 	var nextBtn = document.getElementById('timeline__next');
 
-	if (prevBtn) prevBtn.disabled = selectedYear <= minYear;
-	if (nextBtn) nextBtn.disabled = selectedYear >= maxYear;
+	if (prevBtn) prevBtn.disabled = getAdjacentMilestoneYear(-1) == null;
+	if (nextBtn) nextBtn.disabled = getAdjacentMilestoneYear(1) == null;
 
 	if (!playBtn) return;
 
 	if (timelinePlaying) {
-		playBtn.textContent = '❚❚';
+		setButtonIcon(playBtn, 'pause');
 		playBtn.setAttribute('aria-label', 'Pause timeline');
 		playBtn.disabled = false;
 		return;
 	}
 
-	playBtn.textContent = '▶';
+	setButtonIcon(playBtn, 'play');
 	playBtn.setAttribute('aria-label', 'Play timeline');
 	playBtn.disabled = selectedYear >= maxYear && minYear >= maxYear;
 }
@@ -1829,6 +2134,9 @@ function updateMissionData() {
 	if (map.getSource('presidios')) {
 		map.getSource('presidios').setData(markerData.presidios);
 	}
+	if (map.getSource('provincia-regions')) {
+		map.getSource('provincia-regions').setData(getVisibleProvinciaRegionGeojson());
+	}
 	if (map.getSource('provincia-mayor')) {
 		map.getSource('provincia-mayor').setData(getVisibleProvinciaMayorGeojson());
 	}
@@ -1842,7 +2150,7 @@ function updateMissionData() {
 		map.getSource('us-states').setData(getVisibleUsStateGeojson());
 	}
 	updateNationalCapitals();
-	applyLegendToggleDefaults();
+	syncLegendLayerVisibility();
 	updateTimelineUi();
 }
 
@@ -1902,15 +2210,17 @@ function setupTimeline() {
 
 	if (prevBtn) {
 		prevBtn.addEventListener('click', function() {
-			stepTimelineYear(-1);
+			stepTimelineMilestone(-1);
 		});
 	}
 
 	if (nextBtn) {
 		nextBtn.addEventListener('click', function() {
-			stepTimelineYear(1);
+			stepTimelineMilestone(1);
 		});
 	}
+
+	setTimelineYear(selectedYear);
 
 	document.addEventListener('keydown', function(event) {
 		if (event.key !== '[' && event.key !== ']') return;
@@ -2010,19 +2320,21 @@ function initMap() {
 		center: [-117.5, 32.5],
 		zoom: 5,
 		hash: true,
+		attributionControl: false,
 	});
 
 	map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+	map.addControl(new mapboxgl.AttributionControl({ compact: true }), 'bottom-right');
 
 	map.on('load', function() {
+		addProvinciaRegionLayers();
 		addProvinciaMayorLayers();
 		addMexicoLayers();
 		addTexasLayers();
 		addUsStateLayers();
 		addCaliforniaLayers();
+		setupPolygonLayerInteractions('provincia-regions-fill', buildProvinciaRegionPopupHtml);
 		setupPolygonLayerInteractions('provincia-mayor-fill', buildContextPopupHtml);
-		setupPolygonLayerInteractions('mexico-fill', buildMexicoPopupHtml);
-		setupPolygonLayerInteractions('texas-fill', buildTexasPopupHtml);
 		setupPolygonLayerInteractions('us-states-fill', buildUsStatePopupHtml);
 		setupPolygonLayerInteractions('california-outline', buildCaliforniaPopupHtml);
 		setupLegendControls();
@@ -2067,7 +2379,7 @@ function initMap() {
 			setupPresidioInteractions();
 			setupNationalCapitalInteractions();
 			setupTimeline();
-			applyLegendToggleDefaults();
+			syncLegendLayerVisibility();
 			map.once('idle', function() {
 				if (!window.location.hash) {
 					fitMapToCustomLayers({ duration: 0 });
@@ -2079,31 +2391,39 @@ function initMap() {
 	});
 }
 
+loadReadmeMarkdown().then(applyLegendTitleFromReadme).catch(function(error) {
+	console.error(error);
+});
+
 Promise.all([
-	fetch('./missions.geojson').then(function(response) {
-		if (!response.ok) throw new Error('Failed to load missions.geojson');
+	fetch('./milestones.csv').then(function(response) {
+		if (!response.ok) throw new Error('Failed to load milestones.csv');
+		return response.text();
+	}),
+	fetch('./layers/missions.geojson').then(function(response) {
+		if (!response.ok) throw new Error('Failed to load layers/missions.geojson');
 		return response.json();
 	}),
-	fetch('./presidios.geojson').then(function(response) {
-		if (!response.ok) throw new Error('Failed to load presidios.geojson');
+	fetch('./layers/presidios.geojson').then(function(response) {
+		if (!response.ok) throw new Error('Failed to load layers/presidios.geojson');
 		return response.json();
 	}),
-	fetch('./context-Provincia_mayor.geojson').then(function(response) {
-		if (!response.ok) throw new Error('Failed to load context-Provincia_mayor.geojson');
+	fetch('./layers/context-Provincia_mayor.geojson').then(function(response) {
+		if (!response.ok) throw new Error('Failed to load layers/context-Provincia_mayor.geojson');
 		return response.json();
 	}),
-	fetch('./california.geojson').then(function(response) {
-		if (!response.ok) throw new Error('Failed to load california.geojson');
+	fetch('./layers/california.geojson').then(function(response) {
+		if (!response.ok) throw new Error('Failed to load layers/california.geojson');
 		return response.json();
 	}),
 ].concat(MEXICO_PERIOD_YEARS.map(function(year) {
-	return fetch('./context-mexico-' + year + '.geojson').then(function(response) {
-		if (!response.ok) throw new Error('Failed to load context-mexico-' + year + '.geojson');
+	return fetch('./layers/context-mexico-' + year + '.geojson').then(function(response) {
+		if (!response.ok) throw new Error('Failed to load layers/context-mexico-' + year + '.geojson');
 		return response.json();
 	});
 })).concat([
-	fetch('./context-texas.geojson').then(function(response) {
-		if (!response.ok) throw new Error('Failed to load context-texas.geojson');
+	fetch('./layers/context-texas.geojson').then(function(response) {
+		if (!response.ok) throw new Error('Failed to load layers/context-texas.geojson');
 		return response.json();
 	}),
 ]).concat(US_STATE_DECADES.map(function(decade) {
@@ -2112,18 +2432,19 @@ Promise.all([
 		return response.json();
 	});
 }))).then(function(results) {
-	applyMissions(results[0]);
-	applyPresidios(results[1]);
-	provinciaMayor = results[2];
-	california = results[3];
+	applyTimelineEvents(parseMilestonesCsv(results[0]));
+	applyMissions(results[1]);
+	applyPresidios(results[2]);
+	provinciaMayor = results[3];
+	california = results[4];
 	mexicoByPeriod = {};
 	MEXICO_PERIOD_YEARS.forEach(function(year, index) {
-		mexicoByPeriod[year] = results[4 + index];
+		mexicoByPeriod[year] = results[5 + index];
 	});
-	texasGeojson = results[4 + MEXICO_PERIOD_YEARS.length];
+	texasGeojson = results[5 + MEXICO_PERIOD_YEARS.length];
 	usStateByDecade = {};
 	US_STATE_DECADES.forEach(function(decade, index) {
-		usStateByDecade[decade] = results[5 + MEXICO_PERIOD_YEARS.length + index];
+		usStateByDecade[decade] = results[6 + MEXICO_PERIOD_YEARS.length + index];
 	});
 	initMap();
 	setupDataModal();

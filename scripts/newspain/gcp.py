@@ -12,7 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from svg_geom import parse_svg  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
-ASSETS = ROOT / "src/maps/spanish-missions/assets"
+REFERENCES = ROOT / "src/maps/spanish-missions/references"
 
 # Reliable *point* city labels only (not region labels). Modern lon/lat.
 CITY_GCPS: dict[str, tuple[float, float]] = {
@@ -106,7 +106,7 @@ def coastal_gcp_pairs(year: str = "1794"):
 
 def label_pixels(year: str = "1794") -> dict[str, tuple[float, float]]:
     """Return {label_text: (x, y)} for Names-layer labels (first occurrence)."""
-    parsed = parse_svg(ASSETS / f"ref-new-spain-{year}.svg", step=8.0)
+    parsed = parse_svg(REFERENCES / f"ref-new-spain-{year}.svg", step=8.0)
     out: dict[str, tuple[float, float]] = {}
     for label in parsed.labels:
         if label.layer != "Names":

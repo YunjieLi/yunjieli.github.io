@@ -19,9 +19,10 @@ from shapely.validation import make_valid
 
 ROOT = Path(__file__).resolve().parents[1]
 MAPS = ROOT / "src/maps/spanish-missions"
+LAYERS = MAPS / "layers"
 COUNTRIES = MAPS / "references/countries.geojson"
-US_1840 = MAPS / "context-us_state_1840.geojson"
-US_1850 = MAPS / "context-us_state_1850.geojson"
+US_1840 = LAYERS / "context-us_state_1840.geojson"
+US_1850 = LAYERS / "context-us_state_1850.geojson"
 
 MIN_PART_AREA = 0.01
 # NHGIS leaves a ~0.5° gap between Mexico (modern border) and New Mexico Territory.
@@ -198,7 +199,7 @@ def main() -> int:
     }
 
     for filename, feature in outputs.items():
-        out = MAPS / filename
+        out = LAYERS / filename
         write_geojson(out, feature_collection([feature]))
         geom_type = feature["geometry"]["type"]
         size = out.stat().st_size

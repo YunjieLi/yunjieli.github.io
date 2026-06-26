@@ -18,13 +18,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from svg_geom import parse_svg  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
-ASSETS = ROOT / "src/maps/spanish-missions/assets"
+REFERENCES = ROOT / "src/maps/spanish-missions/references"
 CACHE = ROOT / "scripts/.cache/new-spain"
 
 
 def main() -> int:
     year = sys.argv[1] if len(sys.argv) > 1 else "1794"
-    svg_path = ASSETS / f"ref-new-spain-{year}.svg"
+    svg_path = REFERENCES / f"ref-new-spain-{year}.svg"
     parsed = parse_svg(svg_path, step=4.0)
 
     layer_counts = Counter(p.layer for p in parsed.polylines)
