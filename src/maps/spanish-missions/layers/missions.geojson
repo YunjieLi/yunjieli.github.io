@@ -1083,6 +1083,25 @@
         "region": "baja",
         "hq": false
       }
+    },
+    {
+      "type": "Feature",
+      "id": 58,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.9372,
+          35.6869
+        ]
+      },
+      "properties": {
+        "name": "San Miguel Chapel",
+        "location": "Santa Fe, New Mexico, USA",
+        "year": 1610,
+        "order": "Chapel",
+        "region": "nuevo mexico",
+        "hq": false
+      }
     }
   ]
 }

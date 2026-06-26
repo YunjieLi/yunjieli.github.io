@@ -36,6 +36,8 @@
             --radius-lg: var(--radius);
             --text: var(--foreground);
             --surface: oklch(0.21 0.006 285.885 / 92%);
+            --readme-accent: oklch(0.8 0.14 195);
+            --readme-bold: oklch(0.87 0.08 195);
         }
 
         * {
@@ -298,6 +300,7 @@
             font-weight: 600;
             line-height: 1.5rem;
             letter-spacing: -0.01em;
+            color: var(--readme-bold);
         }
 
         .legend-row {
@@ -398,9 +401,9 @@
         .legend-row__label {
             flex: 1;
             min-width: 0;
-            font-size: 0.875rem;
+            font-size: 1rem;
             font-weight: 400;
-            line-height: 1.25rem;
+            line-height: 1.375rem;
         }
 
         .legend-zoom {
@@ -423,6 +426,7 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            margin-right: 2.5rem;
             padding: 0.75rem;
             border-radius: var(--radius-lg);
             background: var(--surface);
@@ -433,9 +437,9 @@
         #timeline__label {
             flex-shrink: 0;
             min-width: 3.25rem;
-            font-size: 0.875rem;
-            font-weight: 400;
-            line-height: 1.25rem;
+            font-size: 1rem;
+            font-weight: 500;
+            line-height: 1.375rem;
             font-variant-numeric: tabular-nums;
             color: var(--foreground);
         }
@@ -443,20 +447,57 @@
         #timeline__track {
             flex: 1;
             min-width: 0;
+            display: flex;
+            align-items: center;
         }
 
         #timeline__slider-wrap {
             position: relative;
-            height: 1.5rem;
+            width: 100%;
+            height: 2.75rem;
             display: flex;
             align-items: center;
             overflow: visible;
+            --timeline-thumb-size: 1.125rem;
+            --timeline-track-height: 0.25rem;
+        }
+
+        #timeline__track-line {
+            position: absolute;
+            left: calc(var(--timeline-thumb-size) / 2);
+            right: calc(var(--timeline-thumb-size) / 2);
+            top: 50%;
+            height: var(--timeline-track-height);
+            transform: translateY(-50%);
+            border-radius: 9999px;
+            background: rgb(255 255 255 / 22%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        #timeline__progress {
+            position: absolute;
+            left: calc(var(--timeline-thumb-size) / 2);
+            right: calc(var(--timeline-thumb-size) / 2);
+            top: 50%;
+            height: var(--timeline-track-height);
+            transform: translateY(-50%);
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        #timeline__progress-fill {
+            display: block;
+            height: 100%;
+            width: var(--timeline-progress, 0%);
+            border-radius: 9999px;
+            background: var(--foreground);
         }
 
         #timeline__ticks {
             position: absolute;
-            left: 0;
-            right: 0;
+            left: calc(var(--timeline-thumb-size) / 2);
+            right: calc(var(--timeline-thumb-size) / 2);
             top: 50%;
             height: 0;
             pointer-events: none;
@@ -465,11 +506,15 @@
 
         #timeline__events {
             position: absolute;
-            left: 0;
-            right: 0;
+            left: calc(var(--timeline-thumb-size) / 2);
+            right: calc(var(--timeline-thumb-size) / 2);
             top: 50%;
             height: 0;
-            z-index: 2;
+            z-index: 4;
+            pointer-events: none;
+        }
+
+        #timeline__events.is-slider-active .timeline-event::before {
             pointer-events: none;
         }
 
@@ -499,24 +544,40 @@
             padding: 0;
             border: 0;
             background: none;
+            pointer-events: none;
+            cursor: default;
+        }
+
+        .timeline-event::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 1.5rem;
+            height: 1.625rem;
+            transform: translate(-50%, calc(-100% - 0.125rem));
             pointer-events: auto;
             cursor: pointer;
         }
 
         .timeline-event__mark {
             display: block;
+            position: relative;
+            z-index: 1;
             width: 3px;
             height: 1.5rem;
             margin: 0 auto;
             border-radius: 9999px;
-            background: #e9c46a;
+            background: var(--readme-accent);
             border: none;
             box-shadow: none;
+            pointer-events: none;
             transition: height 120ms ease, opacity 120ms ease;
         }
 
         .timeline-event:hover .timeline-event__mark,
-        .timeline-event:focus-visible .timeline-event__mark {
+        .timeline-event:focus-visible .timeline-event__mark,
+        .timeline-event.is-tooltip-visible .timeline-event__mark {
             height: 1.625rem;
             opacity: 0.95;
         }
@@ -534,8 +595,8 @@
             border: 1px solid var(--border);
             box-shadow: 0 4px 12px rgb(0 0 0 / 35%);
             color: var(--popover-foreground);
-            font-size: 0.875rem;
-            line-height: 1.25rem;
+            font-size: 14px;
+            line-height: 20px;
             text-align: left;
             opacity: 0;
             visibility: hidden;
@@ -545,7 +606,8 @@
         }
 
         .timeline-event:hover .timeline-event__tooltip,
-        .timeline-event:focus-visible .timeline-event__tooltip {
+        .timeline-event:focus-visible .timeline-event__tooltip,
+        .timeline-event.is-tooltip-visible .timeline-event__tooltip {
             opacity: 1;
             visibility: visible;
         }
@@ -553,37 +615,88 @@
         .timeline-event__year {
             display: block;
             margin-bottom: 0.125rem;
-            font-size: 0.75rem;
+            font-size: 14px;
             font-weight: 600;
-            line-height: 1;
-            color: #e9c46a;
+            line-height: 20px;
+            color: var(--readme-accent);
             font-variant-numeric: tabular-nums;
         }
 
         .timeline-event__name {
             display: block;
             margin-bottom: 0.25rem;
-            font-size: 0.875rem;
+            font-size: 14px;
             font-weight: 600;
-            line-height: 1.25rem;
+            line-height: 20px;
         }
 
         .timeline-event__desc {
             display: block;
-            font-size: 0.75rem;
-            line-height: 1.25rem;
+            font-size: 14px;
+            line-height: 20px;
             color: var(--muted-foreground);
         }
 
         #timeline__range {
             position: relative;
-            z-index: 1;
-            width: 100%;
-            height: 0.25rem;
-            margin: 0;
-            accent-color: var(--foreground);
-            cursor: pointer;
+            z-index: 3;
+            width: calc(100% - var(--timeline-thumb-size));
+            height: 100%;
+            margin: 0 calc(var(--timeline-thumb-size) / 2);
+            cursor: grab;
+            touch-action: none;
             background: transparent;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        #timeline__range:active {
+            cursor: grabbing;
+        }
+
+        #timeline__range::-webkit-slider-runnable-track {
+            height: var(--timeline-track-height);
+            border-radius: 9999px;
+            background: transparent;
+        }
+
+        #timeline__range::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: var(--timeline-thumb-size);
+            height: var(--timeline-thumb-size);
+            margin-top: calc((var(--timeline-track-height) - var(--timeline-thumb-size)) / 2);
+            border: 2px solid var(--background);
+            border-radius: 50%;
+            background: var(--foreground);
+            box-shadow: 0 0 0 1px rgb(255 255 255 / 18%);
+            cursor: grab;
+        }
+
+        #timeline__range:active::-webkit-slider-thumb {
+            cursor: grabbing;
+            transform: scale(1.12);
+        }
+
+        #timeline__range::-moz-range-track {
+            height: var(--timeline-track-height);
+            border-radius: 9999px;
+            background: transparent;
+        }
+
+        #timeline__range::-moz-range-thumb {
+            width: var(--timeline-thumb-size);
+            height: var(--timeline-thumb-size);
+            border: 2px solid var(--background);
+            border-radius: 50%;
+            background: var(--foreground);
+            box-shadow: 0 0 0 1px rgb(255 255 255 / 18%);
+            cursor: grab;
+        }
+
+        #timeline__range:active::-moz-range-thumb {
+            cursor: grabbing;
+            transform: scale(1.12);
         }
 
         .mission-popup.mapboxgl-popup {
@@ -840,8 +953,9 @@
             min-height: 0;
             overflow: auto;
             padding: 1rem 3rem 1.125rem 1.125rem;
-            font-size: 0.875rem;
-            line-height: 1.5;
+            font-family: "Inter Variable", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: 1rem;
+            line-height: 1.6;
         }
 
         .readme-modal__content h1,
@@ -849,17 +963,19 @@
         .readme-modal__content h3 {
             margin: 1.25rem 0 0.625rem;
             line-height: 1.25;
+            font-family: "Inter Variable", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             font-weight: 600;
             letter-spacing: -0.01em;
+            color: var(--readme-accent);
         }
 
         .readme-modal__content h1 {
             margin-top: 0;
-            font-size: 1.25rem;
+            font-size: 1.5rem;
         }
 
         .readme-modal__content h2 {
-            font-size: 1rem;
+            font-size: 1.125rem;
         }
 
         .data-table td.data-table__coordinates,
@@ -892,14 +1008,28 @@
         }
 
         .readme-modal__content a {
-            color: var(--primary);
+            color: var(--readme-accent);
+            text-decoration: underline;
+            text-decoration-color: oklch(0.8 0.14 195 / 45%);
+            text-underline-offset: 0.15em;
+        }
+
+        .readme-modal__content a:hover {
+            color: oklch(0.88 0.12 195);
+            text-decoration-color: oklch(0.88 0.12 195 / 65%);
+        }
+
+        .readme-modal__content strong,
+        .readme-modal__content b {
+            color: var(--readme-bold);
+            font-weight: 600;
         }
 
         .readme-modal__content code {
             padding: 0.1em 0.35em;
             border-radius: 0.25rem;
             background: rgb(255 255 255 / 8%);
-            font: 0.92em/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+            font: 0.92em/1.4 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
         }
 
         .readme-modal__content pre {
@@ -997,7 +1127,7 @@
             </div>
             <div class="legend-row">
                 <button type="button" class="legend-row__symbol" data-locate="texas" aria-label="Zoom to Texas"><span class="legend-region legend-region--texas" aria-hidden="true"></span></button>
-                <span class="legend-row__label">Texas</span>
+                <span class="legend-row__label">Republic of Texas</span>
             </div>
             <div class="legend-row">
                 <button type="button" class="legend-row__symbol" data-locate="california" aria-label="Zoom to California today"><span class="legend-region legend-region--california" aria-hidden="true"></span></button>
@@ -1010,6 +1140,8 @@
             <span id="timeline__label">1610</span>
             <div id="timeline__track">
                 <div id="timeline__slider-wrap">
+                    <div id="timeline__track-line" aria-hidden="true"></div>
+                    <div id="timeline__progress" aria-hidden="true"><span id="timeline__progress-fill"></span></div>
                     <div id="timeline__ticks"></div>
                     <div id="timeline__events"></div>
                     <input id="timeline__range" type="range" min="1610" max="1850" step="1" value="1610" />

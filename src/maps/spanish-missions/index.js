@@ -46,8 +46,11 @@ var ORDER_COLORS = {
 	Jesuit: '#2a6f97',
 	Franciscan: '#bc6c25',
 	Dominican: '#606c38',
+	Chapel: '#9b2226',
 };
 var MARKER_REFERENCE_ZOOM = 7;
+var INITIAL_MAP_CENTER = [-97.68, 29.26];
+var INITIAL_MAP_ZOOM = 3.5;
 var MARKER_ICON_SIZE_SCALE = 1.5;
 var MISSION_CIRCLE_RADIUS = 6;
 var MISSION_HQ_CIRCLE_RADIUS = 12;
@@ -168,20 +171,22 @@ function unionProvinciaGeometries(features) {
 	return turf.union(collection);
 }
 
-var US_STATE_DECADES = [1776, 1790, 1800, 1810, 1820, 1830, 1840, 1850];
+var US_STATE_DECADES = [1776, 1790, 1800, 1810, 1820, 1830, 1840, 1845, 1846, 1848];
 
-function getUsStateGeojsonUrl(decade) {
-	if (decade === 1776) return './layers/context-us_1776.geojson';
-	return './layers/context-us_state_' + decade + '.geojson';
+function getUsStateGeojsonUrl(year) {
+	if (year === 1776) return './layers/context-us_1776.geojson';
+	if (year === 1845 || year === 1846 || year === 1848) {
+		return './layers/context-us_' + year + '.geojson';
+	}
+	return './layers/context-us_state_' + year + '.geojson';
 }
 
 function getUsStateDecadeYear(year) {
-	if (year >= 1848) return 1850;
-	var decadeYear = null;
+	var snapshotYear = null;
 	US_STATE_DECADES.forEach(function(decade) {
-		if (decade <= year) decadeYear = decade;
+		if (decade <= year) snapshotYear = decade;
 	});
-	return decadeYear;
+	return snapshotYear;
 }
 
 function getVisibleUsStateGeojson() {
@@ -207,7 +212,7 @@ function getActiveMexicoPeriodYear() {
 }
 
 function isTexasPeriodActive() {
-	return selectedYear >= 1836 && selectedYear < 1848;
+	return selectedYear >= 1836 && selectedYear < 1845;
 }
 
 function getVisibleMexicoGeojson() {
@@ -467,6 +472,13 @@ var missionsVisible = true;
 
 var MISSION_HQ_ICON_OFFSET = [-1.25, 1.25];
 var PRESIDIO_CAPITAL_ICON_OFFSET = [1.25, -1.25];
+var NEARBY_MISSION_ICON_OFFSET = [-1.5, 1.5];
+var NEARBY_PRESIDIO_ICON_OFFSET = [1.5, -1.5];
+var NEARBY_MARKER_THRESHOLD_DEG = 0.0015;
+
+function fetchData(url) {
+	return fetch(url, { cache: 'no-cache' });
+}
 
 function extendBoundsWithCoords(bounds, coords) {
 	if (typeof coords[0] === 'number') {
@@ -497,6 +509,7 @@ function getMissionOrderFilter() {
 		['==', ['get', 'order'], 'Jesuit'],
 		['==', ['get', 'order'], 'Franciscan'],
 		['==', ['get', 'order'], 'Dominican'],
+		['==', ['get', 'order'], 'Chapel'],
 	];
 }
 
@@ -641,10 +654,19 @@ function loadReadmeMarkdown() {
 }
 
 function renderReadmeMarkdown(markdown) {
+	var html;
 	if (typeof marked !== 'undefined' && marked.parse) {
-		return marked.parse(markdown);
+		html = marked.parse(markdown);
+	} else {
+		html = '<pre>' + markdown.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</pre>';
 	}
-	return '<pre>' + markdown.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</pre>';
+	var container = document.createElement('div');
+	container.innerHTML = html;
+	container.querySelectorAll('a[href]').forEach(function(link) {
+		link.setAttribute('target', '_blank');
+		link.setAttribute('rel', 'noopener noreferrer');
+	});
+	return container.innerHTML;
 }
 
 function isReadmeModalOpen() {
@@ -1662,7 +1684,12 @@ function rasterizeMissionMarker(fillColor, logicalSize, pixelRatio) {
 	return ctx.getImageData(0, 0, size, size);
 }
 
-function loadMissionIconImages(callback) {
+function ensureMissionIconImages(callback) {
+	if (!map) {
+		if (callback) callback();
+		return;
+	}
+
 	var dpr = getMarkerPixelRatio();
 	Object.keys(ORDER_COLORS).forEach(function(order) {
 		var imageId = 'mission-' + order.toLowerCase();
@@ -1674,7 +1701,11 @@ function loadMissionIconImages(callback) {
 			);
 		}
 	});
-	callback();
+	if (callback) callback();
+}
+
+function loadMissionIconImages(callback) {
+	ensureMissionIconImages(callback);
 }
 
 function getMarkerIconSizeAtReferenceZoom(markerRadius, imageLogicalSize) {
@@ -1701,6 +1732,7 @@ function getMissionIconImageExpression() {
 		'Jesuit', 'mission-jesuit',
 		'Franciscan', 'mission-franciscan',
 		'Dominican', 'mission-dominican',
+		'Chapel', 'mission-chapel',
 		'mission-franciscan',
 	];
 }
@@ -1819,6 +1851,10 @@ function coordKey(coords) {
 	return coords[0].toFixed(4) + ',' + coords[1].toFixed(4);
 }
 
+function coordsNear(a, b, threshold) {
+	return Math.abs(a[0] - b[0]) <= threshold && Math.abs(a[1] - b[1]) <= threshold;
+}
+
 function applyColocatedIconOffsets(missionFeatures, presidioFeatures) {
 	var hqByKey = {};
 	missionFeatures.forEach(function(feature) {
@@ -1832,6 +1868,19 @@ function applyColocatedIconOffsets(missionFeatures, presidioFeatures) {
 		if (!hq) return;
 		hq.properties.iconOffset = MISSION_HQ_ICON_OFFSET.slice();
 		feature.properties.iconOffset = PRESIDIO_CAPITAL_ICON_OFFSET.slice();
+	});
+
+	missionFeatures.forEach(function(mission) {
+		if (mission.properties.iconOffset) return;
+		var mcoords = mission.geometry.coordinates;
+		for (var i = 0; i < presidioFeatures.length; i++) {
+			var presidio = presidioFeatures[i];
+			if (presidio.properties.iconOffset) continue;
+			if (!coordsNear(mcoords, presidio.geometry.coordinates, NEARBY_MARKER_THRESHOLD_DEG)) continue;
+			mission.properties.iconOffset = NEARBY_MISSION_ICON_OFFSET.slice();
+			presidio.properties.iconOffset = NEARBY_PRESIDIO_ICON_OFFSET.slice();
+			break;
+		}
 	});
 }
 
@@ -1882,10 +1931,8 @@ function getVisiblePresidiosGeojson() {
 
 function buildPresidioPopupHtml(props) {
 	var capitalLabel = '';
-	if (isCapitalProperty(props.capital) && props.year_became_capital != null) {
-		capitalLabel = props.year_ended_as_capital != null
-			? 'Royal capital (' + props.year_became_capital + '–' + props.year_ended_as_capital + ')'
-			: 'Royal capital (since ' + props.year_became_capital + ')';
+	if (isCapitalProperty(props.capital)) {
+		capitalLabel = 'Royal capital';
 	}
 	var regionLabel = props.region ? String(props.region).charAt(0).toUpperCase() + String(props.region).slice(1) : '';
 	var typeParts = [];
@@ -1909,11 +1956,68 @@ function buildPopupHtml(props) {
 	);
 }
 
+function getTimelineThumbSizePx(wrap) {
+	if (!wrap) return 18;
+	var size = getComputedStyle(wrap).getPropertyValue('--timeline-thumb-size').trim();
+	if (size.endsWith('rem')) {
+		var rootSize = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+		return parseFloat(size) * rootSize;
+	}
+	if (size.endsWith('px')) return parseFloat(size);
+	return parseFloat(size) || 18;
+}
+
+function getTimelinePositionPercent(year) {
+	var span = maxYear - minYear;
+	if (span <= 0) return 0;
+
+	var progress = (year - minYear) / span;
+	var slider = document.getElementById('timeline__range');
+	if (!slider || !slider.clientWidth) return progress * 100;
+
+	var trackWidth = slider.clientWidth;
+	var wrap = document.getElementById('timeline__slider-wrap');
+	var thumbSize = getTimelineThumbSizePx(wrap);
+	if (trackWidth <= thumbSize) return progress * 100;
+
+	var centerPx = progress * (trackWidth - thumbSize) + thumbSize / 2;
+	return (centerPx / trackWidth) * 100;
+}
+
+function updateTimelineProgress() {
+	var wrap = document.getElementById('timeline__slider-wrap');
+	if (!wrap) return;
+	wrap.style.setProperty('--timeline-progress', getTimelinePositionPercent(selectedYear) + '%');
+}
+
+function updateTimelinePositions() {
+	var ticksEl = document.getElementById('timeline__ticks');
+	if (ticksEl) {
+		Array.prototype.forEach.call(ticksEl.children, function(tick) {
+			var year = Number(tick.dataset.year);
+			if (isNaN(year)) return;
+			tick.style.left = getTimelinePositionPercent(year) + '%';
+		});
+	}
+
+	var eventsEl = document.getElementById('timeline__events');
+	if (eventsEl) {
+		Array.prototype.forEach.call(eventsEl.querySelectorAll('.timeline-event'), function(button) {
+			var year = Number(button.dataset.year);
+			if (isNaN(year)) return;
+			button.style.left = getTimelinePositionPercent(year) + '%';
+		});
+	}
+
+	updateTimelineProgress();
+}
+
 function updateTimelineUi() {
 	var label = document.getElementById('timeline__label');
 	if (label) label.textContent = String(selectedYear);
 	updateTimelineTickStates();
 	updateTimelineControls();
+	updateTimelineProgress();
 }
 
 function updateTimelineTickStates() {
@@ -1928,10 +2032,21 @@ function updateTimelineTickStates() {
 }
 
 function getDecadeTickYears() {
-	var first = Math.ceil(minYear / 10) * 10;
 	var years = [];
+	var seen = {};
+	if (minYear % 10 !== 0) {
+		years.push(minYear);
+		seen[minYear] = true;
+	}
+	var first = Math.ceil(minYear / 10) * 10;
 	for (var year = first; year <= maxYear; year += 10) {
-		years.push(year);
+		if (!seen[year]) {
+			years.push(year);
+			seen[year] = true;
+		}
+	}
+	if (maxYear % 10 !== 0 && !seen[maxYear]) {
+		years.push(maxYear);
 	}
 	return years;
 }
@@ -1948,7 +2063,7 @@ function renderTimelineTicks() {
 		var tick = document.createElement('div');
 		tick.className = 'timeline-tick' + (year <= selectedYear ? ' is-past' : '');
 		tick.dataset.year = String(year);
-		tick.style.left = ((year - minYear) / span * 100) + '%';
+		tick.style.left = getTimelinePositionPercent(year) + '%';
 
 		var mark = document.createElement('span');
 		mark.className = 'timeline-tick__mark';
@@ -1972,7 +2087,8 @@ function renderTimelineEvents() {
 		var button = document.createElement('button');
 		button.type = 'button';
 		button.className = 'timeline-event';
-		button.style.left = ((event.year - minYear) / span * 100) + '%';
+		button.dataset.year = String(event.year);
+		button.style.left = getTimelinePositionPercent(event.year) + '%';
 		button.setAttribute('aria-label', event.year + ': ' + event.name);
 
 		var mark = document.createElement('span');
@@ -2127,6 +2243,9 @@ function playTimelineAnimation() {
 function updateMissionData() {
 	if (!map) return;
 
+	ensureMissionIconImages();
+	updateMissionLayerFilters();
+
 	var markerData = getVisibleMarkerGeojson();
 	if (map.getSource('missions')) {
 		map.getSource('missions').setData(markerData.missions);
@@ -2163,31 +2282,54 @@ function unionBoundsFromGeojson(bounds, geojson) {
 	});
 }
 
-function fitMapToCustomLayers(options) {
-	if (!map) return;
-
-	options = options || {};
-	var bounds = new mapboxgl.LngLatBounds();
-
-	unionBoundsFromGeojson(bounds, missions);
-	unionBoundsFromGeojson(bounds, presidios);
-	unionBoundsFromGeojson(bounds, california);
-	unionBoundsFromGeojson(bounds, getVisibleNationalCapitalsGeojson());
-
-	if (bounds.isEmpty()) return;
-
-	map.fitBounds(bounds, {
-		padding: { top: 48, bottom: 96, left: 48, right: 48 },
-		duration: options.duration != null ? options.duration : 600,
+function clearTimelineEventTooltips() {
+	var eventsEl = document.getElementById('timeline__events');
+	if (!eventsEl) return;
+	Array.prototype.forEach.call(eventsEl.querySelectorAll('.timeline-event'), function(btn) {
+		btn.classList.remove('is-tooltip-visible');
 	});
+}
+
+function setupTimelineEventHover() {
+	var eventsEl = document.getElementById('timeline__events');
+	var wrap = document.getElementById('timeline__slider-wrap');
+	if (!eventsEl || !wrap) return;
+
+	wrap.addEventListener('pointermove', function(event) {
+		if (eventsEl.classList.contains('is-slider-active')) {
+			clearTimelineEventTooltips();
+			return;
+		}
+
+		var hovered = null;
+		Array.prototype.forEach.call(eventsEl.querySelectorAll('.timeline-event'), function(btn) {
+			var rect = btn.getBoundingClientRect();
+			var centerX = rect.left + rect.width / 2;
+			var centerY = rect.top + rect.height / 2;
+			if (Math.abs(event.clientX - centerX) <= 12 && Math.abs(event.clientY - centerY) <= 20) {
+				hovered = btn;
+			}
+		});
+
+		Array.prototype.forEach.call(eventsEl.querySelectorAll('.timeline-event'), function(btn) {
+			btn.classList.toggle('is-tooltip-visible', btn === hovered);
+		});
+	});
+
+	wrap.addEventListener('pointerleave', clearTimelineEventTooltips);
 }
 
 function setupTimeline() {
 	var slider = document.getElementById('timeline__range');
+	var eventsEl = document.getElementById('timeline__events');
 	var playBtn = document.getElementById('timeline__play');
 	var prevBtn = document.getElementById('timeline__prev');
 	var nextBtn = document.getElementById('timeline__next');
 	if (!slider) return;
+
+	function setSliderInteracting(active) {
+		if (eventsEl) eventsEl.classList.toggle('is-slider-active', active);
+	}
 
 	slider.min = String(minYear);
 	slider.max = String(maxYear);
@@ -2195,8 +2337,29 @@ function setupTimeline() {
 	renderTimelineTicks();
 	renderTimelineEvents();
 
-	slider.addEventListener('pointerdown', function() {
+	slider.addEventListener('pointerdown', function(event) {
 		pauseTimelineAnimation();
+		clearTimelineEventTooltips();
+		slider.setPointerCapture(event.pointerId);
+		setSliderInteracting(true);
+	});
+
+	slider.addEventListener('pointerup', function(event) {
+		if (slider.hasPointerCapture(event.pointerId)) {
+			slider.releasePointerCapture(event.pointerId);
+		}
+		setSliderInteracting(false);
+	});
+
+	slider.addEventListener('pointercancel', function(event) {
+		if (slider.hasPointerCapture(event.pointerId)) {
+			slider.releasePointerCapture(event.pointerId);
+		}
+		setSliderInteracting(false);
+	});
+
+	slider.addEventListener('lostpointercapture', function() {
+		setSliderInteracting(false);
 	});
 
 	slider.addEventListener('input', function() {
@@ -2231,6 +2394,10 @@ function setupTimeline() {
 	});
 
 	updateTimelineUi();
+	setupTimelineEventHover();
+
+	window.addEventListener('resize', updateTimelinePositions);
+	requestAnimationFrame(updateTimelinePositions);
 }
 
 function setupPresidioInteractions() {
@@ -2313,13 +2480,19 @@ function addMissionLayers() {
 	});
 }
 
+function clearMapLocationHash() {
+	if (!window.location.hash) return;
+	history.replaceState(null, '', window.location.pathname + window.location.search);
+}
+
 function initMap() {
+	clearMapLocationHash();
+
 	map = new mapboxgl.Map({
 		container: 'map',
 		style: 'mapbox://styles/mapbox/dark-v11',
-		center: [-117.5, 32.5],
-		zoom: 5,
-		hash: true,
+		center: INITIAL_MAP_CENTER,
+		zoom: INITIAL_MAP_ZOOM,
 		attributionControl: false,
 	});
 
@@ -2380,11 +2553,6 @@ function initMap() {
 			setupNationalCapitalInteractions();
 			setupTimeline();
 			syncLegendLayerVisibility();
-			map.once('idle', function() {
-				if (!window.location.hash) {
-					fitMapToCustomLayers({ duration: 0 });
-				}
-			});
 			});
 			});
 		});
@@ -2396,38 +2564,38 @@ loadReadmeMarkdown().then(applyLegendTitleFromReadme).catch(function(error) {
 });
 
 Promise.all([
-	fetch('./milestones.csv').then(function(response) {
+	fetchData('./milestones.csv').then(function(response) {
 		if (!response.ok) throw new Error('Failed to load milestones.csv');
 		return response.text();
 	}),
-	fetch('./layers/missions.geojson').then(function(response) {
+	fetchData('./layers/missions.geojson').then(function(response) {
 		if (!response.ok) throw new Error('Failed to load layers/missions.geojson');
 		return response.json();
 	}),
-	fetch('./layers/presidios.geojson').then(function(response) {
+	fetchData('./layers/presidios.geojson').then(function(response) {
 		if (!response.ok) throw new Error('Failed to load layers/presidios.geojson');
 		return response.json();
 	}),
-	fetch('./layers/context-Provincia_mayor.geojson').then(function(response) {
+	fetchData('./layers/context-Provincia_mayor.geojson').then(function(response) {
 		if (!response.ok) throw new Error('Failed to load layers/context-Provincia_mayor.geojson');
 		return response.json();
 	}),
-	fetch('./layers/california.geojson').then(function(response) {
+	fetchData('./layers/california.geojson').then(function(response) {
 		if (!response.ok) throw new Error('Failed to load layers/california.geojson');
 		return response.json();
 	}),
 ].concat(MEXICO_PERIOD_YEARS.map(function(year) {
-	return fetch('./layers/context-mexico-' + year + '.geojson').then(function(response) {
+	return fetchData('./layers/context-mexico-' + year + '.geojson').then(function(response) {
 		if (!response.ok) throw new Error('Failed to load layers/context-mexico-' + year + '.geojson');
 		return response.json();
 	});
 })).concat([
-	fetch('./layers/context-texas.geojson').then(function(response) {
+	fetchData('./layers/context-texas.geojson').then(function(response) {
 		if (!response.ok) throw new Error('Failed to load layers/context-texas.geojson');
 		return response.json();
 	}),
 ]).concat(US_STATE_DECADES.map(function(decade) {
-	return fetch(getUsStateGeojsonUrl(decade)).then(function(response) {
+	return fetchData(getUsStateGeojsonUrl(decade)).then(function(response) {
 		if (!response.ok) throw new Error('Failed to load ' + getUsStateGeojsonUrl(decade));
 		return response.json();
 	});

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Build historical Mexico and Texas boundary GeoJSON layers.
 
-Mexico-1821: union(countries.geojson) + (union(1850 US) - Oregon Territory - union(1840 US))
-Mexico-1823: union(Mexico from countries.geojson) + (union(1850 US) - Oregon Territory - union(1840 US))
+Mexico-1821: union(countries.geojson) + (union(1848 US) - Oregon Territory - union(1840 US))
+Mexico-1823: union(Mexico from countries.geojson) + (union(1848 US) - Oregon Territory - union(1840 US))
 Mexico-1836: Mexico-1823 - Texas
-Mexico-1848: Mexico from countries.geojson + northern patch, minus 1850 US borders, clipped to original coastline
-Texas: Texas from context-us_state_1850
+Mexico-1848: Mexico from countries.geojson + northern patch, minus 1848 US borders, clipped to original coastline
+Texas: Texas from context-us_1845 (Republic boundaries; annexed into US from 1845)
 """
 
 from __future__ import annotations
@@ -22,12 +22,13 @@ MAPS = ROOT / "src/maps/spanish-missions"
 LAYERS = MAPS / "layers"
 COUNTRIES = MAPS / "references/countries.geojson"
 US_1840 = LAYERS / "context-us_state_1840.geojson"
-US_1850 = LAYERS / "context-us_state_1850.geojson"
+US_1845 = LAYERS / "context-us_1845.geojson"
+US_1848 = LAYERS / "context-us_1848.geojson"
 
 MIN_PART_AREA = 0.01
 # NHGIS leaves a ~0.5° gap between Mexico (modern border) and New Mexico Territory.
 GAP_BRIDGE_DISTANCE = 0.55
-# Tall band patched onto Mexico's northern SW edge before subtracting 1850 US borders.
+# Tall band patched onto Mexico's northern SW edge before subtracting 1848 US borders.
 NORTHERN_PATCH_BOX = box(-117, 31, -106, 34)
 # Inland-only corridor for the NHGIS gap bridge (excludes Pacific coast and Gulf of California).
 NORTHERN_LAND_CORRIDOR = box(-112, 31.8, -106, 34)
@@ -116,13 +117,13 @@ def write_geojson(path: Path, geojson: dict) -> None:
     path.write_text(json.dumps(geojson, separators=(",", ":")), encoding="utf-8")
 
 
-def us_territory_patch(us_1850: dict, us_1840: dict):
-    """1850 US states/territories minus Oregon Territory minus 1840 US."""
-    us_1850_union = union_features(us_1850["features"])
-    oregon = feature_geom(features_by_state(us_1850, ("Oregon Territory",))[0])
+def us_territory_patch(us_later: dict, us_1840: dict):
+    """Later US states/territories minus Oregon Territory minus 1840 US."""
+    us_later_union = union_features(us_later["features"])
+    oregon = feature_geom(features_by_state(us_later, ("Oregon Territory",))[0])
     us_1840_union = union_features(us_1840["features"])
     subtract = unary_union([oregon, us_1840_union])
-    return finalize_territory(us_1850_union.difference(subtract))
+    return finalize_territory(us_later_union.difference(subtract))
 
 
 def union_with_patch_bridge(base, patch):
@@ -131,22 +132,22 @@ def union_with_patch_bridge(base, patch):
     return finalize_territory(unary_union([base, patch, bridge]))
 
 
-def build_mexico_1821(countries: dict, us_1840: dict, us_1850: dict):
+def build_mexico_1821(countries: dict, us_1840: dict, us_1848: dict):
     countries_union = clean_geom(union_features(countries["features"]))
-    patch = us_territory_patch(us_1850, us_1840)
+    patch = us_territory_patch(us_1848, us_1840)
     geom = union_with_patch_bridge(countries_union, patch)
     return single_feature(geom, "Mexico", 1821)
 
 
-def build_mexico_1823(countries: dict, us_1840: dict, us_1850: dict):
+def build_mexico_1823(countries: dict, us_1840: dict, us_1848: dict):
     mexico = clean_geom(feature_geom(features_by_name(countries, ("Mexico",))[0]))
-    patch = us_territory_patch(us_1850, us_1840)
+    patch = us_territory_patch(us_1848, us_1840)
     geom = union_with_patch_bridge(mexico, patch)
     return single_feature(geom, "Mexico", 1823)
 
 
-def build_mexico_1836(mexico_1823_geom, us_1850: dict):
-    texas = feature_geom(features_by_state(us_1850, ("Texas",))[0])
+def build_mexico_1836(mexico_1823_geom, us_1845: dict):
+    texas = feature_geom(features_by_state(us_1845, ("Texas",))[0])
     geom = finalize_territory(mexico_1823_geom.difference(texas))
     return single_feature(geom, "Mexico", 1836)
 
@@ -160,18 +161,18 @@ def clip_to_original_coastline(geom, coastline, inland_corridor):
     return finalize_territory(trimmed)
 
 
-def build_mexico_1848(countries: dict, us_1850: dict):
+def build_mexico_1848(countries: dict, us_1848: dict):
     """Modern Mexico with NHGIS gap closed, preserving the original coastline."""
     mexico = clean_geom(feature_geom(features_by_name(countries, ("Mexico",))[0]))
-    us_union = union_features(us_1850["features"])
+    us_union = union_features(us_1848["features"])
     extended = unary_union([mexico, NORTHERN_PATCH_BOX])
     raw = extended.difference(us_union)
     geom = clip_to_original_coastline(raw, mexico, NORTHERN_LAND_CORRIDOR)
     return single_feature(geom, "Mexico", 1848)
 
 
-def build_texas(us_1850: dict):
-    texas = features_by_state(us_1850, ("Texas",))[0]
+def build_texas(us_1845: dict):
+    texas = features_by_state(us_1845, ("Texas",))[0]
     feature = dict(texas)
     props = dict(feature.get("properties") or {})
     props["name"] = "Texas"
@@ -183,19 +184,20 @@ def build_texas(us_1850: dict):
 def main() -> int:
     countries = load_geojson(COUNTRIES)
     us_1840 = load_geojson(US_1840)
-    us_1850 = load_geojson(US_1850)
+    us_1845 = load_geojson(US_1845)
+    us_1848 = load_geojson(US_1848)
 
-    mexico_1821 = build_mexico_1821(countries, us_1840, us_1850)
-    mexico_1823 = build_mexico_1823(countries, us_1840, us_1850)
+    mexico_1821 = build_mexico_1821(countries, us_1840, us_1848)
+    mexico_1823 = build_mexico_1823(countries, us_1840, us_1848)
     mexico_1823_geom = shape(mexico_1823["geometry"])
-    mexico_1836 = build_mexico_1836(mexico_1823_geom, us_1850)
+    mexico_1836 = build_mexico_1836(mexico_1823_geom, us_1845)
 
     outputs = {
         "context-mexico-1821.geojson": mexico_1821,
         "context-mexico-1823.geojson": mexico_1823,
         "context-mexico-1836.geojson": mexico_1836,
-        "context-mexico-1848.geojson": build_mexico_1848(countries, us_1850),
-        "context-texas.geojson": build_texas(us_1850),
+        "context-mexico-1848.geojson": build_mexico_1848(countries, us_1848),
+        "context-texas.geojson": build_texas(us_1845),
     }
 
     for filename, feature in outputs.items():
