@@ -29,6 +29,69 @@ function popupFieldRow(label, value) {
 	return '<div class="mission-popup__detail"><span class="mission-popup__field">' + label + ':</span> ' + value + '</div>';
 }
 
+function formatRegionLabel(region) {
+	if (!region) return '';
+	return String(region).replace(/\b([a-z])/g, function(match) {
+		return match.toUpperCase();
+	});
+}
+
+var PRESIDIO_REGION_LABELS = {
+	alta: 'Alta California',
+	baja: 'Baja California',
+};
+
+function formatPresidioRegionLabel(region) {
+	if (!region) return '';
+	if (PRESIDIO_REGION_LABELS[region]) return PRESIDIO_REGION_LABELS[region];
+	return formatRegionLabel(region);
+}
+
+var GALLERY_IMAGES = {
+	'San Diego de Alcalá': 'Mission_San_Diego_de_Alcala\u0301_-_church.jpg',
+	'San Carlos Borromeo de Carmelo': '500px-16_21_0440_carmel_mission_(cropped)_(cropped).jpg',
+	'San Antonio de Padua': '500px-Mission_San_Antonio_de_Padua_modern.jpg',
+	'San Gabriel Arcángel': '500px-Mission_San_Gabriel_4-15-05_6611.jpeg',
+	'San Luis Obispo de Tolosa': '500px-Mission_San_Luis_Obispo.jpeg',
+	'San Francisco de Asís (Mission Dolores)': 'Mission_Dolores_(1165072805).jpg',
+	'San Juan Capistrano': 'The beautiful ruins of Mission San Juan Capistrano.jpg',
+	'Santa Clara de Asís': 'Mission_Santa_Clara.jpg',
+	'San Buenaventura': 'mission-buenaventura-870x550-0.webp',
+	'Santa Bárbara': '500px-Mission_Santa_Barbara_2025.jpg',
+	'La Purísima Concepción': '500px-La_Purisima_Mission_-_Lompoc,_CA.jpg',
+	'Santa Cruz': '500px-MissionSantaCruzCalifornia.jpg',
+	'Nuestra Señora de la Soledad': '500px-Mission_Soledad,_36641_Fort_Romie,_Rd_Soledad,_CA_USA_-_panoramio_(2).jpg',
+	'San José de Guadalupe': '500px-Mission_San_Jose_April_2011_001.jpg',
+	'San Juan Bautista': '500px-San_Juan_Bautista_Mission_and_Saint_John_the_Baptist_statue_02_2022.jpg',
+	'San Miguel Arcángel': '500px-MissionSanMiguelArches.jpeg',
+	'San Fernando Rey de España': '500px-2007_Mission_San_Fernando.jpg',
+	'San Luis Rey de Francia': 'Misio\u0301n_San_Luis_Rey_de_Francia-7839.jpg',
+	'Santa Inés': '500px-Mission_StInes_(cropped).jpg',
+	'San Rafael Arcángel': '500px-Saint_Raphael_Church_San_Rafael_CA.jpg',
+	'San Francisco Solano': '500px-Mission_San_Francisco_Solano._Sonoma_State_Historic_Park.jpg',
+	'San Xavier del Bac': 'san-xavier-del-bac-mission.jpg',
+	'San Miguel Chapel': 'san-miguel-chapel.jpg',
+	'El Presidio Real de San Diego': 'presidio-san-diego.jpg',
+	'El Presidio Real de Monterrey': 'presidio-monterey.jpg',
+	'El Presidio de San Francisco': 'presidio-san-francisco.webp',
+	'El Presidio Real de Santa Bárbara': 'presidio-santa-barbara.jpg',
+	'El Presidio Real de Santa Fe': 'presidio-santa-fe-palace-of-the-governors.jpg',
+};
+
+function popupPhotoHtml(name) {
+	var filename = GALLERY_IMAGES[name];
+	if (!filename) return '';
+	return (
+		'<div class="mission-popup__photo">' +
+		'<img src="./gallery/' +
+		encodeURIComponent(filename) +
+		'" alt="' +
+		name +
+		'" loading="lazy">' +
+		'</div>'
+	);
+}
+
 function setButtonIcon(button, iconName) {
 	if (button && UI_ICONS[iconName]) {
 		button.innerHTML = UI_ICONS[iconName];
@@ -436,6 +499,10 @@ function setupPolygonLayerInteractions(layerId, buildPopupHtmlFn) {
 	});
 
 	map.on('mousemove', layerId, function(event) {
+		if (hasHoveredMarkers(event.point)) {
+			popup.remove();
+			return;
+		}
 		if (!event.features || !event.features.length) return;
 		popup
 			.setLngLat(event.lngLat)
@@ -468,6 +535,9 @@ var legendLayerVisibility = {
 };
 
 var MISSION_LAYER_IDS = ['missions-symbols', 'missions-hq-symbols'];
+var PRESIDIO_LAYER_IDS = ['presidios-symbols', 'presidios-capital-symbols'];
+var MISSION_HOVER_PAD_PX = 14;
+var markerPopupsByKey = {};
 var missionsVisible = true;
 
 var MISSION_HQ_ICON_OFFSET = [-1.25, 1.25];
@@ -895,6 +965,10 @@ function setupNationalCapitalInteractions() {
 		});
 
 		map.on('mousemove', layerId, function(event) {
+			if (hasHoveredMarkers(event.point)) {
+				popup.remove();
+				return;
+			}
 			if (!event.features || !event.features.length) return;
 			var props = event.features[0].properties;
 			popup
@@ -1930,29 +2004,26 @@ function getVisiblePresidiosGeojson() {
 }
 
 function buildPresidioPopupHtml(props) {
-	var capitalLabel = '';
-	if (isCapitalProperty(props.capital)) {
-		capitalLabel = 'Royal capital';
-	}
-	var regionLabel = props.region ? String(props.region).charAt(0).toUpperCase() + String(props.region).slice(1) : '';
-	var typeParts = [];
-	if (regionLabel) typeParts.push(regionLabel);
-	if (capitalLabel) typeParts.push(capitalLabel);
 	return (
+		popupPhotoHtml(props.name) +
 		'<div class="mission-popup__name">' + props.name + '</div>' +
-		popupDetailRow('mapPin', props.location) +
-		popupDetailRow('clock', String(props.year)) +
-		(typeParts.length ? popupDetailRow('flag', typeParts.join(' · ')) : '')
+		popupFieldRow('location', props.location) +
+		popupFieldRow('year', props.year != null ? String(props.year) : '') +
+		popupFieldRow('region', formatPresidioRegionLabel(props.region)) +
+		popupFieldRow('year_became_capital', props.year_became_capital != null ? String(props.year_became_capital) : '') +
+		popupFieldRow('year_ended_as_capital', props.year_ended_as_capital != null ? String(props.year_ended_as_capital) : '')
 	);
 }
 
 function buildPopupHtml(props) {
-	var orderLabel = props.order + (isHqProperty(props.hq) ? ' · HQ' : '');
 	return (
+		popupPhotoHtml(props.name) +
 		'<div class="mission-popup__name">' + props.name + '</div>' +
-		popupDetailRow('mapPin', props.location) +
-		popupDetailRow('clock', String(props.year)) +
-		popupDetailRow('church', orderLabel)
+		popupFieldRow('location', props.location) +
+		popupFieldRow('year', props.year != null ? String(props.year) : '') +
+		popupFieldRow('order', props.order) +
+		popupFieldRow('region', formatRegionLabel(props.region)) +
+		popupFieldRow('hq', isHqProperty(props.hq) ? 'TRUE' : '')
 	);
 }
 
@@ -2400,61 +2471,207 @@ function setupTimeline() {
 	requestAnimationFrame(updateTimelinePositions);
 }
 
-function setupPresidioInteractions() {
-	var popup = new mapboxgl.Popup({
-		closeButton: false,
-		closeOnClick: false,
-		offset: 12,
-		className: 'mission-popup',
+function isMarkerLayerVisible(layerId) {
+	if (!map.getLayer(layerId)) return false;
+	return map.getLayoutProperty(layerId, 'visibility') !== 'none';
+}
+
+function getVisibleMarkerLayers(layerIds) {
+	return layerIds.filter(isMarkerLayerVisible);
+}
+
+function queryBBoxAroundPoint(point, pad) {
+	return [
+		[point.x - pad, point.y - pad],
+		[point.x + pad, point.y + pad],
+	];
+}
+
+
+function screenDistanceBetweenProjected(a, b) {
+	var dx = a.x - b.x;
+	var dy = a.y - b.y;
+	return Math.sqrt(dx * dx + dy * dy);
+}
+
+function pickClosestRenderedFeature(features, point) {
+	var best = features[0];
+	var bestDist = Infinity;
+	features.forEach(function(feature) {
+		var projected = map.project(feature.geometry.coordinates);
+		var dx = projected.x - point.x;
+		var dy = projected.y - point.y;
+		var dist = dx * dx + dy * dy;
+		if (dist < bestDist) {
+			bestDist = dist;
+			best = feature;
+		}
+	});
+	return best;
+}
+
+function pickClosestMarkerPair(point) {
+	var features = getHoveredMarkerFeatures(point);
+	var missions = [];
+	var presidios = [];
+
+	features.forEach(function(feature) {
+		if (isPresidioMarkerLayer(feature.layer.id)) {
+			presidios.push(feature);
+		} else {
+			missions.push(feature);
+		}
 	});
 
-	['presidios-symbols', 'presidios-capital-symbols'].forEach(function(layerId) {
-		map.on('mouseenter', layerId, function() {
-			map.getCanvas().style.cursor = 'pointer';
-		});
+	var result = [];
+	if (missions.length) result.push(pickClosestRenderedFeature(missions, point));
+	if (presidios.length) result.push(pickClosestRenderedFeature(presidios, point));
+	return result;
+}
 
-		map.on('mouseleave', layerId, function() {
-			map.getCanvas().style.cursor = '';
-			popup.remove();
-		});
+function isPresidioMarkerLayer(layerId) {
+	return PRESIDIO_LAYER_IDS.indexOf(layerId) !== -1;
+}
 
-		map.on('mousemove', layerId, function(event) {
-			if (!event.features || !event.features.length) return;
-			var props = event.features[0].properties;
-			popup
-				.setLngLat(event.lngLat)
-				.setHTML(buildPresidioPopupHtml(props))
-				.addTo(map);
-		});
+function getMarkerFeatureKey(feature) {
+	var kind = isPresidioMarkerLayer(feature.layer.id) ? 'presidio' : 'mission';
+	return kind + ':' + (feature.properties.name || feature.id || '');
+}
+
+function dedupeMarkerFeatures(features) {
+	var byKey = {};
+	features.forEach(function(feature) {
+		byKey[getMarkerFeatureKey(feature)] = feature;
+	});
+	return Object.keys(byKey).map(function(key) {
+		return byKey[key];
 	});
 }
 
-function setupMissionInteractions() {
-	var popup = new mapboxgl.Popup({
-		closeButton: false,
-		closeOnClick: false,
-		offset: 12,
-		className: 'mission-popup',
+function getHoveredMarkerFeatures(point) {
+	var missionLayers = getVisibleMarkerLayers(MISSION_LAYER_IDS);
+	var presidioLayers = getVisibleMarkerLayers(PRESIDIO_LAYER_IDS);
+	var features = [];
+
+	if (missionLayers.length) {
+		features = features.concat(
+			map.queryRenderedFeatures(queryBBoxAroundPoint(point, MISSION_HOVER_PAD_PX), { layers: missionLayers })
+		);
+	}
+	if (presidioLayers.length) {
+		features = features.concat(
+			map.queryRenderedFeatures(point, { layers: presidioLayers })
+		);
+	}
+
+	return dedupeMarkerFeatures(features);
+}
+
+function hasHoveredMarkers(point) {
+	return pickClosestMarkerPair(point).length > 0;
+}
+
+function buildMarkerPopupHtml(feature) {
+	if (isPresidioMarkerLayer(feature.layer.id)) {
+		return buildPresidioPopupHtml(feature.properties);
+	}
+	return buildPopupHtml(feature.properties);
+}
+
+function getMarkerPopupLayout(kind, feature, otherFeature) {
+	if (!otherFeature) {
+		return { anchor: 'top', offset: [0, 12] };
+	}
+
+	var thisPoint = map.project(feature.geometry.coordinates);
+	var otherPoint = map.project(otherFeature.geometry.coordinates);
+	var closeOnScreen = screenDistanceBetweenProjected(thisPoint, otherPoint) < 120;
+
+	if (closeOnScreen) {
+		if (kind === 'presidio') {
+			return { anchor: 'left', offset: [18, 0] };
+		}
+		return { anchor: 'right', offset: [-18, 0] };
+	}
+
+	if (kind === 'presidio') {
+		return { anchor: 'bottom', offset: [0, -12] };
+	}
+	return { anchor: 'top', offset: [0, 12] };
+}
+
+function layoutKey(layout) {
+	return layout.anchor + ':' + layout.offset[0] + ',' + layout.offset[1];
+}
+
+function syncMarkerPopups(features) {
+	var missionFeature = null;
+	var presidioFeature = null;
+
+	features.forEach(function(feature) {
+		if (isPresidioMarkerLayer(feature.layer.id)) {
+			presidioFeature = feature;
+		} else {
+			missionFeature = feature;
+		}
 	});
 
-	['missions-symbols', 'missions-hq-symbols'].forEach(function(layerId) {
-		map.on('mouseenter', layerId, function() {
-			map.getCanvas().style.cursor = 'pointer';
-		});
+	var activeKeys = {};
+	var pairs = [];
+	if (missionFeature) pairs.push({ kind: 'mission', feature: missionFeature });
+	if (presidioFeature) pairs.push({ kind: 'presidio', feature: presidioFeature });
 
-		map.on('mouseleave', layerId, function() {
+	pairs.forEach(function(pair) {
+		var key = pair.kind;
+		var otherFeature = pair.kind === 'mission' ? presidioFeature : missionFeature;
+		var layout = getMarkerPopupLayout(pair.kind, pair.feature, otherFeature);
+		var nextLayoutKey = layoutKey(layout);
+		activeKeys[key] = true;
+
+		var popup = markerPopupsByKey[key];
+		if (!popup || popup._layoutKey !== nextLayoutKey) {
+			if (popup) popup.remove();
+			popup = new mapboxgl.Popup({
+				closeButton: false,
+				closeOnClick: false,
+				anchor: layout.anchor,
+				offset: layout.offset,
+				className: 'mission-popup',
+			});
+			popup._layoutKey = nextLayoutKey;
+			markerPopupsByKey[key] = popup;
+		}
+
+		popup
+			.setLngLat(pair.feature.geometry.coordinates)
+			.setHTML(buildMarkerPopupHtml(pair.feature))
+			.addTo(map);
+	});
+
+	Object.keys(markerPopupsByKey).forEach(function(key) {
+		if (!activeKeys[key]) {
+			markerPopupsByKey[key].remove();
+			delete markerPopupsByKey[key];
+		}
+	});
+}
+
+function setupMarkerHoverInteractions() {
+	map.on('mousemove', function(event) {
+		var features = pickClosestMarkerPair(event.point);
+		if (!features.length) {
 			map.getCanvas().style.cursor = '';
-			popup.remove();
-		});
+			syncMarkerPopups([]);
+			return;
+		}
 
-		map.on('mousemove', layerId, function(event) {
-			if (!event.features || !event.features.length) return;
-			var props = event.features[0].properties;
-			popup
-				.setLngLat(event.lngLat)
-				.setHTML(buildPopupHtml(props))
-				.addTo(map);
-		});
+		map.getCanvas().style.cursor = 'pointer';
+		syncMarkerPopups(features);
+	});
+
+	map.on('mouseleave', function() {
+		map.getCanvas().style.cursor = '';
+		syncMarkerPopups([]);
 	});
 }
 
@@ -2548,8 +2765,7 @@ function initMap() {
 			addMissionLayers();
 
 			addNationalCapitalLayers();
-			setupMissionInteractions();
-			setupPresidioInteractions();
+			setupMarkerHoverInteractions();
 			setupNationalCapitalInteractions();
 			setupTimeline();
 			syncLegendLayerVisibility();

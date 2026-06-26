@@ -712,10 +712,43 @@
             box-shadow: 0 4px 12px rgb(0 0 0 / 35%);
             font-size: 0.875rem;
             line-height: 1.25rem;
+            min-width: 12rem;
+            max-width: 16rem;
         }
 
-        .mission-popup .mapboxgl-popup-tip {
+        .mission-popup.mapboxgl-popup-anchor-top .mapboxgl-popup-tip,
+        .mission-popup.mapboxgl-popup-anchor-top-left .mapboxgl-popup-tip,
+        .mission-popup.mapboxgl-popup-anchor-top-right .mapboxgl-popup-tip {
+            border-bottom-color: var(--popover);
+        }
+
+        .mission-popup.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip,
+        .mission-popup.mapboxgl-popup-anchor-bottom-left .mapboxgl-popup-tip,
+        .mission-popup.mapboxgl-popup-anchor-bottom-right .mapboxgl-popup-tip {
             border-top-color: var(--popover);
+        }
+
+        .mission-popup.mapboxgl-popup-anchor-left .mapboxgl-popup-tip {
+            border-right-color: var(--popover);
+        }
+
+        .mission-popup.mapboxgl-popup-anchor-right .mapboxgl-popup-tip {
+            border-left-color: var(--popover);
+        }
+
+        .mission-popup__photo {
+            margin: -0.75rem -0.75rem 0.5rem;
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            overflow: hidden;
+            line-height: 0;
+        }
+
+        .mission-popup__photo img {
+            display: block;
+            width: 100%;
+            height: auto;
+            max-height: 9rem;
+            object-fit: cover;
         }
 
         .mission-popup__name {

@@ -3,285 +3,13 @@
   "features": [
     {
       "type": "Feature",
-      "id": 1,
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -117.1943,
-          32.7587
-        ]
-      },
       "properties": {
-        "name": "El Presidio Real de San Diego",
-        "location": "Presidio Park, San Diego, CA, USA",
-        "year": 1769,
-        "region": "alta"
-      }
-    },
-    {
-      "type": "Feature",
-      "id": 2,
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -121.8974,
-          36.5977
-        ]
+        "name": "El Presidio Real de Santa Fe",
+        "location": "Santa Fe, New Mexico, USA",
+        "year": 1610,
+        "region": "nuevo mexico",
+        "year_became_capital": 1610
       },
-      "properties": {
-        "name": "El Presidio Real de Monterrey",
-        "location": "Downtown / Presidio of Monterey, Monterey, CA, USA",
-        "year": 1770,
-        "region": "alta",
-        "year_became_capital": 1777
-      }
-    },
-    {
-      "type": "Feature",
-      "id": 3,
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -122.4641,
-          37.8014
-        ]
-      },
-      "properties": {
-        "name": "El Presidio de San Francisco",
-        "location": "Golden Gate National Recreation Area, San Francisco, CA, USA",
-        "year": 1776,
-        "region": "alta"
-      }
-    },
-    {
-      "type": "Feature",
-      "id": 4,
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -119.6986,
-          34.4383
-        ]
-      },
-      "properties": {
-        "name": "El Presidio Real de Santa Bárbara",
-        "location": "El Presidio de Santa Bárbara State Historic Park, Santa Barbara, CA, USA",
-        "year": 1782,
-        "region": "alta"
-      }
-    },
-    {
-      "type": "Feature",
-      "id": 5,
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -111.349,
-          26.014
-        ]
-      },
-      "properties": {
-        "name": "El Presidio de Nuestra Señora de Loreto",
-        "location": "Loreto, Baja California Sur, Mexico",
-        "year": 1697,
-        "region": "baja",
-        "year_became_capital": 1697
-      }
-    },
-    {
-      "type": "Feature",
-      "id": 6,
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -109.695,
-          23.061
-        ]
-      },
-      "properties": {
-        "name": "El Presidio de San José del Cabo",
-        "location": "San José del Cabo, Baja California Sur, Mexico",
-        "year": 1737,
-        "region": "baja"
-      }
-    },
-    {
-      "type": "Feature",
-      "id": 7,
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -101.4215,
-          26.9005
-        ]
-      },
-      "properties": {
-        "name": "Presidio de San Francisco de Coahuila (Monclova)",
-        "location": "Monclova, Coahuila, Mexico",
-        "year": 1689,
-        "region": "coahuila",
-        "year_became_capital": 1689
-      }
-    },
-    {
-      "type": "Feature",
-      "id": 8,
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -100.3925,
-          28.9856
-        ]
-      },
-      "properties": {
-        "name": "Presidio de San Juan Bautista del Río Grande",
-        "location": "Guerrero, Coahuila, Mexico",
-        "year": 1701,
-        "region": "coahuila"
-      }
-    },
-    {
-      "type": "Feature",
-      "id": 9,
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -100.309,
-          27.8878
-        ]
-      },
-      "properties": {
-        "name": "Presidio de Santa Rosa María del Sacramento",
-        "location": "Múzquiz, Coahuila, Mexico",
-        "year": 1737,
-        "region": "coahuila"
-      }
-    },
-    {
-      "type": "Feature",
-      "id": 10,
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -105.6664,
-          26.9318
-        ]
-      },
-      "properties": {
-        "name": "Real de San José del Parral (Capital)",
-        "location": "Parral, Chihuahua, Mexico",
-        "year": 1631,
-        "region": "nueva vizcaya",
-        "year_became_capital": 1631,
-        "year_ended_as_capital": 1718
-      }
-    },
-    {
-      "type": "Feature",
-      "id": 11,
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -105.3485,
-          27.2742
-        ]
-      },
-      "properties": {
-        "name": "Presidio de San Francisco de Conchos",
-        "location": "Conchos, Chihuahua, Mexico",
-        "year": 1685,
-        "region": "nueva vizcaya"
-      }
-    },
-    {
-      "type": "Feature",
-      "id": 12,
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -108.1947,
-          30.8881
-        ]
-      },
-      "properties": {
-        "name": "Presidio de San Pedro de Janos",
-        "location": "Janos, Chihuahua, Mexico",
-        "year": 1686,
-        "region": "nueva vizcaya"
-      }
-    },
-    {
-      "type": "Feature",
-      "id": 13,
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -106.0691,
-          28.6329
-        ]
-      },
-      "properties": {
-        "name": "Villa de San Felipe el Real de Chihuahua (Capital)",
-        "location": "Chihuahua City, Chihuahua, Mexico",
-        "year": 1709,
-        "region": "nueva vizcaya",
-        "year_became_capital": 1718
-      }
-    },
-    {
-      "type": "Feature",
-      "id": 14,
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -105.8892,
-          27.9444
-        ]
-      },
-      "properties": {
-        "name": "Presidio de San Juan Bautista de Carrizal",
-        "location": "Carrizal, Chihuahua, Mexico",
-        "year": 1758,
-        "region": "nueva vizcaya"
-      }
-    },
-    {
-      "type": "Feature",
-      "id": 15,
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -104.3647,
-          24.3572
-        ]
-      },
-      "properties": {
-        "name": "Presidio de Real de San Carlos de Cerro Gordo",
-        "location": "Villa Ocampo, Durango, Mexico",
-        "year": 1770,
-        "region": "nueva vizcaya"
-      }
-    },
-    {
-      "type": "Feature",
-      "id": 16,
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -106.2727,
-          31.5852
-        ]
-      },
-      "properties": {
-        "name": "Presidio de San Elzeario (San Elizario)",
-        "location": "San Elizario, Texas, USA",
-        "year": 1774,
-        "region": "nueva vizcaya"
-      }
-    },
-    {
-      "type": "Feature",
-      "id": 17,
       "geometry": {
         "type": "Point",
         "coordinates": [
@@ -289,139 +17,141 @@
           35.6872
         ]
       },
-      "properties": {
-        "name": "El Presidio Real de Santa Fe",
-        "location": "Santa Fe, New Mexico, USA",
-        "year": 1610,
-        "region": "nuevo mexico",
-        "year_became_capital": 1610
-      }
+      "id": 17
     },
     {
       "type": "Feature",
-      "id": 18,
+      "properties": {
+        "name": "Real de San José del Parral (Capital)",
+        "location": "Parral, Chihuahua, Mexico",
+        "year": 1631,
+        "region": "nueva vizcaya",
+        "year_became_capital": 1631,
+        "year_ended_as_capital": 1718
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -110.188,
-          31.723
+          -105.6664,
+          26.9318
         ]
       },
-      "properties": {
-        "name": "Presidio de Santa Cruz de Terrenate",
-        "location": "Sonora, Mexico (later Tombstone area, AZ, USA)",
-        "year": 1741,
-        "region": "sonora y sinaloa"
-      }
+      "id": 10
     },
     {
       "type": "Feature",
-      "id": 19,
+      "properties": {
+        "name": "Presidio de San Francisco de Conchos",
+        "location": "Conchos, Chihuahua, Mexico",
+        "year": 1685,
+        "region": "nueva vizcaya"
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -110.917,
-          29.333
+          -105.3485,
+          27.2742
         ]
       },
-      "properties": {
-        "name": "Presidio de San Miguel de Horcasitas",
-        "location": "San Miguel de Horcasitas, Sonora, Mexico",
-        "year": 1749,
-        "region": "sonora y sinaloa",
-        "year_became_capital": 1749,
-        "year_ended_as_capital": 1776
-      }
+      "id": 11
     },
     {
       "type": "Feature",
-      "id": 20,
+      "properties": {
+        "name": "Presidio de San Pedro de Janos",
+        "location": "Janos, Chihuahua, Mexico",
+        "year": 1686,
+        "region": "nueva vizcaya"
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -111.047,
-          31.612
+          -108.1947,
+          30.8881
         ]
       },
-      "properties": {
-        "name": "Presidio de San Ignacio de Tubac",
-        "location": "Tubac, Arizona, USA",
-        "year": 1752,
-        "region": "sonora y sinaloa"
-      }
+      "id": 12
     },
     {
       "type": "Feature",
-      "id": 21,
+      "properties": {
+        "name": "Presidio de San Francisco de Coahuila (Monclova)",
+        "location": "Monclova, Coahuila, Mexico",
+        "year": 1689,
+        "region": "coahuila",
+        "year_became_capital": 1689
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -111.959,
-          30.714
+          -101.4215,
+          26.9005
         ]
       },
-      "properties": {
-        "name": "Presidio de Santa Gertrudis de Altar",
-        "location": "Altar, Sonora, Mexico",
-        "year": 1755,
-        "region": "sonora y sinaloa"
-      }
+      "id": 7
     },
     {
       "type": "Feature",
-      "id": 22,
+      "properties": {
+        "name": "El Presidio de Nuestra Señora de Loreto",
+        "location": "Loreto, Baja California Sur, Mexico",
+        "year": 1697,
+        "region": "Baja California",
+        "year_became_capital": 1697
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -110.974,
-          32.222
+          -111.349,
+          26.014
         ]
       },
-      "properties": {
-        "name": "Presidio de San Agustín del Tucsón",
-        "location": "Tucson, Arizona, USA",
-        "year": 1775,
-        "region": "sonora y sinaloa"
-      }
+      "id": 5
     },
     {
       "type": "Feature",
-      "id": 23,
+      "properties": {
+        "name": "Presidio de San Juan Bautista del Río Grande",
+        "location": "Guerrero, Coahuila, Mexico",
+        "year": 1701,
+        "region": "coahuila"
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -109.874,
-          27.959
+          -100.3925,
+          28.9856
         ]
       },
-      "properties": {
-        "name": "Presidio de San Carlos de Buenavista",
-        "location": "Sonora, Mexico",
-        "year": 1775,
-        "region": "sonora y sinaloa"
-      }
+      "id": 8
     },
     {
       "type": "Feature",
-      "id": 24,
+      "properties": {
+        "name": "Villa de San Felipe el Real de Chihuahua (Capital)",
+        "location": "Chihuahua City, Chihuahua, Mexico",
+        "year": 1709,
+        "region": "nueva vizcaya",
+        "year_became_capital": 1718
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -110.13,
-          30.343
+          -106.0691,
+          28.6329
         ]
       },
-      "properties": {
-        "name": "Presidio de Arizpe",
-        "location": "Arizpe, Sonora, Mexico",
-        "year": 1776,
-        "region": "sonora y sinaloa",
-        "year_became_capital": 1776
-      }
+      "id": 13
     },
     {
       "type": "Feature",
-      "id": 25,
+      "properties": {
+        "name": "Presidio de San Antonio de Béxar",
+        "location": "San Antonio, Texas, USA",
+        "year": 1718,
+        "region": "tejas",
+        "year_became_capital": 1772
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
@@ -429,17 +159,16 @@
           29.4258
         ]
       },
-      "properties": {
-        "name": "Presidio de San Antonio de Béxar",
-        "location": "San Antonio, Texas, USA",
-        "year": 1718,
-        "region": "tejas",
-        "year_became_capital": 1772
-      }
+      "id": 25
     },
     {
       "type": "Feature",
-      "id": 26,
+      "properties": {
+        "name": "Presidio de Nuestra Señora de Loreto de la Bahía",
+        "location": "Goliad, Texas, USA",
+        "year": 1721,
+        "region": "tejas"
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
@@ -447,23 +176,10 @@
           28.6477
         ]
       },
-      "properties": {
-        "name": "Presidio de Nuestra Señora de Loreto de la Bahía",
-        "location": "Goliad, Texas, USA",
-        "year": 1721,
-        "region": "tejas"
-      }
+      "id": 26
     },
     {
       "type": "Feature",
-      "id": 27,
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -93.3068,
-          31.6913
-        ]
-      },
       "properties": {
         "name": "Presidio de Los Adaes (Early Capital)",
         "location": "Robeline, Louisiana, USA",
@@ -471,7 +187,291 @@
         "region": "tejas",
         "year_became_capital": 1729,
         "year_ended_as_capital": 1772
-      }
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -93.3068,
+          31.6913
+        ]
+      },
+      "id": 27
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "El Presidio de San José del Cabo",
+        "location": "San José del Cabo, Baja California Sur, Mexico",
+        "year": 1737,
+        "region": "Baja California"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -109.695,
+          23.061
+        ]
+      },
+      "id": 6
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Presidio de Santa Rosa María del Sacramento",
+        "location": "Múzquiz, Coahuila, Mexico",
+        "year": 1737,
+        "region": "coahuila"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -100.309,
+          27.8878
+        ]
+      },
+      "id": 9
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Presidio de Santa Cruz de Terrenate",
+        "location": "Sonora, Mexico (later Tombstone area, AZ, USA)",
+        "year": 1741,
+        "region": "sonora y sinaloa"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -110.188,
+          31.723
+        ]
+      },
+      "id": 18
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Presidio de San Miguel de Horcasitas",
+        "location": "San Miguel de Horcasitas, Sonora, Mexico",
+        "year": 1749,
+        "region": "sonora y sinaloa",
+        "year_became_capital": 1749,
+        "year_ended_as_capital": 1776
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -110.917,
+          29.333
+        ]
+      },
+      "id": 19
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Presidio de San Ignacio de Tubac",
+        "location": "Tubac, Arizona, USA",
+        "year": 1752,
+        "region": "sonora y sinaloa"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -111.047,
+          31.612
+        ]
+      },
+      "id": 20
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Presidio de Santa Gertrudis de Altar",
+        "location": "Altar, Sonora, Mexico",
+        "year": 1755,
+        "region": "sonora y sinaloa"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -111.959,
+          30.714
+        ]
+      },
+      "id": 21
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Presidio de San Juan Bautista de Carrizal",
+        "location": "Carrizal, Chihuahua, Mexico",
+        "year": 1758,
+        "region": "nueva vizcaya"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.8892,
+          27.9444
+        ]
+      },
+      "id": 14
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "El Presidio Real de San Diego",
+        "location": "Presidio Park, San Diego, CA, USA",
+        "year": 1769,
+        "region": "Alta California"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -117.1943,
+          32.7587
+        ]
+      },
+      "id": 1
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "El Presidio Real de Monterrey",
+        "location": "Downtown / Presidio of Monterey, Monterey, CA, USA",
+        "year": 1770,
+        "region": "Alta California",
+        "year_became_capital": 1777
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -121.8974,
+          36.5977
+        ]
+      },
+      "id": 2
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Presidio de Real de San Carlos de Cerro Gordo",
+        "location": "Villa Ocampo, Durango, Mexico",
+        "year": 1770,
+        "region": "nueva vizcaya"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.3647,
+          24.3572
+        ]
+      },
+      "id": 15
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Presidio de San Elzeario (San Elizario)",
+        "location": "San Elizario, Texas, USA",
+        "year": 1774,
+        "region": "nueva vizcaya"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.2727,
+          31.5852
+        ]
+      },
+      "id": 16
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Presidio de San Agustín del Tucsón",
+        "location": "Tucson, Arizona, USA",
+        "year": 1775,
+        "region": "sonora y sinaloa"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -110.974,
+          32.222
+        ]
+      },
+      "id": 22
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Presidio de San Carlos de Buenavista",
+        "location": "Sonora, Mexico",
+        "year": 1775,
+        "region": "sonora y sinaloa"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -109.874,
+          27.959
+        ]
+      },
+      "id": 23
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "El Presidio de San Francisco",
+        "location": "Golden Gate National Recreation Area, San Francisco, CA, USA",
+        "year": 1776,
+        "region": "Alta California"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.4641,
+          37.8014
+        ]
+      },
+      "id": 3
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Presidio de Arizpe",
+        "location": "Arizpe, Sonora, Mexico",
+        "year": 1776,
+        "region": "sonora y sinaloa",
+        "year_became_capital": 1776
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -110.13,
+          30.343
+        ]
+      },
+      "id": 24
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "El Presidio Real de Santa Bárbara",
+        "location": "El Presidio de Santa Bárbara State Historic Park, Santa Barbara, CA, USA",
+        "year": 1782,
+        "region": "Alta California"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -119.6986,
+          34.4383
+        ]
+      },
+      "id": 4
     }
   ]
 }
