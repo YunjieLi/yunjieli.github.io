@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": 1,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-76.7867, 37.2107]
+      },
+      "properties": {
+        "name": "Jamestown",
+        "location": "Jamestown Island, Virginia",
+        "year": 1607,
+        "year_end": 1776
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 2,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-70.6682, 41.9584]
+      },
+      "properties": {
+        "name": "Plymouth",
+        "location": "Plymouth, Massachusetts",
+        "year": 1620,
+        "year_end": 1776
+      }
+    }
+  ]
+}

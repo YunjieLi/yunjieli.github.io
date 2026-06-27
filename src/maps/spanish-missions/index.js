@@ -122,6 +122,7 @@ var MISSION_MARKER_OPACITY = 0.9;
 var MISSION_MARKER_LOGICAL_SIZE = 48;
 var PRESIDIO_MARKER_LOGICAL_SIZE = MISSION_MARKER_LOGICAL_SIZE;
 var PRESIDIO_SYMBOL_URL = './markers/presidio.svg';
+var ENGLISH_SETTLEMENT_SYMBOL_URL = './markers/england.svg';
 var NATIONAL_CAPITAL_MARKER_LOGICAL_SIZE = 96;
 var NATIONAL_CAPITAL_MARKER_RADIUS = 28;
 var NATIONAL_CAPITAL_SIZE_SCALE = 0.6;
@@ -536,6 +537,7 @@ var legendLayerVisibility = {
 
 var MISSION_LAYER_IDS = ['missions-symbols', 'missions-hq-symbols'];
 var PRESIDIO_LAYER_IDS = ['presidios-symbols', 'presidios-capital-symbols'];
+var ENGLISH_SETTLEMENT_LAYER_IDS = ['english-settlements-symbols'];
 var MISSION_HOVER_PAD_PX = 14;
 var markerPopupsByKey = {};
 var missionsVisible = true;
@@ -981,6 +983,7 @@ function setupNationalCapitalInteractions() {
 
 var missions;
 var presidios;
+var englishSettlements;
 var provinciaMayor;
 var provinciaRegionGeojsonCache = {};
 var california;
@@ -989,9 +992,10 @@ var texasGeojson;
 var usStateByDecade = {};
 var PROVINCIA_MAYOR_END_YEAR = 1820;
 var map;
-var minYear = 1610;
+var minYear = 1607;
 var maxYear = 1850;
 var selectedYear = minYear;
+var ENGLISH_SETTLEMENT_END_YEAR = 1776;
 var timelinePlaying = false;
 var timelineAnimationId = null;
 var timelineStepMs = 150;
@@ -1778,6 +1782,26 @@ function ensureMissionIconImages(callback) {
 	if (callback) callback();
 }
 
+function loadEnglishSettlementIconImages(callback) {
+	var img = new Image();
+	img.onload = function() {
+		if (!map.hasImage('england')) {
+			var dpr = getMarkerPixelRatio();
+			map.addImage(
+				'england',
+				rasterizePresidioMarker(img, MISSION_MARKER_LOGICAL_SIZE, dpr),
+				{ pixelRatio: dpr }
+			);
+		}
+		callback();
+	};
+	img.onerror = function() {
+		console.error('Failed to load english settlement symbol:', ENGLISH_SETTLEMENT_SYMBOL_URL);
+		callback();
+	};
+	img.src = ENGLISH_SETTLEMENT_SYMBOL_URL;
+}
+
 function loadMissionIconImages(callback) {
 	ensureMissionIconImages(callback);
 }
@@ -2001,6 +2025,32 @@ function getVisiblePresidiosGeojson() {
 		type: 'FeatureCollection',
 		features: getVisiblePresidioFeatures(),
 	};
+}
+
+function getVisibleEnglishSettlementFeatures() {
+	if (!englishSettlements) return [];
+	return englishSettlements.features.filter(function(feature) {
+		var props = feature.properties;
+		var startYear = props.year || 0;
+		var endYear = props.year_end != null ? props.year_end : ENGLISH_SETTLEMENT_END_YEAR;
+		return selectedYear >= startYear && selectedYear <= endYear;
+	});
+}
+
+function getVisibleEnglishSettlementsGeojson() {
+	return {
+		type: 'FeatureCollection',
+		features: getVisibleEnglishSettlementFeatures(),
+	};
+}
+
+function buildEnglishSettlementPopupHtml(props) {
+	return (
+		'<div class="mission-popup__name">' + props.name + '</div>' +
+		popupFieldRow('location', props.location) +
+		popupFieldRow('year', props.year != null ? String(props.year) : '') +
+		popupFieldRow('year_end', props.year_end != null ? String(props.year_end) : '')
+	);
 }
 
 function buildPresidioPopupHtml(props) {
@@ -2324,6 +2374,9 @@ function updateMissionData() {
 	if (map.getSource('presidios')) {
 		map.getSource('presidios').setData(markerData.presidios);
 	}
+	if (map.getSource('english-settlements')) {
+		map.getSource('english-settlements').setData(getVisibleEnglishSettlementsGeojson());
+	}
 	if (map.getSource('provincia-regions')) {
 		map.getSource('provincia-regions').setData(getVisibleProvinciaRegionGeojson());
 	}
@@ -2533,8 +2586,17 @@ function isPresidioMarkerLayer(layerId) {
 	return PRESIDIO_LAYER_IDS.indexOf(layerId) !== -1;
 }
 
+function isEnglishSettlementMarkerLayer(layerId) {
+	return ENGLISH_SETTLEMENT_LAYER_IDS.indexOf(layerId) !== -1;
+}
+
 function getMarkerFeatureKey(feature) {
-	var kind = isPresidioMarkerLayer(feature.layer.id) ? 'presidio' : 'mission';
+	var kind = 'mission';
+	if (isPresidioMarkerLayer(feature.layer.id)) {
+		kind = 'presidio';
+	} else if (isEnglishSettlementMarkerLayer(feature.layer.id)) {
+		kind = 'settlement';
+	}
 	return kind + ':' + (feature.properties.name || feature.id || '');
 }
 
@@ -2551,6 +2613,7 @@ function dedupeMarkerFeatures(features) {
 function getHoveredMarkerFeatures(point) {
 	var missionLayers = getVisibleMarkerLayers(MISSION_LAYER_IDS);
 	var presidioLayers = getVisibleMarkerLayers(PRESIDIO_LAYER_IDS);
+	var settlementLayers = getVisibleMarkerLayers(ENGLISH_SETTLEMENT_LAYER_IDS);
 	var features = [];
 
 	if (missionLayers.length) {
@@ -2561,6 +2624,11 @@ function getHoveredMarkerFeatures(point) {
 	if (presidioLayers.length) {
 		features = features.concat(
 			map.queryRenderedFeatures(point, { layers: presidioLayers })
+		);
+	}
+	if (settlementLayers.length) {
+		features = features.concat(
+			map.queryRenderedFeatures(queryBBoxAroundPoint(point, MISSION_HOVER_PAD_PX), { layers: settlementLayers })
 		);
 	}
 
@@ -2574,6 +2642,9 @@ function hasHoveredMarkers(point) {
 function buildMarkerPopupHtml(feature) {
 	if (isPresidioMarkerLayer(feature.layer.id)) {
 		return buildPresidioPopupHtml(feature.properties);
+	}
+	if (isEnglishSettlementMarkerLayer(feature.layer.id)) {
+		return buildEnglishSettlementPopupHtml(feature.properties);
 	}
 	return buildPopupHtml(feature.properties);
 }
@@ -2697,6 +2768,37 @@ function addMissionLayers() {
 	});
 }
 
+function getEnglishSettlementSymbolLayout() {
+	return {
+		'icon-image': 'england',
+		'icon-size': getZoomScaledIconSizeExpression(
+			getMarkerIconSizeAtReferenceZoom(MISSION_CIRCLE_RADIUS, MISSION_MARKER_LOGICAL_SIZE)
+		),
+		'icon-anchor': 'center',
+		'icon-allow-overlap': true,
+		'icon-ignore-placement': true,
+	};
+}
+
+function addEnglishSettlementLayers() {
+	if (!map.getSource('english-settlements')) {
+		map.addSource('english-settlements', {
+			type: 'geojson',
+			data: getVisibleEnglishSettlementsGeojson(),
+		});
+	}
+
+	if (!map.getLayer('english-settlements-symbols')) {
+		map.addLayer({
+			id: 'english-settlements-symbols',
+			type: 'symbol',
+			source: 'english-settlements',
+			layout: getEnglishSettlementSymbolLayout(),
+			paint: { 'icon-opacity': MISSION_MARKER_OPACITY },
+		});
+	}
+}
+
 function clearMapLocationHash() {
 	if (!window.location.hash) return;
 	history.replaceState(null, '', window.location.pathname + window.location.search);
@@ -2739,8 +2841,14 @@ function initMap() {
 			data: getVisibleMarkerGeojson().presidios,
 		});
 
+		map.addSource('english-settlements', {
+			type: 'geojson',
+			data: getVisibleEnglishSettlementsGeojson(),
+		});
+
 		loadPresidioIconImages(function() {
 			loadMissionIconImages(function() {
+			loadEnglishSettlementIconImages(function() {
 			loadNationalCapitalIconImages(function() {
 			var symbolPaint = { 'icon-opacity': 0.95 };
 
@@ -2763,12 +2871,14 @@ function initMap() {
 			});
 
 			addMissionLayers();
+			addEnglishSettlementLayers();
 
 			addNationalCapitalLayers();
 			setupMarkerHoverInteractions();
 			setupNationalCapitalInteractions();
 			setupTimeline();
 			syncLegendLayerVisibility();
+			});
 			});
 			});
 		});
@@ -2790,6 +2900,10 @@ Promise.all([
 	}),
 	fetchData('./layers/presidios.geojson').then(function(response) {
 		if (!response.ok) throw new Error('Failed to load layers/presidios.geojson');
+		return response.json();
+	}),
+	fetchData('./layers/english-settlements.geojson').then(function(response) {
+		if (!response.ok) throw new Error('Failed to load layers/english-settlements.geojson');
 		return response.json();
 	}),
 	fetchData('./layers/context-Provincia_mayor.geojson').then(function(response) {
@@ -2819,16 +2933,17 @@ Promise.all([
 	applyTimelineEvents(parseMilestonesCsv(results[0]));
 	applyMissions(results[1]);
 	applyPresidios(results[2]);
-	provinciaMayor = results[3];
-	california = results[4];
+	englishSettlements = results[3];
+	provinciaMayor = results[4];
+	california = results[5];
 	mexicoByPeriod = {};
 	MEXICO_PERIOD_YEARS.forEach(function(year, index) {
-		mexicoByPeriod[year] = results[5 + index];
+		mexicoByPeriod[year] = results[6 + index];
 	});
-	texasGeojson = results[5 + MEXICO_PERIOD_YEARS.length];
+	texasGeojson = results[6 + MEXICO_PERIOD_YEARS.length];
 	usStateByDecade = {};
 	US_STATE_DECADES.forEach(function(decade, index) {
-		usStateByDecade[decade] = results[6 + MEXICO_PERIOD_YEARS.length + index];
+		usStateByDecade[decade] = results[7 + MEXICO_PERIOD_YEARS.length + index];
 	});
 	initMap();
 	setupDataModal();
