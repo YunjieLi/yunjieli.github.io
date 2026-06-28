@@ -36,8 +36,9 @@
             --radius-lg: var(--radius);
             --text: var(--foreground);
             --surface: oklch(0.21 0.006 285.885 / 92%);
-            --readme-accent: oklch(0.8 0.14 195);
-            --readme-bold: oklch(0.87 0.08 195);
+            --readme-accent: oklch(0.78 0.13 88);
+            --readme-bold: oklch(0.985 0 0);
+            --camino-yellow: #8f6f14;
         }
 
         * {
@@ -300,7 +301,11 @@
             font-weight: 600;
             line-height: 1.5rem;
             letter-spacing: -0.01em;
-            color: var(--readme-bold);
+            color: var(--readme-accent);
+        }
+
+        #legend__info {
+            color: var(--readme-accent);
         }
 
         .legend-row {
@@ -386,6 +391,13 @@
         .legend-region--california {
             background: transparent;
             border: 1.5px dotted #bc6c25;
+        }
+
+        .legend-route--el-camino-real {
+            width: 1.125rem;
+            height: 0;
+            border-top: 1.5px solid var(--camino-yellow);
+            flex-shrink: 0;
         }
 
         .legend-presidio {
@@ -989,6 +1001,7 @@
             font-family: "Inter Variable", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             font-size: 1rem;
             line-height: 1.6;
+            color: var(--muted-foreground);
         }
 
         .readme-modal__content h1,
@@ -1147,6 +1160,10 @@
                 <span class="legend-row__label">Presidio</span>
             </div>
             <div class="legend-row">
+                <button type="button" class="legend-row__symbol" data-locate="el-camino-real" aria-label="Zoom to El Camino Real network"><span class="legend-route legend-route--el-camino-real" aria-hidden="true"></span></button>
+                <span class="legend-row__label">El Camino Real network</span>
+            </div>
+            <div class="legend-row">
                 <button type="button" class="legend-row__symbol" data-locate="provincia-mayor" aria-label="Zoom to New Spain"><span class="legend-region legend-region--new-spain" aria-hidden="true"></span></button>
                 <span class="legend-row__label">New Spain</span>
             </div>
@@ -1170,14 +1187,14 @@
         <div id="timeline">
             <button type="button" id="timeline__prev" class="btn btn-icon btn-ghost" aria-label="Previous milestone"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button>
             <button type="button" id="timeline__play" class="btn btn-icon btn-ghost" aria-label="Play timeline"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5a1 1 0 0 1 1.528-.852l12 7a1 1 0 0 1 0 1.704l-12 7A1 1 0 0 1 5 19z"></path></svg></button>
-            <span id="timeline__label">1607</span>
+            <span id="timeline__label">1610</span>
             <div id="timeline__track">
                 <div id="timeline__slider-wrap">
                     <div id="timeline__track-line" aria-hidden="true"></div>
                     <div id="timeline__progress" aria-hidden="true"><span id="timeline__progress-fill"></span></div>
                     <div id="timeline__ticks"></div>
                     <div id="timeline__events"></div>
-                    <input id="timeline__range" type="range" min="1607" max="1850" step="1" value="1607" />
+                    <input id="timeline__range" type="range" min="1610" max="1850" step="1" value="1610" />
                 </div>
             </div>
             <button type="button" id="timeline__next" class="btn btn-icon btn-ghost" aria-label="Next milestone"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></button>

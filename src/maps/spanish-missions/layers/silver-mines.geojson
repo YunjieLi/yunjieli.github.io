@@ -1,0 +1,18 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": 1,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-102.575, 22.7707]
+      },
+      "properties": {
+        "name": "Mina El Edén",
+        "subtext": "Silver mine, 1546",
+        "year": 1546
+      }
+    }
+  ]
+}

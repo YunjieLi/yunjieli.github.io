@@ -11,6 +11,7 @@
       "properties": {
         "name": "Jamestown",
         "location": "Jamestown Island, Virginia",
+        "subtext": "1607",
         "year": 1607,
         "year_end": 1776
       }
@@ -25,6 +26,7 @@
       "properties": {
         "name": "Plymouth",
         "location": "Plymouth, Massachusetts",
+        "subtext": "1620",
         "year": 1620,
         "year_end": 1776
       }

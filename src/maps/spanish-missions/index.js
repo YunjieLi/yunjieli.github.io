@@ -123,6 +123,9 @@ var MISSION_MARKER_LOGICAL_SIZE = 48;
 var PRESIDIO_MARKER_LOGICAL_SIZE = MISSION_MARKER_LOGICAL_SIZE;
 var PRESIDIO_SYMBOL_URL = './markers/presidio.svg';
 var ENGLISH_SETTLEMENT_SYMBOL_URL = './markers/england.svg';
+var SILVER_MINE_SYMBOL_URL = './markers/silver-mine.svg';
+var SILVER_MINE_MARKER_LOGICAL_SIZE = 160;
+var SILVER_MINE_SIZE_SCALE = 2;
 var NATIONAL_CAPITAL_MARKER_LOGICAL_SIZE = 96;
 var NATIONAL_CAPITAL_MARKER_RADIUS = 28;
 var NATIONAL_CAPITAL_SIZE_SCALE = 0.6;
@@ -456,6 +459,24 @@ function addCaliforniaLayers() {
 	});
 }
 
+function addElCaminoRealLayers() {
+	map.addSource('el-camino-real', {
+		type: 'geojson',
+		data: getVisibleElCaminoRealGeojson(),
+	});
+
+	map.addLayer({
+		id: 'el-camino-real-line',
+		type: 'line',
+		source: 'el-camino-real',
+		paint: {
+			'line-color': '#8f6f14',
+			'line-opacity': 0.85,
+			'line-width': 1.5,
+		},
+	});
+}
+
 function buildCaliforniaPopupHtml(props) {
 	return (
 		'<div class="mission-popup__name">' + (props.name || 'California') + '</div>' +
@@ -524,6 +545,7 @@ var LEGEND_LAYERS = {
 	texas: ['texas-fill', 'texas-outline'],
 	'us-states': ['us-states-fill', 'us-states-outline'],
 	california: ['california-outline'],
+	'el-camino-real': ['el-camino-real-line'],
 };
 
 var legendLayerVisibility = {
@@ -533,11 +555,13 @@ var legendLayerVisibility = {
 	texas: true,
 	'us-states': true,
 	california: true,
+	'el-camino-real': true,
 };
 
 var MISSION_LAYER_IDS = ['missions-symbols', 'missions-hq-symbols'];
 var PRESIDIO_LAYER_IDS = ['presidios-symbols', 'presidios-capital-symbols'];
 var ENGLISH_SETTLEMENT_LAYER_IDS = ['english-settlements-symbols'];
+var SILVER_MINE_LAYER_IDS = ['silver-mines-symbols'];
 var MISSION_HOVER_PAD_PX = 14;
 var markerPopupsByKey = {};
 var missionsVisible = true;
@@ -671,6 +695,8 @@ function getLegendLocateGeojson(target) {
 			return getVisibleTexasGeojson();
 		case 'california':
 			return california;
+		case 'el-camino-real':
+			return getVisibleElCaminoRealGeojson();
 		default:
 			return null;
 	}
@@ -984,15 +1010,17 @@ function setupNationalCapitalInteractions() {
 var missions;
 var presidios;
 var englishSettlements;
+var silverMines;
 var provinciaMayor;
 var provinciaRegionGeojsonCache = {};
 var california;
+var elCaminoReal;
 var mexicoByPeriod = {};
 var texasGeojson;
 var usStateByDecade = {};
 var PROVINCIA_MAYOR_END_YEAR = 1820;
 var map;
-var minYear = 1607;
+var minYear = 1610;
 var maxYear = 1850;
 var selectedYear = minYear;
 var ENGLISH_SETTLEMENT_END_YEAR = 1776;
@@ -1055,6 +1083,144 @@ function parseMilestonesCsv(text) {
 	});
 
 	return events;
+}
+
+function normalizeCaminoLocation(name) {
+	return String(name || '')
+		.normalize('NFD')
+		.replace(/[\u0300-\u036f]/g, '')
+		.replace(/\([^)]*\)/g, '')
+		.replace(/,.*$/, '')
+		.trim()
+		.toLowerCase();
+}
+
+function makeCaminoSegmentPairKey(start, end) {
+	var a = normalizeCaminoLocation(start);
+	var b = normalizeCaminoLocation(end);
+	return a < b ? a + '|' + b : b + '|' + a;
+}
+
+function parseCaminoSegmentName(name) {
+	return String(name || '')
+		.split(/\s*-\s*/)
+		.map(function(part) { return part.trim(); })
+		.filter(Boolean);
+}
+
+function parseElCaminoRealCsv(text) {
+	var lines = text.replace(/^\uFEFF/, '').split(/\r?\n/);
+	var rows = [];
+
+	for (var i = 0; i < lines.length; i++) {
+		var line = lines[i].trim();
+		if (!line || /^sequence\s+corridor/i.test(line)) continue;
+
+		var fields = parseCsvLine(line);
+		if (fields.length < 6) continue;
+
+		var year = parseInt(fields[3], 10);
+		if (isNaN(year)) continue;
+
+		rows.push({
+			corridor: fields[0],
+			startLocation: fields[1],
+			endLocation: fields[2],
+			year: year,
+			routeName: fields[4],
+			context: fields[5],
+		});
+	}
+
+	return rows;
+}
+
+function buildCaminoSegmentLookup(rows) {
+	var lookup = {};
+	rows.forEach(function(row) {
+		var key = makeCaminoSegmentPairKey(row.startLocation, row.endLocation);
+		if (!lookup[key]) lookup[key] = [];
+		lookup[key].push(row);
+	});
+	return lookup;
+}
+
+function findCaminoCorridorLegs(rows, startCity, endCity) {
+	var startNorm = normalizeCaminoLocation(startCity);
+	var endNorm = normalizeCaminoLocation(endCity);
+	var byCorridor = {};
+
+	rows.forEach(function(row) {
+		if (!byCorridor[row.corridor]) byCorridor[row.corridor] = [];
+		byCorridor[row.corridor].push(row);
+	});
+
+	var corridors = Object.keys(byCorridor);
+	for (var i = 0; i < corridors.length; i++) {
+		var legs = byCorridor[corridors[i]];
+		var firstStart = normalizeCaminoLocation(legs[0].startLocation);
+		var lastEnd = normalizeCaminoLocation(legs[legs.length - 1].endLocation);
+		if (firstStart === startNorm && lastEnd === endNorm) {
+			return legs;
+		}
+	}
+
+	return [];
+}
+
+function matchCaminoSegmentRows(cities, lookup, rows) {
+	if (cities.length < 2) return [];
+
+	var matched = [];
+	for (var i = 0; i < cities.length - 1; i++) {
+		var key = makeCaminoSegmentPairKey(cities[i], cities[i + 1]);
+		var legRows = lookup[key];
+		if (!legRows || !legRows.length) {
+			matched = [];
+			break;
+		}
+		matched.push(legRows[0]);
+	}
+
+	if (matched.length === cities.length - 1) return matched;
+	if (cities.length === 2) return findCaminoCorridorLegs(rows, cities[0], cities[1]);
+	return [];
+}
+
+function joinElCaminoRealWithCsv(geojson, rows) {
+	var lookup = buildCaminoSegmentLookup(rows);
+
+	return {
+		type: 'FeatureCollection',
+		features: geojson.features.map(function(feature) {
+			var props = Object.assign({}, feature.properties);
+			var cities = parseCaminoSegmentName(props.name);
+			var matchedRows = matchCaminoSegmentRows(cities, lookup, rows);
+
+			if (matchedRows.length) {
+				props.year = matchedRows.reduce(function(minYear, row) {
+					return row.year < minYear ? row.year : minYear;
+				}, matchedRows[0].year);
+				props.corridor = matchedRows[0].corridor;
+				props.route_name = matchedRows.map(function(row) { return row.routeName; }).filter(function(value, index, list) {
+					return list.indexOf(value) === index;
+				}).join('; ');
+				props.context = matchedRows.map(function(row) { return row.context; }).join(' ');
+				props.start_location = matchedRows[0].startLocation;
+				props.end_location = matchedRows[matchedRows.length - 1].endLocation;
+			}
+
+			return {
+				type: 'Feature',
+				geometry: feature.geometry,
+				properties: props,
+			};
+		}),
+	};
+}
+
+function applyElCaminoReal(geojson) {
+	elCaminoReal = geojson;
 }
 
 function applyTimelineEvents(events) {
@@ -1802,6 +1968,39 @@ function loadEnglishSettlementIconImages(callback) {
 	img.src = ENGLISH_SETTLEMENT_SYMBOL_URL;
 }
 
+function loadSilverMineIconImages(callback) {
+	fetch(SILVER_MINE_SYMBOL_URL, { cache: 'no-cache' }).then(function(response) {
+		if (!response.ok) throw new Error('Failed to load silver mine symbol');
+		return response.blob();
+	}).then(function(blob) {
+		var img = new Image();
+		var objectUrl = URL.createObjectURL(blob);
+		img.onload = function() {
+			URL.revokeObjectURL(objectUrl);
+			var dpr = getMarkerPixelRatio();
+			var logicalSize = img.naturalWidth || SILVER_MINE_MARKER_LOGICAL_SIZE;
+			if (map.hasImage('silver-mine')) {
+				map.removeImage('silver-mine');
+			}
+			map.addImage(
+				'silver-mine',
+				rasterizePresidioMarker(img, logicalSize, dpr),
+				{ pixelRatio: dpr }
+			);
+			callback();
+		};
+		img.onerror = function() {
+			URL.revokeObjectURL(objectUrl);
+			console.error('Failed to decode silver mine symbol:', SILVER_MINE_SYMBOL_URL);
+			callback();
+		};
+		img.src = objectUrl;
+	}).catch(function(error) {
+		console.error(error);
+		callback();
+	});
+}
+
 function loadMissionIconImages(callback) {
 	ensureMissionIconImages(callback);
 }
@@ -2044,12 +2243,48 @@ function getVisibleEnglishSettlementsGeojson() {
 	};
 }
 
+function getVisibleSilverMineFeatures() {
+	if (!silverMines) return [];
+	return silverMines.features.filter(function(feature) {
+		var startYear = feature.properties.year || 0;
+		return selectedYear >= startYear;
+	});
+}
+
+function getVisibleSilverMinesGeojson() {
+	return {
+		type: 'FeatureCollection',
+		features: getVisibleSilverMineFeatures(),
+	};
+}
+
+function getVisibleElCaminoRealFeatures() {
+	if (!elCaminoReal) return [];
+	return elCaminoReal.features.filter(function(feature) {
+		var year = feature.properties.year;
+		if (year == null) return true;
+		return selectedYear >= year;
+	});
+}
+
+function getVisibleElCaminoRealGeojson() {
+	return {
+		type: 'FeatureCollection',
+		features: getVisibleElCaminoRealFeatures(),
+	};
+}
+
 function buildEnglishSettlementPopupHtml(props) {
 	return (
 		'<div class="mission-popup__name">' + props.name + '</div>' +
-		popupFieldRow('location', props.location) +
-		popupFieldRow('year', props.year != null ? String(props.year) : '') +
-		popupFieldRow('year_end', props.year_end != null ? String(props.year_end) : '')
+		(props.subtext ? '<div class="mission-popup__detail">' + props.subtext + '</div>' : '')
+	);
+}
+
+function buildSilverMinePopupHtml(props) {
+	return (
+		'<div class="mission-popup__name">' + props.name + '</div>' +
+		(props.subtext ? '<div class="mission-popup__detail">' + props.subtext + '</div>' : '')
 	);
 }
 
@@ -2377,6 +2612,9 @@ function updateMissionData() {
 	if (map.getSource('english-settlements')) {
 		map.getSource('english-settlements').setData(getVisibleEnglishSettlementsGeojson());
 	}
+	if (map.getSource('silver-mines')) {
+		map.getSource('silver-mines').setData(getVisibleSilverMinesGeojson());
+	}
 	if (map.getSource('provincia-regions')) {
 		map.getSource('provincia-regions').setData(getVisibleProvinciaRegionGeojson());
 	}
@@ -2391,6 +2629,9 @@ function updateMissionData() {
 	}
 	if (map.getSource('us-states')) {
 		map.getSource('us-states').setData(getVisibleUsStateGeojson());
+	}
+	if (map.getSource('el-camino-real')) {
+		map.getSource('el-camino-real').setData(getVisibleElCaminoRealGeojson());
 	}
 	updateNationalCapitals();
 	syncLegendLayerVisibility();
@@ -2510,8 +2751,16 @@ function setupTimeline() {
 	setTimelineYear(selectedYear);
 
 	document.addEventListener('keydown', function(event) {
-		if (event.key !== '[' && event.key !== ']') return;
 		if (shouldIgnoreTimelineShortcut(event)) return;
+		if (isReadmeModalOpen() || isDataModalOpen()) return;
+
+		if (event.key === ' ') {
+			event.preventDefault();
+			playTimelineAnimation();
+			return;
+		}
+
+		if (event.key !== '[' && event.key !== ']') return;
 
 		event.preventDefault();
 		stepTimelineYear(event.key === '[' ? -1 : 1);
@@ -2590,12 +2839,18 @@ function isEnglishSettlementMarkerLayer(layerId) {
 	return ENGLISH_SETTLEMENT_LAYER_IDS.indexOf(layerId) !== -1;
 }
 
+function isSilverMineMarkerLayer(layerId) {
+	return SILVER_MINE_LAYER_IDS.indexOf(layerId) !== -1;
+}
+
 function getMarkerFeatureKey(feature) {
 	var kind = 'mission';
 	if (isPresidioMarkerLayer(feature.layer.id)) {
 		kind = 'presidio';
 	} else if (isEnglishSettlementMarkerLayer(feature.layer.id)) {
 		kind = 'settlement';
+	} else if (isSilverMineMarkerLayer(feature.layer.id)) {
+		kind = 'silver-mine';
 	}
 	return kind + ':' + (feature.properties.name || feature.id || '');
 }
@@ -2614,6 +2869,7 @@ function getHoveredMarkerFeatures(point) {
 	var missionLayers = getVisibleMarkerLayers(MISSION_LAYER_IDS);
 	var presidioLayers = getVisibleMarkerLayers(PRESIDIO_LAYER_IDS);
 	var settlementLayers = getVisibleMarkerLayers(ENGLISH_SETTLEMENT_LAYER_IDS);
+	var silverMineLayers = getVisibleMarkerLayers(SILVER_MINE_LAYER_IDS);
 	var features = [];
 
 	if (missionLayers.length) {
@@ -2631,6 +2887,11 @@ function getHoveredMarkerFeatures(point) {
 			map.queryRenderedFeatures(queryBBoxAroundPoint(point, MISSION_HOVER_PAD_PX), { layers: settlementLayers })
 		);
 	}
+	if (silverMineLayers.length) {
+		features = features.concat(
+			map.queryRenderedFeatures(queryBBoxAroundPoint(point, MISSION_HOVER_PAD_PX), { layers: silverMineLayers })
+		);
+	}
 
 	return dedupeMarkerFeatures(features);
 }
@@ -2645,6 +2906,9 @@ function buildMarkerPopupHtml(feature) {
 	}
 	if (isEnglishSettlementMarkerLayer(feature.layer.id)) {
 		return buildEnglishSettlementPopupHtml(feature.properties);
+	}
+	if (isSilverMineMarkerLayer(feature.layer.id)) {
+		return buildSilverMinePopupHtml(feature.properties);
 	}
 	return buildPopupHtml(feature.properties);
 }
@@ -2799,6 +3063,37 @@ function addEnglishSettlementLayers() {
 	}
 }
 
+function getSilverMineSymbolLayout() {
+	return {
+		'icon-image': 'silver-mine',
+		'icon-size': getZoomScaledIconSizeExpression(
+			getMarkerIconSizeAtReferenceZoom(MISSION_CIRCLE_RADIUS, SILVER_MINE_MARKER_LOGICAL_SIZE) * SILVER_MINE_SIZE_SCALE
+		),
+		'icon-anchor': 'center',
+		'icon-allow-overlap': true,
+		'icon-ignore-placement': true,
+	};
+}
+
+function addSilverMineLayers() {
+	if (!map.getSource('silver-mines')) {
+		map.addSource('silver-mines', {
+			type: 'geojson',
+			data: getVisibleSilverMinesGeojson(),
+		});
+	}
+
+	if (!map.getLayer('silver-mines-symbols')) {
+		map.addLayer({
+			id: 'silver-mines-symbols',
+			type: 'symbol',
+			source: 'silver-mines',
+			layout: getSilverMineSymbolLayout(),
+			paint: { 'icon-opacity': MISSION_MARKER_OPACITY },
+		});
+	}
+}
+
 function clearMapLocationHash() {
 	if (!window.location.hash) return;
 	history.replaceState(null, '', window.location.pathname + window.location.search);
@@ -2825,6 +3120,7 @@ function initMap() {
 		addTexasLayers();
 		addUsStateLayers();
 		addCaliforniaLayers();
+		addElCaminoRealLayers();
 		setupPolygonLayerInteractions('provincia-regions-fill', buildProvinciaRegionPopupHtml);
 		setupPolygonLayerInteractions('provincia-mayor-fill', buildContextPopupHtml);
 		setupPolygonLayerInteractions('us-states-fill', buildUsStatePopupHtml);
@@ -2846,9 +3142,15 @@ function initMap() {
 			data: getVisibleEnglishSettlementsGeojson(),
 		});
 
+		map.addSource('silver-mines', {
+			type: 'geojson',
+			data: getVisibleSilverMinesGeojson(),
+		});
+
 		loadPresidioIconImages(function() {
 			loadMissionIconImages(function() {
 			loadEnglishSettlementIconImages(function() {
+			loadSilverMineIconImages(function() {
 			loadNationalCapitalIconImages(function() {
 			var symbolPaint = { 'icon-opacity': 0.95 };
 
@@ -2872,12 +3174,14 @@ function initMap() {
 
 			addMissionLayers();
 			addEnglishSettlementLayers();
+			addSilverMineLayers();
 
 			addNationalCapitalLayers();
 			setupMarkerHoverInteractions();
 			setupNationalCapitalInteractions();
 			setupTimeline();
 			syncLegendLayerVisibility();
+			});
 			});
 			});
 			});
@@ -2914,6 +3218,10 @@ Promise.all([
 		if (!response.ok) throw new Error('Failed to load layers/california.geojson');
 		return response.json();
 	}),
+	fetchData('./layers/el-camino-real.geojson').then(function(response) {
+		if (!response.ok) throw new Error('Failed to load layers/el-camino-real.geojson');
+		return response.json();
+	}),
 ].concat(MEXICO_PERIOD_YEARS.map(function(year) {
 	return fetchData('./layers/context-mexico-' + year + '.geojson').then(function(response) {
 		if (!response.ok) throw new Error('Failed to load layers/context-mexico-' + year + '.geojson');
@@ -2929,22 +3237,33 @@ Promise.all([
 		if (!response.ok) throw new Error('Failed to load ' + getUsStateGeojsonUrl(decade));
 		return response.json();
 	});
-}))).then(function(results) {
+})).concat([
+	fetchData('./references/el_camino_real.csv').then(function(response) {
+		if (!response.ok) throw new Error('Failed to load references/el_camino_real.csv');
+		return response.text();
+	}),
+	fetchData('./layers/silver-mines.geojson').then(function(response) {
+		if (!response.ok) throw new Error('Failed to load layers/silver-mines.geojson');
+		return response.json();
+	}),
+])).then(function(results) {
 	applyTimelineEvents(parseMilestonesCsv(results[0]));
 	applyMissions(results[1]);
 	applyPresidios(results[2]);
 	englishSettlements = results[3];
 	provinciaMayor = results[4];
 	california = results[5];
+	applyElCaminoReal(joinElCaminoRealWithCsv(results[6], parseElCaminoRealCsv(results[results.length - 2])));
 	mexicoByPeriod = {};
 	MEXICO_PERIOD_YEARS.forEach(function(year, index) {
-		mexicoByPeriod[year] = results[6 + index];
+		mexicoByPeriod[year] = results[7 + index];
 	});
-	texasGeojson = results[6 + MEXICO_PERIOD_YEARS.length];
+	texasGeojson = results[7 + MEXICO_PERIOD_YEARS.length];
 	usStateByDecade = {};
 	US_STATE_DECADES.forEach(function(decade, index) {
-		usStateByDecade[decade] = results[7 + MEXICO_PERIOD_YEARS.length + index];
+		usStateByDecade[decade] = results[8 + MEXICO_PERIOD_YEARS.length + index];
 	});
+	silverMines = results[results.length - 1];
 	initMap();
 	setupDataModal();
 	setupReadmeModal();
