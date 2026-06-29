@@ -1,13 +1,5 @@
 import { Link } from 'react-router-dom'
 
-const maps = [
-  { href: '/kings',      label: 'Glorious Kings',     sub: '王者荣耀·英雄地图' },
-  { href: '/swordsmen',  label: 'Smiling Swordsmen',  sub: '在地图上重读《笑傲江湖》' },
-  { href: '/spanish-missions', label: 'Spanish Missions', sub: 'California mission chain on Mapbox Outdoors' },
-  { href: '/deck-tests', label: '黄金大劫案',           sub: 'Deck.gl arc map' },
-  { href: '/liancheng',  label: '连城诀',               sub: 'Deck.gl arc map' },
-]
-
 const games = [
   { href: '/flip-game',    label: 'Flip Game' },
   { href: '/wack-a-virus', label: 'Whack-a-Virus' },
@@ -101,17 +93,17 @@ export default function Toc() {
         <div className="mt-14 mb-10">
           <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3.5">Maps</p>
           <ul className="grid gap-2">
-            {maps.map(p => (
-              <li key={p.href}>
-                <Link
-                  to={p.href}
-                  className="flex items-baseline justify-between px-4 py-3 rounded-md border border-border text-foreground text-[15px] no-underline hover:bg-muted transition-colors"
-                >
-                  <span>{p.label}</span>
-                  <span className="text-xs text-muted-foreground ml-3 shrink-0">{p.sub}</span>
-                </Link>
-              </li>
-            ))}
+            <li>
+              <a
+                href="https://github.com/YunjieLi/map-fun"
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-baseline justify-between px-4 py-3 rounded-md border border-border text-foreground text-[15px] no-underline hover:bg-muted transition-colors"
+              >
+                <span>Map Fun</span>
+                <span className="text-xs text-muted-foreground ml-3 shrink-0">Historical & data maps, in their own repo ↗</span>
+              </a>
+            </li>
           </ul>
         </div>
 

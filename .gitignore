@@ -7,8 +7,6 @@ dist/
 
 .env
 .env.*
-!.env.example
-
-src/maps/swordsmen/mapbox-config.js
-src/maps/swordsmen/archive/mapbox-config.js
-src/maps/spanish-missions/mapbox-config.js
+scripts/.cache/
+scripts/__pycache__/
+*.DS_Store

@@ -29,13 +29,6 @@ export default defineConfig({
         { src: 'src/games/whack/*.svg',        dest: 'src/games/whack' },
         { src: 'src/games/whack/*.png',        dest: 'src/games/whack' },
         { src: 'src/games/press-here',        dest: 'src/games' },
-        // Maps
-        { src: 'src/maps/kings',      dest: 'src/maps' },
-        { src: 'src/maps/swordsmen',  dest: 'src/maps' },
-        { src: 'src/maps/spanish-missions', dest: 'src/maps' },
-        { src: 'src/maps/deck-tests', dest: 'src/maps' },
-        { src: 'src/maps/liancheng',  dest: 'src/maps' },
-        { src: 'src/maps/mapbox',     dest: 'src/maps' },
         // Pages
         { src: 'src/pages/toc/img',   dest: 'src/pages/toc' },
         { src: 'upstream_land_logo.svg', dest: '.' },
