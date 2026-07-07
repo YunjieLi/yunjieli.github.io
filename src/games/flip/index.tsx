@@ -1,12 +1,16 @@
 import { useState, useCallback, useEffect } from 'react'
 import '@fontsource-variable/nunito'
 import {
-  RotateCcw, ChevronRight, ChevronDown, X, Plus, Minus,
+  RotateCcw, ChevronRight, ChevronDown, X, Plus, Minus, Star,
   Apple, Banana, Carrot, Cherry, Cookie, IceCreamCone, LeafyGreen, Lollipop,
   type LucideIcon,
 } from 'lucide-react'
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
+} from '@/components/ui/dropdown-menu'
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
 import { LEVELS, type Level, type Sprite } from './sprites'
-import { playFlip, playMatch, playMismatch, playTurn, playWin } from './sounds'
+import { playFlip, playMatch, playTurn, playWin } from './sounds'
 
 // ─── Responsive layout ────────────────────────────────────────────────────────
 const MIN_CARD = 80
@@ -61,6 +65,35 @@ const PLAYER_ICONS: { id: string; name: string; color: string; Icon: LucideIcon 
   { id: 'lollipop',    name: 'Lolli',  color: '#E85D9E', Icon: Lollipop },     // pink
   { id: 'cookie',      name: 'Cookie', color: '#8D6E63', Icon: Cookie },       // brown
 ]
+
+function useIsMobile() {
+  const [mobile, setMobile] = useState(() => window.matchMedia('(max-width: 640px)').matches)
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 640px)')
+    const update = () => setMobile(mq.matches)
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  }, [])
+  return mobile
+}
+
+// difficulty as a fixed row of 5 stars: `count` filled in light yellow, the rest hollow
+// (sized explicitly so menu-item svg rules don't inflate them)
+function StarRow({ count, style }: { count: number; style?: React.CSSProperties }) {
+  return (
+    <span style={{ display: 'inline-flex', gap: 2, alignItems: 'center', ...style }}>
+      {Array.from({ length: 5 }, (_, i) => (
+        <Star
+          key={i}
+          className="size-3"
+          strokeWidth={2}
+          fill={i < count ? '#FFD666' : 'transparent'}
+          color={i < count ? '#FFD666' : '#CFCFCF'}
+        />
+      ))}
+    </span>
+  )
+}
 
 // solid colored disc + white icon — the one way player symbols render everywhere
 function IconBadge({ entry, size }: { entry: typeof PLAYER_ICONS[number]; size: number }) {
@@ -234,6 +267,7 @@ export default function FlipGame() {
   const [levelIdx, setLevelIdx] = useState(() => Math.max(0, LEVELS.findIndex(l => l.title === 'Nature')))
   const level = LEVELS[levelIdx]
 
+  const isMobile = useIsMobile()
   const [players, setPlayers] = useState(1)   // 1 = solo, 2-4 = take turns
   const [turn, setTurn] = useState(0)
   const multi = players > 1
@@ -325,8 +359,6 @@ export default function FlipGame() {
       setCards(prev => prev.map(c =>
         c.uid === firstUid || c.uid === uid ? { ...c, matched: true, claimedBy: owner } : c))
       setTimeout(playMatch, 250)   // after the flip animation reveals the pair
-    } else {
-      setTimeout(playMismatch, 550) // once both cards have been seen
     }
     setTimeout(() => {
       if (!isMatch) {
@@ -353,14 +385,14 @@ export default function FlipGame() {
     }}>
       {/* Header — restart | mode + level switchers | next, all vertically centered */}
       <div style={{
-        position: 'absolute', top: 16, left: 20, right: 20,
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+        position: 'absolute', top: 16, left: isMobile ? 10 : 20, right: isMobile ? 10 : 20,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: isMobile ? 6 : 12,
       }}>
         <IconBtn onClick={() => reset(level)} title="Restart">
           <RotateCcw size={20} strokeWidth={2.5} />
         </IconBtn>
 
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', gap: isMobile ? 6 : 10, alignItems: 'center', flexWrap: 'nowrap', justifyContent: 'center' }}>
           {/* player-count stepper: ( − 👤👤 + ) */}
           <div style={{
             display: 'flex', alignItems: 'center', gap: 2, padding: 4, borderRadius: 999,
@@ -373,7 +405,7 @@ export default function FlipGame() {
             >
               <Minus size={16} strokeWidth={2.75} />
             </StepBtn>
-            <span style={{ fontSize: 15, padding: '0 4px', letterSpacing: 1 }}>
+            <span style={{ fontSize: isMobile ? 13 : 15, padding: isMobile ? '0 2px' : '0 4px', letterSpacing: 1, whiteSpace: 'nowrap' }}>
               {'👤'.repeat(players)}
             </span>
             <StepBtn
@@ -384,40 +416,34 @@ export default function FlipGame() {
               <Plus size={16} strokeWidth={2.75} />
             </StepBtn>
           </div>
-          <div style={{ position: 'relative' }}>
-            {/* invisible sizer so the pill fits the selected label, not the widest option */}
-            <div aria-hidden style={{
-              padding: '10px 34px 10px 16px', fontSize: 14, fontWeight: 800,
-              visibility: 'hidden', whiteSpace: 'pre',
+          <DropdownMenu>
+            <DropdownMenuTrigger style={{
+              display: 'inline-flex', alignItems: 'center', gap: isMobile ? 4 : 7,
+              border: 'none', borderRadius: 999, padding: isMobile ? '10px 12px' : '10px 16px',
+              fontFamily: 'inherit', fontSize: 14, fontWeight: 800, color: '#555',
+              cursor: 'pointer', background: 'rgba(255,255,255,0.75)',
+              boxShadow: '0 2px 10px rgba(0,0,0,0.08)', whiteSpace: 'nowrap',
             }}>
-              {level.emoji} {level.title} {'★'.repeat(level.stars)}
-            </div>
-            <select
-              value={levelIdx}
-              onChange={e => gotoLevel(Number(e.target.value))}
-              style={{
-                position: 'absolute', inset: 0, width: '100%',
-                appearance: 'none', border: 'none', borderRadius: 999,
-                padding: '10px 34px 10px 16px', fontFamily: 'inherit', fontSize: 14,
-                fontWeight: 800, color: '#555', cursor: 'pointer',
-                background: 'rgba(255,255,255,0.75)', boxShadow: '0 2px 10px rgba(0,0,0,0.08)',
-              }}
+              {isMobile ? level.emoji : `${level.emoji} ${level.title}`}
+              <ChevronDown className="size-4" strokeWidth={2.75} />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="center"
+              className="w-auto min-w-44 rounded-xl"
+              style={{ fontFamily: '"Nunito Variable", Nunito, sans-serif' }}
             >
               {LEVELS.map((lvl, i) => (
-                <option key={lvl.id} value={i}>
-                  {lvl.emoji} {lvl.title} {'★'.repeat(lvl.stars)}
-                </option>
+                <DropdownMenuItem
+                  key={lvl.id}
+                  onClick={() => gotoLevel(i)}
+                  className={`cursor-pointer py-1.5 ${i === levelIdx ? 'bg-accent font-extrabold' : 'font-bold'}`}
+                >
+                  <span>{lvl.emoji} {lvl.title}</span>
+                  <StarRow count={lvl.stars} style={{ marginLeft: 'auto', paddingLeft: 16 }} />
+                </DropdownMenuItem>
               ))}
-            </select>
-            <ChevronDown
-              size={16}
-              strokeWidth={2.75}
-              style={{
-                position: 'absolute', right: 12, top: '50%',
-                transform: 'translateY(-50%)', pointerEvents: 'none', color: '#555',
-              }}
-            />
-          </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {/* Right slot — next / replay when won (multi: after the modal is dismissed); else a spacer to keep the center balanced */}
@@ -466,64 +492,61 @@ export default function FlipGame() {
             const entry = PLAYER_ICONS[playerIcons[p]]
             const { name, color } = entry
             return (
-              <div key={p} style={{ position: 'relative' }}>
-                <div
-                  onClick={() => setPickerFor(pickerFor === p ? null : p)}
+              <Popover key={p} open={pickerFor === p} onOpenChange={open => setPickerFor(open ? p : null)}>
+                <PopoverTrigger
                   title="Pick your icon"
                   style={{
                     display: 'flex', alignItems: 'center', gap: 7,
-                    padding: '6px 14px', borderRadius: 999, background: '#fff',
+                    padding: isMobile ? 6 : '6px 14px', borderRadius: 999, background: '#fff',
                     border: `2.5px solid ${active || isWinner ? color : 'transparent'}`,
                     boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
                     opacity: active || isWinner || won ? 1 : 0.55,
                     transform: active ? 'scale(1.08)' : 'scale(1)',
                     transition: 'all 0.25s ease',
-                    cursor: 'pointer',
+                    cursor: 'pointer', fontFamily: 'inherit',
                   }}
                 >
                   <IconBadge entry={entry} size={20} />
-                  <span style={{ fontSize: 14, fontWeight: 800, color: '#444' }}>
-                    {name}
-                  </span>
-                </div>
-                {/* Icon picker — opens upward since chips sit near the bottom */}
-                {pickerFor === p && (
-                  <div style={{
-                    position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%',
-                    transform: 'translateX(-50%)', zIndex: 5,
-                    display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10,
-                    padding: 12, borderRadius: 16, background: '#fff',
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
-                  }}>
-                    {PLAYER_ICONS.map((opt, i) => {
-                      // only icons held by players in the current game block a pick
-                      const taken = playerIcons.some((v, q) => q !== p && q < players && v === i)
-                      const selected = playerIcons[p] === i
-                      return (
-                        <button
-                          key={opt.id}
-                          disabled={taken}
-                          title={opt.name}
-                          onClick={() => {
-                            setPlayerIcons(prev => prev.map((v, q) => q === p ? i : v))
-                            setPickerFor(null)
-                          }}
-                          style={{
-                            width: 38, height: 38, borderRadius: '50%', border: 'none',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            background: opt.color,
-                            boxShadow: selected ? `0 0 0 2.5px #fff, 0 0 0 5px ${opt.color}` : 'none',
-                            cursor: taken ? 'not-allowed' : 'pointer',
-                            opacity: taken ? 0.25 : 1,
-                          }}
-                        >
-                          <opt.Icon size={20} strokeWidth={2.5} color="#fff" />
-                        </button>
-                      )
-                    })}
-                  </div>
-                )}
-              </div>
+                  {!isMobile && (
+                    <span style={{ fontSize: 14, fontWeight: 800, color: '#444' }}>
+                      {name}
+                    </span>
+                  )}
+                </PopoverTrigger>
+                <PopoverContent
+                  side="top"
+                  sideOffset={8}
+                  className="w-auto rounded-2xl p-3"
+                  style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                >
+                  {PLAYER_ICONS.map((opt, i) => {
+                    // only icons held by players in the current game block a pick
+                    const taken = playerIcons.some((v, q) => q !== p && q < players && v === i)
+                    const selected = playerIcons[p] === i
+                    return (
+                      <button
+                        key={opt.id}
+                        disabled={taken}
+                        title={opt.name}
+                        onClick={() => {
+                          setPlayerIcons(prev => prev.map((v, q) => q === p ? i : v))
+                          setPickerFor(null)
+                        }}
+                        style={{
+                          width: 38, height: 38, borderRadius: '50%', border: 'none',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          background: opt.color,
+                          boxShadow: selected ? `0 0 0 2.5px #fff, 0 0 0 5px ${opt.color}` : 'none',
+                          cursor: taken ? 'not-allowed' : 'pointer',
+                          opacity: taken ? 0.25 : 1,
+                        }}
+                      >
+                        <opt.Icon size={20} strokeWidth={2.5} color="#fff" />
+                      </button>
+                    )
+                  })}
+                </PopoverContent>
+              </Popover>
             )
           })}
         </div>

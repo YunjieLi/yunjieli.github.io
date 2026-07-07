@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 
 const games = [
-  { href: '/flip-game',    label: 'Flip Game' },
+  { href: '/flip',    label: 'Flip Game' },
   { href: '/wack-a-virus', label: 'Whack-a-Virus' },
   { href: '/press-here',   label: 'Press Here' },
 ]
@@ -62,7 +62,7 @@ export default function Toc() {
 
           {/* Flip Game */}
           <Link
-            to="/flip-game"
+            to="/flip"
             className="relative rounded-md overflow-hidden no-underline text-white flex flex-col justify-end min-h-[160px] hover:opacity-90 transition-opacity"
             style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 70%, #533483 100%)' }}
           >

@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import LegacyPage from './pages/LegacyPage'
 import Home from './pages/Home'
 import Dunhuang from './pages/dunhuang/Dunhuang'
@@ -24,7 +24,8 @@ export default function App() {
 <Route path="/turbines"        element={<LegacyPage src="/turbines/index.html"        title="Turbines" />} />
 
         {/* Games */}
-        <Route path="/flip-game"    element={<FlipGame />} />
+        <Route path="/flip"    element={<FlipGame />} />
+        <Route path="/flip-game" element={<Navigate to="/flip" replace />} />
         <Route path="/wack-a-virus" element={<WackAVirus />} />
       </Routes>
     </BrowserRouter>

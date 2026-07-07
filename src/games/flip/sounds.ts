@@ -38,38 +38,21 @@ function blip({ from, to = from, at = 0, dur = 0.15, type = 'triangle', vol = 0.
   osc.stop(t0 + dur + 0.05)
 }
 
-// cached white-noise buffer for organic, papery textures
-let noiseBuf: AudioBuffer | null = null
-function noise(c: AudioContext): AudioBuffer {
-  if (!noiseBuf) {
-    noiseBuf = c.createBuffer(1, c.sampleRate * 0.3, c.sampleRate)
-    const data = noiseBuf.getChannelData(0)
-    for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1
-  }
-  return noiseBuf
-}
-
-// papery "swish" + soft tap, like a real card being turned over
+// soft bubble pop when a card flips — a quick, quiet rising "bloop"
 export function playFlip() {
   const c = ac()
   const t0 = c.currentTime
-  const dur = 0.13
-  const src = c.createBufferSource()
-  src.buffer = noise(c)
-  const bp = c.createBiquadFilter()
-  bp.type = 'bandpass'
-  bp.Q.value = 1.1
-  bp.frequency.setValueAtTime(800, t0)
-  bp.frequency.exponentialRampToValueAtTime(2600, t0 + dur)
+  const osc = c.createOscillator()
   const g = c.createGain()
+  osc.type = 'sine'
+  osc.frequency.setValueAtTime(330, t0)
+  osc.frequency.exponentialRampToValueAtTime(900, t0 + 0.08)
   g.gain.setValueAtTime(0.0001, t0)
-  g.gain.exponentialRampToValueAtTime(0.12, t0 + 0.025)
-  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur)
-  src.connect(bp).connect(g).connect(c.destination)
-  src.start(t0)
-  src.stop(t0 + dur + 0.02)
-  // soft landing tap as the card settles
-  blip({ from: 300, to: 240, at: dur * 0.55, dur: 0.06, type: 'sine', vol: 0.05 })
+  g.gain.exponentialRampToValueAtTime(0.12, t0 + 0.012)
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.09)
+  osc.connect(g).connect(c.destination)
+  osc.start(t0)
+  osc.stop(t0 + 0.1)
 }
 
 // sparkly ascending arpeggio when a pair matches
@@ -79,16 +62,20 @@ export function playMatch() {
   blip({ from: 1046.5, at: 0.27, dur: 0.3, type: 'sine', vol: 0.09 }) // C6 sparkle on top
 }
 
-// gentle, non-punishing "hmm" when the pair doesn't match
-export function playMismatch() {
-  blip({ from: 220, to: 180, dur: 0.18, type: 'sine', vol: 0.07 })
-  blip({ from: 170, to: 140, at: 0.16, dur: 0.22, type: 'sine', vol: 0.06 })
-}
-
-// friendly two-note nudge when the turn passes to the next player
+// single clave "tock" when the turn passes to the next player
 export function playTurn() {
-  blip({ from: 392, dur: 0.12, type: 'sine', vol: 0.09 })              // G4
-  blip({ from: 587.33, at: 0.11, dur: 0.22, type: 'sine', vol: 0.1 })  // D5
+  const c = ac()
+  const t0 = c.currentTime
+  const osc = c.createOscillator()
+  const g = c.createGain()
+  osc.type = 'sine'
+  osc.frequency.setValueAtTime(2500, t0)
+  g.gain.setValueAtTime(0.0001, t0)
+  g.gain.exponentialRampToValueAtTime(0.15, t0 + 0.003)
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.06)
+  osc.connect(g).connect(c.destination)
+  osc.start(t0)
+  osc.stop(t0 + 0.08)
 }
 
 // little fanfare when the board is cleared
