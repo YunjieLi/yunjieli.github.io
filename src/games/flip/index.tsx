@@ -598,7 +598,7 @@ export default function FlipGame() {
                     }}>
                       <IconBadge entry={entry} size={20} />
                       <span style={{ flex: 1, textAlign: 'left', fontSize: 15, fontWeight: 800, color: '#444' }}>
-                        {name}
+                        {name}{winners.length === 1 && winners.includes(p) && ' 🏆'}
                       </span>
                       <span style={{ fontSize: 15, fontWeight: 900, color }}>
                         {score}
