@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react'
 import '@fontsource-variable/nunito'
 import {
   RotateCcw, ChevronRight, ChevronDown, X, Plus, Minus, Star,
-  Apple, Banana, Carrot, Cherry, Cookie, IceCreamCone, LeafyGreen, Lollipop,
+  Apple, Banana, Carrot, Cherry, Citrus, Cookie, Ham, IceCreamCone, LeafyGreen, Lollipop,
   type LucideIcon,
 } from 'lucide-react'
 import {
@@ -13,7 +13,9 @@ import { LEVELS, type Level, type Sprite } from './sprites'
 import { playFlip, playMatch, playTurn, playWin } from './sounds'
 
 // ─── Responsive layout ────────────────────────────────────────────────────────
-const MIN_CARD = 80
+// the page never scrolls, so the floor has to stay small enough that the
+// biggest board (32 cards) still fits a short phone rather than getting clipped
+const MIN_CARD = 48
 const MAX_CARD = 160
 const GRID_GAP = 10
 
@@ -54,15 +56,18 @@ function useLayout(totalCards: number, headerH: number) {
 // ─── Game state ───────────────────────────────────────────────────────────────
 type Card = { uid: number; spriteId: string; flipped: boolean; matched: boolean; claimedBy: number | null }
 
-// rainbow order, pink after purple, cookie last
+// rainbow order, pinks after purple, cookie last. hues are spaced far enough apart
+// that any four picked together stay tellable apart at badge size
 const PLAYER_ICONS: { id: string; name: string; color: string; Icon: LucideIcon }[] = [
-  { id: 'apple',       name: 'Apple',  color: '#E5484D', Icon: Apple },        // red
-  { id: 'carrot',      name: 'Carol',  color: '#F4791F', Icon: Carrot },       // orange
+  { id: 'apple',       name: 'Apple',  color: '#E03131', Icon: Apple },        // red
+  { id: 'carrot',      name: 'Carol',  color: '#F76707', Icon: Carrot },       // orange
   { id: 'banana',      name: 'Banana', color: '#FFC400', Icon: Banana },       // bright yellow
-  { id: 'leafy-green', name: 'Leafy',  color: '#43A047', Icon: LeafyGreen },   // green
-  { id: 'ice-cream',   name: 'Icey',   color: '#3E63DD', Icon: IceCreamCone }, // blue
-  { id: 'cherry',      name: 'Cherry', color: '#8E44AD', Icon: Cherry },       // purple
-  { id: 'lollipop',    name: 'Lolli',  color: '#E85D9E', Icon: Lollipop },     // pink
+  { id: 'citrus',      name: 'Citrus', color: '#A0B816', Icon: Citrus },       // greenish yellow
+  { id: 'leafy-green', name: 'Leafy',  color: '#2F9E44', Icon: LeafyGreen },   // green
+  { id: 'ice-cream',   name: 'Icey',   color: '#1C7ED6', Icon: IceCreamCone }, // blue
+  { id: 'cherry',      name: 'Cherry', color: '#7950F2', Icon: Cherry },       // violet
+  { id: 'ham',         name: 'Ham',    color: '#E85D9E', Icon: Ham },          // deep pink
+  { id: 'lollipop',    name: 'Lolli',  color: '#F58BB6', Icon: Lollipop },     // light pink
   { id: 'cookie',      name: 'Cookie', color: '#8D6E63', Icon: Cookie },       // brown
 ]
 
@@ -75,6 +80,41 @@ function useIsMobile() {
     return () => mq.removeEventListener('change', update)
   }, [])
   return mobile
+}
+
+// the board is always sized to the viewport — pin the page so it can't scroll or
+// rubber-band, and swallow the long-press/right-click menu, while the game is mounted
+function usePageLock() {
+  useEffect(() => {
+    const html = document.documentElement
+    const { body } = document
+    const prev = {
+      htmlOverflow: html.style.overflow,
+      overflow: body.style.overflow,
+      overscroll: body.style.overscrollBehavior,
+      position: body.style.position,
+      width: body.style.width,
+      height: body.style.height,
+    }
+    html.style.overflow = 'hidden'
+    body.style.overflow = 'hidden'
+    body.style.overscrollBehavior = 'none'
+    body.style.position = 'fixed'  // iOS won't rubber-band a fixed body
+    body.style.width = '100%'
+    body.style.height = '100%'
+
+    const swallow = (e: Event) => e.preventDefault()
+    document.addEventListener('contextmenu', swallow)
+    return () => {
+      html.style.overflow = prev.htmlOverflow
+      body.style.overflow = prev.overflow
+      body.style.overscrollBehavior = prev.overscroll
+      body.style.position = prev.position
+      body.style.width = prev.width
+      body.style.height = prev.height
+      document.removeEventListener('contextmenu', swallow)
+    }
+  }, [])
 }
 
 // difficulty as a fixed row of 5 stars: `count` filled in light yellow, the rest hollow
@@ -113,10 +153,12 @@ const maxPlayersFor = (lvl: Level) => lvl.stars === 1 ? 1 : lvl.stars === 2 ? 2 
 // system navigation chrome is neutral — color coding is reserved for players
 const NAV_COLOR = '#71717A'
 
-const ICONS_STORAGE_KEY = 'flip-player-icons'
+// v2: the icon list grew mid-order, so old saved indices no longer mean the same
+// icon — start those players fresh on the defaults instead of remapping them
+const ICONS_STORAGE_KEY = 'flip-player-icons-v2'
 
 // default assignment: pink, blue, yellow, green — high contrast in any subset
-const DEFAULT_ICONS = ['lollipop', 'ice-cream', 'banana', 'leafy-green']
+const DEFAULT_ICONS = ['ham', 'ice-cream', 'banana', 'leafy-green']
 
 // ensure the first `count` slots hold distinct icons — a hidden slot can clash
 // with a pick made while it was out of the game
@@ -268,6 +310,7 @@ export default function FlipGame() {
   const level = LEVELS[levelIdx]
 
   const isMobile = useIsMobile()
+  usePageLock()
   const [players, setPlayers] = useState(1)   // 1 = solo, 2-4 = take turns
   const [turn, setTurn] = useState(0)
   const multi = players > 1
@@ -375,7 +418,7 @@ export default function FlipGame() {
 
   return (
     <div style={{
-      minHeight: '100dvh',
+      height: '100dvh', overflow: 'hidden',
       background: 'linear-gradient(160deg, #e0f7ff 0%, #fff9e6 60%, #ffe0f0 100%)',
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       justifyContent: 'center', gap: 20,
@@ -517,7 +560,7 @@ export default function FlipGame() {
                   side="top"
                   sideOffset={8}
                   className="w-auto rounded-2xl p-3"
-                  style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                  style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10 }}
                 >
                   {PLAYER_ICONS.map((opt, i) => {
                     // only icons held by players in the current game block a pick
@@ -598,7 +641,7 @@ export default function FlipGame() {
                     }}>
                       <IconBadge entry={entry} size={20} />
                       <span style={{ flex: 1, textAlign: 'left', fontSize: 15, fontWeight: 800, color: '#444' }}>
-                        {name}{winners.length === 1 && winners.includes(p) && ' 🏆'}
+                        {name}{winners.includes(p) && ' 🏆'}
                       </span>
                       <span style={{ fontSize: 15, fontWeight: 900, color }}>
                         {score}
@@ -636,6 +679,16 @@ export default function FlipGame() {
       )}
 
       <style>{`
+        /* nothing on the page is selectable or draggable — long-pressing a card
+           should flip it, not pop the copy/share callout. body-level so the
+           portalled menus and popovers are covered too. */
+        body, body * {
+          -webkit-user-select: none; user-select: none;
+          -webkit-touch-callout: none;
+          -webkit-tap-highlight-color: transparent;
+        }
+        body img { -webkit-user-drag: none; }
+        body { touch-action: manipulation; }
         @keyframes stamp-in { 0% { transform: rotate(12deg) scale(2); opacity: 0 } 100% { transform: rotate(12deg) scale(1); opacity: 1 } }
         @keyframes fade-in { from { opacity: 0 } to { opacity: 1 } }
         @keyframes pop-in { 0% { transform: scale(0.6); opacity: 0 } 100% { transform: scale(1); opacity: 1 } }
