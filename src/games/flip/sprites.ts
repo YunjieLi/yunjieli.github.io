@@ -13,7 +13,9 @@ export type Level = {
   setSize: number   // how many pairs to pick per play
 }
 
-// every jpg in this folder, discovered at build time — no numbering assumptions
+// every jpg in this folder, discovered at build time — no numbering assumptions.
+// Files are named `<set>-NN.jpg`; difficulty lives on the Level, not the filename,
+// so a level can be re-rated without touching the artwork.
 const files = Object.keys(import.meta.glob('./*.jpg'))
   .map(path => path.replace('./', '').replace(/\.jpg$/, ''))
   .sort()
@@ -59,19 +61,19 @@ const EMOJI_POOL = [
 const EMOJI_SPRITES: Sprite[] = EMOJI_POOL.map(glyph)
 
 export const LEVELS: Level[] = [
-  { id: 1,  title: 'Summer',  emoji: '🌊', stars: 1, backColor: '#49D4B4', sprites: spritesFor('⭐️-summer'),            setSize: 4  },
-  { id: 2,  title: 'Space',   emoji: '🚀', stars: 1, backColor: '#FFB575', sprites: spritesFor('⭐️-space'),             setSize: 4  },
-  { id: 3,  title: 'Nature',  emoji: '🌿', stars: 2, backColor: '#49D4B4', sprites: spritesFor('⭐️⭐️-nature'),          setSize: 6  },
-  { id: 4,  title: 'Party',   emoji: '🎉', stars: 2, backColor: '#F06AA6', sprites: spritesFor('⭐️⭐️-party'),           setSize: 6  },
-  { id: 5,  title: 'Flags',   emoji: '🌏', stars: 3, backColor: '#F06AA6', sprites: spritesFor('⭐️⭐️⭐️-flags'),        setSize: 8  },
-  { id: 6,  title: 'Food',    emoji: '🍜', stars: 3, backColor: '#FFB575', sprites: spritesFor('⭐️⭐️⭐️-food'),         setSize: 8  },
-  { id: 7,  title: 'Hearts',  emoji: '💕', stars: 4, backColor: '#FF918F', sprites: spritesFor('⭐️⭐️⭐️⭐️-heart'),     setSize: 10 },
-  { id: 8,  title: 'Yoga',    emoji: '🧘', stars: 4, backColor: '#A5A0D6', sprites: spritesFor('⭐️⭐️⭐️⭐️-yoga'),      setSize: 10 },
-  { id: 9,  title: 'Zoo',     emoji: '🦁', stars: 5, backColor: '#FF918F', sprites: spritesFor('⭐️⭐️⭐️⭐️⭐️-zoo'),     setSize: 12 },
-  { id: 10, title: 'Letters', emoji: '🔤', stars: 5, backColor: '#A5A0D6', sprites: LETTER_SPRITES, setSize: 12 },
-  { id: 11, title: '汉字',    emoji: '🀄', stars: 5, backColor: '#49D4B4', sprites: HANZI_SPRITES,  setSize: 12 },
-  { id: 12, title: 'Words',   emoji: '📖', stars: 5, backColor: '#FFB575', sprites: WORD_SPRITES,   setSize: 12 },
-  { id: 13, title: 'Emoji',   emoji: '😀', stars: 3, backColor: '#F06AA6', sprites: EMOJI_SPRITES,  setSize: 10 },
-  { id: 14, title: 'Shapes',  emoji: '🔷', stars: 4, backColor: '#FFB575', sprites: spritesFor('⭐️⭐️⭐️⭐️-shape'),  setSize: 10 },
-  { id: 15, title: 'People',  emoji: '👥', stars: 3, backColor: '#49D4B4', sprites: spritesFor('⭐️⭐️⭐️⭐️-people'), setSize: 10 },
+  { id: 1 , title: 'Summer',  emoji: '🌊', stars: 1, backColor: '#49D4B4', sprites: spritesFor('summer'), setSize:  4 },
+  { id: 2 , title: 'Space',   emoji: '🚀', stars: 1, backColor: '#FFB575', sprites: spritesFor('space'),  setSize:  4 },
+  { id: 3 , title: 'Nature',  emoji: '🌿', stars: 2, backColor: '#49D4B4', sprites: spritesFor('nature'), setSize:  6 },
+  { id: 4 , title: 'Party',   emoji: '🎉', stars: 2, backColor: '#F06AA6', sprites: spritesFor('party'),  setSize:  6 },
+  { id: 5 , title: 'Flags',   emoji: '🌏', stars: 3, backColor: '#F06AA6', sprites: spritesFor('flags'),  setSize:  8 },
+  { id: 6 , title: 'Food',    emoji: '🍜', stars: 3, backColor: '#FFB575', sprites: spritesFor('food'),   setSize:  8 },
+  { id: 7 , title: 'Hearts',  emoji: '💕', stars: 4, backColor: '#FF918F', sprites: spritesFor('heart'),  setSize: 10 },
+  { id: 8 , title: 'Yoga',    emoji: '🧘', stars: 4, backColor: '#A5A0D6', sprites: spritesFor('yoga'),   setSize: 10 },
+  { id: 9 , title: 'Zoo',     emoji: '🦁', stars: 5, backColor: '#FF918F', sprites: spritesFor('zoo'),    setSize: 12 },
+  { id: 10, title: 'Letters', emoji: '🔤', stars: 5, backColor: '#A5A0D6', sprites: LETTER_SPRITES,       setSize: 12 },
+  { id: 11, title: '汉字',      emoji: '🀄', stars: 5, backColor: '#49D4B4', sprites: HANZI_SPRITES,        setSize: 12 },
+  { id: 12, title: 'Words',   emoji: '📖', stars: 5, backColor: '#FFB575', sprites: WORD_SPRITES,         setSize: 12 },
+  { id: 13, title: 'Emoji',   emoji: '😀', stars: 3, backColor: '#F06AA6', sprites: EMOJI_SPRITES,        setSize: 10 },
+  { id: 14, title: 'Shapes',  emoji: '🔷', stars: 4, backColor: '#FFB575', sprites: spritesFor('shape'),  setSize: 10 },
+  { id: 15, title: 'People',  emoji: '👥', stars: 3, backColor: '#49D4B4', sprites: spritesFor('people'), setSize: 10 },
 ]
