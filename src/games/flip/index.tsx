@@ -1,5 +1,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import '@fontsource-variable/nunito'
+import '@fontsource/andika/400.css'
+import '@fontsource/andika/700.css'
 import {
   RotateCcw, ChevronRight, ChevronDown, X, Plus, Minus, Star,
   Apple, Banana, Carrot, Cherry, Citrus, Cookie, Ham, IceCreamCone, LeafyGreen, Lollipop,
@@ -54,7 +56,23 @@ function useLayout(totalCards: number, headerH: number) {
 }
 
 // ─── Game state ───────────────────────────────────────────────────────────────
-type Card = { uid: number; spriteId: string; flipped: boolean; matched: boolean; claimedBy: number | null }
+type Card = {
+  uid: number; spriteId: string; ink: number
+  flipped: boolean; matched: boolean; claimedBy: number | null
+}
+
+// Card faces are painted from a fresh rainbow every deal. Each ink is dark enough
+// to stay readable on its own tint.
+const INKS: { color: string; bg: string }[] = [
+  { color: '#C14343', bg: '#FFEBEC' },  // red
+  { color: '#C2661C', bg: '#FFF0E3' },  // orange
+  { color: '#AC8309', bg: '#FFFAE6' },  // yellow
+  { color: '#3E8E41', bg: '#EBF7EC' },  // green
+  { color: '#18868C', bg: '#E4F6F6' },  // teal
+  { color: '#2C6BC9', bg: '#E9F1FD' },  // blue
+  { color: '#5E50BF', bg: '#EDEAFB' },  // violet
+  { color: '#B8438E', bg: '#FCEAF5' },  // pink
+]
 
 // rainbow order, pinks after purple, cookie last. hues are spaced far enough apart
 // that any four picked together stay tellable apart at badge size
@@ -198,16 +216,99 @@ function shuffle<T>(arr: T[]): T[] {
 
 function makeCards(level: Level): Card[] {
   const picked = shuffle(level.sprites).slice(0, level.setSize)
+  // cycling a shuffled palette spreads the rainbow evenly; independent random
+  // picks would clump. Ink is per pair, so a match always looks like a match.
+  const palette = shuffle(INKS.map((_, i) => i))
+  const inkOf = new Map(picked.map((s, i) => [s.id, palette[i % palette.length]]))
   return shuffle(picked.flatMap((s: Sprite) => [s.id, s.id])).map((spriteId, i) => ({
-    uid: i, spriteId, flipped: false, matched: false, claimedBy: null,
+    uid: i, spriteId, ink: inkOf.get(spriteId) ?? 0,
+    flipped: false, matched: false, claimedBy: null,
   }))
+}
+
+// Nunito carries no CJK, so 汉字 fall through to a system face — name the good
+// ones per platform rather than landing on whatever the default sans is
+const HAN_STACK = '"PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif'
+
+// Andika is SIL's literacy face: print letterforms shaped the way children are
+// taught to write them, drawn for maximum legibility rather than for character
+const GLYPH_STACK = '"Andika", "Nunito Variable", sans-serif'
+const FIT_RATIO = 0.84   // of the card width — leaves the glyph visible breathing room
+
+// Letter widths vary enormously — "mom" renders twice as wide as "sit" at the same
+// length — so a board is sized from what its widest face actually measures, never
+// from a character count. Widths are per-em, so one measurement serves every card size.
+const emWidths = new Map<string, number>()
+
+function emWidth(text: string): number {
+  const cached = emWidths.get(text)
+  if (cached !== undefined) return cached
+  const probe = document.createElement('span')
+  probe.textContent = text
+  probe.style.cssText =
+    `position:absolute;left:-9999px;top:0;white-space:pre;line-height:1;font:700 100px ${GLYPH_STACK}`
+  document.body.appendChild(probe)
+  const em = probe.getBoundingClientRect().width / 100
+  probe.remove()
+  emWidths.set(text, em)
+  return em
+}
+
+// widths measured before Nunito lands describe the fallback face, so drop them
+// and re-render once the real font is in. `ready` settles only once, while the
+// font's subsets load lazily — so keep listening for later arrivals too.
+function useFontMetrics() {
+  const [, bump] = useState(0)
+  useEffect(() => {
+    const fonts = document.fonts
+    if (!fonts) return
+    let alive = true
+    const refresh = () => {
+      if (!alive) return
+      emWidths.clear()
+      levelEms.clear()
+      bump(n => n + 1)
+    }
+    fonts.ready.then(refresh)
+    fonts.addEventListener('loadingdone', refresh)
+    return () => {
+      alive = false
+      fonts.removeEventListener('loadingdone', refresh)
+    }
+  }, [])
+}
+
+// One type size per level, set by its widest face, so a board reads as one set
+// rather than a jumble of sizes — the short words simply sit smaller in their cards.
+const levelEms = new Map<number, number>()
+
+function levelEm(level: Level): number {
+  const cached = levelEms.get(level.id)
+  if (cached !== undefined) return cached
+  const widest = Math.max(
+    ...level.sprites.map(s => s.kind === 'text' ? emWidth(s.text) : 0),
+  )
+  levelEms.set(level.id, widest)
+  return widest
+}
+
+// 汉字 fill their em box where a latin letter only reaches cap height, so the two
+// scripts need different sizing to look like the same size
+function glyphType(level: Level, text: string, size: number): React.CSSProperties {
+  if (/\p{Script=Han}/u.test(text))
+    return { fontSize: size * 0.46, fontWeight: 600, fontFamily: HAN_STACK }
+  const fitted = (size * FIT_RATIO) / levelEm(level)
+  return { fontSize: Math.min(size * 0.52, fitted), fontWeight: 700, fontFamily: GLYPH_STACK }
 }
 
 // ─── FlipCard ─────────────────────────────────────────────────────────────────
 function FlipCard({ card, level, size, playerIcons, onClick }: {
   card: Card; level: Level; size: number; playerIcons: number[]; onClick: () => void
 }) {
-  const sprite = level.sprites.find(s => s.id === card.spriteId)!
+  // a card whose sprite has gone missing (a level edited under a live board, say)
+  // renders a blank face rather than taking the whole board down with it
+  const sprite = level.sprites.find(s => s.id === card.spriteId)
+  const ink = INKS[card.ink] ?? INKS[0]
   const revealed = card.flipped || card.matched
   const claim = card.claimedBy !== null ? PLAYER_ICONS[playerIcons[card.claimedBy]] : null
   const ringColor = claim ? claim.color : level.backColor
@@ -231,18 +332,29 @@ function FlipCard({ card, level, size, playerIcons, onClick }: {
         {/* Front */}
         <div style={{
           position: 'absolute', inset: 0, backfaceVisibility: 'hidden',
-          transform: 'rotateY(180deg)', borderRadius: 14, background: '#fff',
+          transform: 'rotateY(180deg)', borderRadius: 14,
+          background: sprite?.kind === 'text' ? ink.bg : '#fff',
           boxShadow: card.matched
             ? `0 0 0 3px ${ringColor}, 0 4px 12px rgba(0,0,0,0.08)`
             : '0 4px 12px rgba(0,0,0,0.08)',
           overflow: 'hidden',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
-          <img
-            src={`/src/games/flip/${sprite.file}.jpg`}
-            draggable={false}
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-          />
+          {sprite?.kind === 'text' && (
+            <span style={{
+              lineHeight: 1, color: ink.color,
+              ...glyphType(level, sprite.text, size),
+            }}>
+              {sprite.text}
+            </span>
+          )}
+          {sprite?.kind === 'image' && (
+            <img
+              src={`/src/games/flip/${sprite.file}.jpg`}
+              draggable={false}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          )}
           {/* Claim stamp — multiplayer */}
           {claim && (
             <div style={{
@@ -311,6 +423,7 @@ export default function FlipGame() {
 
   const isMobile = useIsMobile()
   usePageLock()
+  useFontMetrics()
   const [players, setPlayers] = useState(1)   // 1 = solo, 2-4 = take turns
   const [turn, setTurn] = useState(0)
   const multi = players > 1
