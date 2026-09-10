@@ -49,6 +49,15 @@ const WORD_POOL = [
 ]
 const WORD_SPRITES: Sprite[] = WORD_POOL.map(glyph)
 
+// Mostly the most-used emoji worldwide, minus the near-identical ones — the top of
+// that list is heavy on yellow round faces (😂 🤣 😭 😅 😆 all at once), and a memory
+// game where half the board looks alike is unplayable. One per look.
+const EMOJI_POOL = [
+  '😂', '❤️', '👍', '🙏', '😭', '😍', '🎉', '🥺', '🔥',
+  '🤔', '😎', '💯', '✨', '🎂', '👀', '🥳', '🧠', '😱',
+]
+const EMOJI_SPRITES: Sprite[] = EMOJI_POOL.map(glyph)
+
 export const LEVELS: Level[] = [
   { id: 1,  title: 'Summer',  emoji: '🌊', stars: 1, backColor: '#49D4B4', sprites: spritesFor('⭐️-summer'),            setSize: 4  },
   { id: 2,  title: 'Space',   emoji: '🚀', stars: 1, backColor: '#FFB575', sprites: spritesFor('⭐️-space'),             setSize: 4  },
@@ -62,4 +71,7 @@ export const LEVELS: Level[] = [
   { id: 10, title: 'Letters', emoji: '🔤', stars: 5, backColor: '#A5A0D6', sprites: LETTER_SPRITES, setSize: 12 },
   { id: 11, title: '汉字',    emoji: '🀄', stars: 5, backColor: '#49D4B4', sprites: HANZI_SPRITES,  setSize: 12 },
   { id: 12, title: 'Words',   emoji: '📖', stars: 5, backColor: '#FFB575', sprites: WORD_SPRITES,   setSize: 12 },
+  { id: 13, title: 'Emoji',   emoji: '😀', stars: 3, backColor: '#F06AA6', sprites: EMOJI_SPRITES,  setSize: 10 },
+  { id: 14, title: 'Shapes',  emoji: '🔷', stars: 4, backColor: '#FFB575', sprites: spritesFor('⭐️⭐️⭐️⭐️-shape'),  setSize: 10 },
+  { id: 15, title: 'People',  emoji: '👥', stars: 3, backColor: '#49D4B4', sprites: spritesFor('⭐️⭐️⭐️⭐️-people'), setSize: 10 },
 ]

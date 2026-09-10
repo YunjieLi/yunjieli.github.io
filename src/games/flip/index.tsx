@@ -137,13 +137,15 @@ function usePageLock() {
 
 // difficulty as a fixed row of 5 stars: `count` filled in light yellow, the rest hollow
 // (sized explicitly so menu-item svg rules don't inflate them)
-function StarRow({ count, style }: { count: number; style?: React.CSSProperties }) {
+function StarRow({ count, starClass = 'size-3', style }: {
+  count: number; starClass?: string; style?: React.CSSProperties
+}) {
   return (
     <span style={{ display: 'inline-flex', gap: 2, alignItems: 'center', ...style }}>
       {Array.from({ length: 5 }, (_, i) => (
         <Star
           key={i}
-          className="size-3"
+          className={starClass}
           strokeWidth={2}
           fill={i < count ? '#FFD666' : 'transparent'}
           color={i < count ? '#FFD666' : '#CFCFCF'}
@@ -162,6 +164,29 @@ function IconBadge({ entry, size }: { entry: typeof PLAYER_ICONS[number]; size: 
     }}>
       <entry.Icon size={size * 0.62} color="#fff" strokeWidth={2.75} />
     </span>
+  )
+}
+
+// The menu lists levels easiest first, whichever order LEVELS is declared in, so a
+// new level can just be appended. Sort is stable, so same-difficulty levels keep
+// their declared order — and each row carries its index in LEVELS, which is what
+// gotoLevel and the selected-row highlight key off.
+const MENU_ORDER = LEVELS
+  .map((lvl, i) => ({ lvl, i }))
+  .sort((a, b) => a.lvl.stars - b.lvl.stars)
+
+// One tile face for the level picker, drawn the same in the desktop menu and the
+// mobile sheet. The name carries the tile — it is the thing being read — so it sits
+// large and dark, with the stars demoted to a small muted row beneath it.
+function LevelTileFace({ lvl, big }: { lvl: Level; big: boolean }) {
+  return (
+    <>
+      <span style={{ fontSize: big ? 34 : 30, lineHeight: 1.1 }}>{lvl.emoji}</span>
+      <span style={{ fontSize: big ? 15 : 14, lineHeight: 1.15, color: '#2F2B33', letterSpacing: 0.1 }}>
+        {lvl.title}
+      </span>
+      <StarRow count={lvl.stars} starClass="size-2.5" style={{ opacity: 0.85, marginTop: 1 }} />
+    </>
   )
 }
 
@@ -230,6 +255,9 @@ function makeCards(level: Level): Card[] {
 // ones per platform rather than landing on whatever the default sans is
 const HAN_STACK = '"PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif'
 
+// name the colour-emoji faces rather than trusting the platform default
+const EMOJI_STACK = '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif'
+
 // Andika is SIL's literacy face: print letterforms shaped the way children are
 // taught to write them, drawn for maximum legibility rather than for character
 const GLYPH_STACK = '"Andika", "Nunito Variable", sans-serif'
@@ -292,9 +320,11 @@ function levelEm(level: Level): number {
   return widest
 }
 
-// 汉字 fill their em box where a latin letter only reaches cap height, so the two
-// scripts need different sizing to look like the same size
+// 汉字 fill their em box where a latin letter only reaches cap height, and an emoji
+// is a picture rather than type — each needs its own sizing to look right in a card
 function glyphType(level: Level, text: string, size: number): React.CSSProperties {
+  if (/\p{Extended_Pictographic}/u.test(text))
+    return { fontSize: size * 0.62, fontWeight: 400, fontFamily: EMOJI_STACK }
   if (/\p{Script=Han}/u.test(text))
     return { fontSize: size * 0.46, fontWeight: 600, fontFamily: HAN_STACK }
   const fitted = (size * FIT_RATIO) / levelEm(level)
@@ -431,6 +461,7 @@ export default function FlipGame() {
   // icon per player slot — random by default, kept across games via localStorage
   const [playerIcons, setPlayerIcons] = useState<number[]>(loadPlayerIcons)
   const [pickerFor, setPickerFor] = useState<number | null>(null)
+  const [sheetOpen, setSheetOpen] = useState(false)
   useEffect(() => {
     localStorage.setItem(ICONS_STORAGE_KEY, JSON.stringify(playerIcons))
   }, [playerIcons])
@@ -488,6 +519,13 @@ export default function FlipGame() {
   }, [won])
 
   useEffect(() => {
+    if (!sheetOpen) return
+    const close = (e: KeyboardEvent) => { if (e.key === 'Escape') setSheetOpen(false) }
+    window.addEventListener('keydown', close)
+    return () => window.removeEventListener('keydown', close)
+  }, [sheetOpen])
+
+  useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'x' || e.key === 'X')
         setCards(prev => prev.map(c => ({ ...c, flipped: true, matched: true })))
@@ -528,6 +566,14 @@ export default function FlipGame() {
       setLocked(false)
     }, 900)
   }, [locked, pending, cards, multi, turn, players])
+
+  const chipStyle: React.CSSProperties = {
+    display: 'inline-flex', alignItems: 'center', gap: isMobile ? 4 : 7,
+    border: 'none', borderRadius: 999, padding: isMobile ? '10px 12px' : '10px 16px',
+    fontFamily: 'inherit', fontSize: 14, fontWeight: 800, color: '#555',
+    cursor: 'pointer', background: 'rgba(255,255,255,0.75)',
+    boxShadow: '0 2px 10px rgba(0,0,0,0.08)', whiteSpace: 'nowrap',
+  }
 
   return (
     <div style={{
@@ -572,34 +618,50 @@ export default function FlipGame() {
               <Plus size={16} strokeWidth={2.75} />
             </StepBtn>
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger style={{
-              display: 'inline-flex', alignItems: 'center', gap: isMobile ? 4 : 7,
-              border: 'none', borderRadius: 999, padding: isMobile ? '10px 12px' : '10px 16px',
-              fontFamily: 'inherit', fontSize: 14, fontWeight: 800, color: '#555',
-              cursor: 'pointer', background: 'rgba(255,255,255,0.75)',
-              boxShadow: '0 2px 10px rgba(0,0,0,0.08)', whiteSpace: 'nowrap',
-            }}>
-              {isMobile ? level.emoji : `${level.emoji} ${level.title}`}
+          {isMobile ? (
+            <button onClick={() => setSheetOpen(true)} style={chipStyle} title="Choose level">
+              {level.emoji}
               <ChevronDown className="size-4" strokeWidth={2.75} />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="center"
-              className="w-auto min-w-44 rounded-xl"
-              style={{ fontFamily: '"Nunito Variable", Nunito, sans-serif' }}
-            >
-              {LEVELS.map((lvl, i) => (
-                <DropdownMenuItem
-                  key={lvl.id}
-                  onClick={() => gotoLevel(i)}
-                  className={`cursor-pointer py-1.5 ${i === levelIdx ? 'bg-accent font-extrabold' : 'font-bold'}`}
-                >
-                  <span>{lvl.emoji} {lvl.title}</span>
-                  <StarRow count={lvl.stars} style={{ marginLeft: 'auto', paddingLeft: 16 }} />
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+            </button>
+          ) : (
+            <DropdownMenu>
+              <DropdownMenuTrigger style={chipStyle}>
+                {level.emoji} {level.title}
+                <ChevronDown className="size-4" strokeWidth={2.75} />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="center"
+                className="w-auto rounded-2xl"
+                style={{
+                  fontFamily: '"Nunito Variable", Nunito, sans-serif',
+                  display: 'grid',
+                  // five across lands the levels on an even grid with no ragged row
+                  gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
+                  gap: 14,
+                  padding: 16,
+                }}
+              >
+                {MENU_ORDER.map(({ lvl, i }) => {
+                  const current = i === levelIdx
+                  return (
+                    <DropdownMenuItem
+                      key={lvl.id}
+                      onClick={() => gotoLevel(i)}
+                      className={`flex-col cursor-pointer gap-1.5 rounded-xl px-3 py-3.5 ${current ? 'font-extrabold' : 'font-bold'}`}
+                      // the open level is tinted in its own card colour, so the picker
+                      // says which board you are on without a second cue
+                      style={current ? {
+                        background: `${lvl.backColor}26`,
+                        boxShadow: `0 0 0 2px ${lvl.backColor}`,
+                      } : undefined}
+                    >
+                      <LevelTileFace lvl={lvl} big />
+                    </DropdownMenuItem>
+                  )
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
 
         {/* Right slot — next / replay when won (multi: after the modal is dismissed); else a spacer to keep the center balanced */}
@@ -791,6 +853,59 @@ export default function FlipGame() {
         </div>
       )}
 
+      {/* Level picker as a bottom sheet on phones — a full-width panel within thumb
+          reach beats a menu anchored to a chip at the top of the screen */}
+      {isMobile && sheetOpen && (
+        <div
+          onClick={() => setSheetOpen(false)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 20,
+            background: 'rgba(35,28,45,0.38)',
+            display: 'flex', alignItems: 'flex-end',
+            animation: 'fade-in 0.18s ease-out',
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: '100%', maxHeight: '76dvh',
+              // the sheet scrolls itself; the page behind it stays put
+              overflowY: 'auto', overscrollBehavior: 'contain',
+              background: '#fff', borderRadius: '22px 22px 0 0',
+              padding: '10px 14px calc(20px + env(safe-area-inset-bottom))',
+              boxShadow: '0 -10px 34px rgba(0,0,0,0.20)',
+              animation: 'sheet-up 0.26s cubic-bezier(0.32, 0.72, 0, 1)',
+            }}
+          >
+            <div style={{
+              width: 40, height: 4, borderRadius: 999,
+              background: '#DEDCE2', margin: '2px auto 14px',
+            }} />
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10 }}>
+              {MENU_ORDER.map(({ lvl, i }) => {
+                const current = i === levelIdx
+                return (
+                  <button
+                    key={lvl.id}
+                    onClick={() => { gotoLevel(i); setSheetOpen(false) }}
+                    style={{
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+                      border: 'none', borderRadius: 16, padding: '12px 6px',
+                      fontFamily: 'inherit', fontWeight: current ? 900 : 800,
+                      cursor: 'pointer',
+                      background: current ? `${lvl.backColor}26` : '#F5F4F7',
+                      boxShadow: current ? `0 0 0 2px ${lvl.backColor}` : 'none',
+                    }}
+                  >
+                    <LevelTileFace lvl={lvl} big={false} />
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
       <style>{`
         /* nothing on the page is selectable or draggable — long-pressing a card
            should flip it, not pop the copy/share callout. body-level so the
@@ -805,6 +920,7 @@ export default function FlipGame() {
         @keyframes stamp-in { 0% { transform: rotate(12deg) scale(2); opacity: 0 } 100% { transform: rotate(12deg) scale(1); opacity: 1 } }
         @keyframes fade-in { from { opacity: 0 } to { opacity: 1 } }
         @keyframes pop-in { 0% { transform: scale(0.6); opacity: 0 } 100% { transform: scale(1); opacity: 1 } }
+        @keyframes sheet-up { from { transform: translateY(100%) } to { transform: translateY(0) } }
       `}</style>
     </div>
   )
