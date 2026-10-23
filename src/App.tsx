@@ -5,6 +5,7 @@ import Dunhuang from './pages/dunhuang/Dunhuang'
 import Toc from './pages/Toc'
 import FlipGame from './games/flip'
 import WackAVirus from './games/whack'
+import YardSale from './pages/YardSale'
 
 export default function App() {
   return (
@@ -13,6 +14,7 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/toc" element={<Toc />} />
         <Route path="/dunhuang" element={<Dunhuang />} />
+        <Route path="/yard-sale" element={<YardSale />} />
 
         {/* Legacy HTML pages */}
         <Route path="/studio"          element={<LegacyPage src="/studio/index.html"          title="Studio" />} />
