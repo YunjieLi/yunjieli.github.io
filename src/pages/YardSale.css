@@ -1,0 +1,15 @@
+.yard-sale-grid {
+  column-count: 1;
+  column-gap: 14px;
+}
+
+.yard-sale-card {
+  break-inside: avoid;
+  margin: 0 0 14px;
+}
+
+@media (min-width: 700px) {
+  .yard-sale-grid {
+    column-count: 2;
+  }
+}

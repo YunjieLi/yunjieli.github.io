@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import './YardSale.css'
 
 type YardSaleItem = {
   name: string
@@ -288,9 +289,10 @@ function statusColors(status: string) {
 function ItemCard({ item }: { item: YardSaleItem }) {
   const [selectedImage, setSelectedImage] = useState(0)
   const cover = item.images[selectedImage]
+  const details = [item.subtext, item.notes].filter(Boolean).join(' · ')
 
   return (
-    <article style={{ background: '#fffefa', border: '1px solid #e6e1d6', borderRadius: 12, overflow: 'hidden' }}>
+    <article className="yard-sale-card" style={{ background: '#fffefa', border: '1px solid #e6e1d6', borderRadius: 12, overflow: 'hidden' }}>
       {cover && (
         <div style={{ position: 'relative' }}>
           <img src={cover.src} alt={cover.alt} style={{ display: 'block', width: '100%', height: 'auto' }} />
@@ -308,11 +310,16 @@ function ItemCard({ item }: { item: YardSaleItem }) {
       )}
       <div style={{ padding: '12px 15px 14px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: 12 }}>
-          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: 23, fontWeight: 500, margin: 0 }}>{item.name}</h2>
-          {item.price && <span style={{ fontFamily: 'Georgia, serif', fontSize: 23, fontWeight: 500, whiteSpace: 'nowrap' }}>{item.price}</span>}
+          <h2 style={{ fontSize: 23, fontWeight: 500, margin: 0 }}>{item.name}</h2>
+          {item.price && <span style={{ fontSize: 23, fontWeight: 500, whiteSpace: 'nowrap' }}>{item.price}</span>}
         </div>
-        {(item.subtext || item.notes) && <p style={{ color: '#737165', fontSize: 13, margin: '7px 0 0' }}>{[item.subtext, item.notes].filter(Boolean).join(' · ')}</p>}
-        {item.referenceUrl && <a href={item.referenceUrl} target="_blank" rel="noreferrer" style={{ display: 'inline-block', marginTop: 9, color: '#25251f', fontSize: 13, textUnderlineOffset: 3 }}>{referenceLabel(item.referenceUrl)} ↗</a>}
+        {(details || item.referenceUrl) && (
+          <p style={{ color: '#737165', fontSize: 13, margin: '7px 0 0' }}>
+            {details}
+            {details && item.referenceUrl && ' · '}
+            {item.referenceUrl && <a href={item.referenceUrl} target="_blank" rel="noreferrer" style={{ color: '#4f765a', textUnderlineOffset: 3 }}>{referenceLabel(item.referenceUrl)} ↗</a>}
+          </p>
+        )}
       </div>
     </article>
   )
@@ -322,8 +329,8 @@ export default function YardSale() {
   return (
     <main style={{ minHeight: '100vh', background: '#f7f4ee', color: '#25251f', padding: 'clamp(14px, 4vw, 24px) clamp(12px, 4vw, 20px)', fontFamily: 'var(--font-sans), sans-serif' }}>
       <div style={{ maxWidth: 760, margin: '0 auto' }}>
-        <header style={{ margin: '0 0 18px' }}><h1 style={{ fontFamily: 'Georgia, serif', fontWeight: 500, fontSize: 'clamp(25px, 4vw, 34px)', letterSpacing: '-.035em', margin: 0 }}>Yard sale 95014</h1></header>
-        <section aria-label="Items for sale" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: 14 }}>
+        <header style={{ margin: '0 0 18px' }}><h1 style={{ fontWeight: 500, fontSize: 'clamp(25px, 4vw, 34px)', letterSpacing: '-.035em', margin: 0 }}>Yard sale 95014</h1></header>
+        <section className="yard-sale-grid" aria-label="Items for sale">
           {items.filter(item => item.status === 'Available').map(item => <ItemCard key={item.notionUrl} item={item} />)}
         </section>
         <footer style={{ color: '#898578', fontSize: 11, marginTop: 18 }}>Last refreshed {refreshedOn}</footer>
