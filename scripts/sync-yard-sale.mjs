@@ -1,6 +1,7 @@
 import { mkdir, readdir, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import convert from 'heic-convert'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const dataSourceId = '40231dfe-b52f-8036-affe-000bfecff7d0'
@@ -74,7 +75,6 @@ function extensionFor(contentType, sourceUrl) {
   const extensionByType = {
     'image/avif': 'avif',
     'image/gif': 'gif',
-    'image/heic': 'heic',
     'image/jpeg': 'jpg',
     'image/png': 'png',
     'image/webp': 'webp',
@@ -82,7 +82,13 @@ function extensionFor(contentType, sourceUrl) {
   const mime = contentType?.split(';')[0]?.trim().toLowerCase()
   if (extensionByType[mime]) return extensionByType[mime]
   const ext = path.extname(new URL(sourceUrl).pathname).slice(1).toLowerCase()
-  return ['avif', 'gif', 'heic', 'jpg', 'jpeg', 'png', 'webp'].includes(ext) ? (ext === 'jpeg' ? 'jpg' : ext) : 'png'
+  return ['avif', 'gif', 'heic', 'heif', 'jpg', 'jpeg', 'png', 'webp'].includes(ext) ? (ext === 'jpeg' ? 'jpg' : ext) : 'png'
+}
+
+function isHeic(contentType, sourceUrl) {
+  const mime = contentType?.split(';')[0]?.trim().toLowerCase()
+  const extension = path.extname(new URL(sourceUrl).pathname).toLowerCase()
+  return mime === 'image/heic' || mime === 'image/heif' || extension === '.heic' || extension === '.heif'
 }
 
 const rows = await queryAllRows()
@@ -104,10 +110,16 @@ for (const row of rows) {
     if (!sourceUrl) continue
     const response = await fetch(sourceUrl)
     if (!response.ok) throw new Error(`Image download failed (${response.status}) for item #${id}`)
-    const extension = extensionFor(response.headers.get('content-type'), sourceUrl)
+    const contentType = response.headers.get('content-type')
+    const sourceBuffer = Buffer.from(await response.arrayBuffer())
+    const heic = isHeic(contentType, sourceUrl)
+    const extension = heic ? 'jpg' : extensionFor(contentType, sourceUrl)
     const filename = `item-${String(id).padStart(2, '0')}-${index + 1}.${extension}`
     const destination = path.join(imageDirectory, filename)
-    await writeFile(destination, Buffer.from(await response.arrayBuffer()))
+    const output = heic
+      ? await convert({ buffer: sourceBuffer, format: 'JPEG', quality: 0.9 })
+      : sourceBuffer
+    await writeFile(destination, Buffer.from(output))
     generatedImages.add(filename)
     images.push({ src: `/yard-sale/${filename}`, alt: `${name} ${index + 1}` })
   }
@@ -127,7 +139,7 @@ for (const row of rows) {
 
 const previousFiles = await readdir(imageDirectory)
 for (const filename of previousFiles) {
-  if (/^item-\d+-\d+\.(avif|gif|heic|jpe?g|png|webp)$/i.test(filename) && !generatedImages.has(filename)) {
+  if (/^item-\d+-\d+\.(avif|gif|heic|heif|jpe?g|png|webp)$/i.test(filename) && !generatedImages.has(filename)) {
     await rm(path.join(imageDirectory, filename))
   }
 }
