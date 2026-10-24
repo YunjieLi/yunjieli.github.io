@@ -2,6 +2,7 @@ import { useState } from 'react'
 import './YardSale.css'
 
 type YardSaleItem = {
+  id: number
   name: string
   price: string
   status: string
@@ -14,6 +15,7 @@ type YardSaleItem = {
 
 const items: YardSaleItem[] = [
   {
+    "id": 1,
     "name": "茶几",
     "price": "$20",
     "status": "Available",
@@ -28,6 +30,7 @@ const items: YardSaleItem[] = [
     ]
   },
   {
+    "id": 2,
     "name": "屏风",
     "price": "$5",
     "status": "Available",
@@ -51,6 +54,7 @@ const items: YardSaleItem[] = [
     ]
   },
   {
+    "id": 3,
     "name": "宜家床头板",
     "price": "$30",
     "status": "Available",
@@ -66,6 +70,7 @@ const items: YardSaleItem[] = [
     ]
   },
   {
+    "id": 4,
     "name": "吉他",
     "price": "$150",
     "status": "Available",
@@ -85,6 +90,7 @@ const items: YardSaleItem[] = [
     ]
   },
   {
+    "id": 5,
     "name": "楔形枕",
     "price": "$10",
     "status": "Available",
@@ -104,10 +110,11 @@ const items: YardSaleItem[] = [
     ]
   },
   {
-    "name": "长条枕 bed rail pillow",
+    "id": 6,
+    "name": "长条枕",
     "price": "",
     "status": "Available",
-    "subtext": "",
+    "subtext": "bed rail pillow",
     "notes": "",
     "notionUrl": "https://app.notion.com/p/40231dfeb52f806cb90bdd750474fe86",
     "images": [
@@ -118,6 +125,7 @@ const items: YardSaleItem[] = [
     ]
   },
   {
+    "id": 7,
     "name": "按摩靠垫",
     "price": "",
     "status": "Available",
@@ -132,6 +140,7 @@ const items: YardSaleItem[] = [
     ]
   },
   {
+    "id": 8,
     "name": "通风扇x2",
     "price": "$10 each",
     "status": "Available",
@@ -151,6 +160,7 @@ const items: YardSaleItem[] = [
     ]
   },
   {
+    "id": 9,
     "name": "气垫床",
     "price": "$15",
     "status": "Available",
@@ -170,6 +180,7 @@ const items: YardSaleItem[] = [
     ]
   },
   {
+    "id": 10,
     "name": "游戏耳机",
     "price": "$40",
     "status": "Available",
@@ -184,6 +195,7 @@ const items: YardSaleItem[] = [
     ]
   },
   {
+    "id": 11,
     "name": "健身轮",
     "price": "$5",
     "status": "Available",
@@ -192,12 +204,13 @@ const items: YardSaleItem[] = [
     "notionUrl": "https://app.notion.com/p/40231dfeb52f80b1bb47c8ca23c15ff3",
     "images": [
       {
-        "src": "/yard-sale/item-11-1.jpg",
+        "src": "/yard-sale/item-11-1.png",
         "alt": "健身轮 1"
       }
     ]
   },
   {
+    "id": 12,
     "name": "书架x2",
     "price": "",
     "status": "Available",
@@ -213,6 +226,7 @@ const items: YardSaleItem[] = [
     ]
   },
   {
+    "id": 13,
     "name": "电视 1",
     "price": "$300",
     "status": "Available",
@@ -222,6 +236,7 @@ const items: YardSaleItem[] = [
     "images": []
   },
   {
+    "id": 14,
     "name": "电视 2",
     "price": "$30",
     "status": "Available",
@@ -231,6 +246,7 @@ const items: YardSaleItem[] = [
     "images": []
   },
   {
+    "id": 15,
     "name": "显示器 1",
     "price": "$30",
     "status": "Available",
@@ -240,6 +256,7 @@ const items: YardSaleItem[] = [
     "images": []
   },
   {
+    "id": 16,
     "name": "显示器 2",
     "price": "$30",
     "status": "Available",
@@ -249,6 +266,7 @@ const items: YardSaleItem[] = [
     "images": []
   },
   {
+    "id": 17,
     "name": "显示器 3",
     "price": "$30",
     "status": "Available",
@@ -258,6 +276,7 @@ const items: YardSaleItem[] = [
     "images": []
   },
   {
+    "id": 18,
     "name": "显示器 4",
     "price": "$30",
     "status": "Available",
@@ -310,7 +329,7 @@ function ItemCard({ item }: { item: YardSaleItem }) {
       )}
       <div style={{ padding: '12px 15px 14px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: 12 }}>
-          <h2 style={{ fontSize: 23, fontWeight: 500, margin: 0 }}>{item.name}</h2>
+          <h2 style={{ fontSize: 23, fontWeight: 500, margin: 0 }}>{item.id} {item.name}</h2>
           {item.price && <span style={{ fontSize: 23, fontWeight: 500, whiteSpace: 'nowrap' }}>{item.price}</span>}
         </div>
         {(details || item.referenceUrl) && (
