@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "sync:yard-sale": "node scripts/sync-yard-sale.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",
