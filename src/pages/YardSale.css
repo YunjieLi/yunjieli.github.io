@@ -13,3 +13,75 @@
     column-count: 2;
   }
 }
+
+@media print {
+  @page {
+    size: 80mm 240mm;
+    margin: 4mm;
+  }
+
+  html,
+  body,
+  #root {
+    width: 72mm !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    background: #fff !important;
+  }
+
+  #root main {
+    width: 72mm !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+  }
+
+  #root main > div {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+  }
+
+  .yard-sale-grid {
+    column-count: 1 !important;
+    column-gap: 0 !important;
+  }
+
+  .yard-sale-card {
+    margin-bottom: 3mm !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    box-shadow: none !important;
+  }
+
+  .yard-sale-screen-cover,
+  .yard-sale-card [aria-label^='More photos of'] {
+    display: none !important;
+  }
+
+  .yard-sale-print-cover {
+    display: block !important;
+  }
+
+  .yard-sale-card h2,
+  .yard-sale-card span {
+    font-size: 15px !important;
+  }
+
+  .yard-sale-card a {
+    color: #315c3a !important;
+    text-decoration: underline !important;
+  }
+
+  .yard-sale-card span[aria-label] {
+    display: none !important;
+  }
+
+  #root main > div > footer {
+    margin-top: 2mm !important;
+    break-before: avoid-page !important;
+    page-break-before: avoid !important;
+    break-inside: avoid-page !important;
+    page-break-inside: avoid !important;
+  }
+}

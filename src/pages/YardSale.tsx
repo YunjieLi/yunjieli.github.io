@@ -36,13 +36,20 @@ function statusColors(status: string) {
 function ItemCard({ item }: { item: YardSaleItem }) {
   const [selectedImage, setSelectedImage] = useState(0)
   const cover = item.images[selectedImage]
+  const firstPhoto = item.images[0]
   const details = [item.subtext, item.notes].filter(Boolean).join(' · ')
 
   return (
     <article className="yard-sale-card" style={{ background: '#fffefa', border: '1px solid #e6e1d6', borderRadius: 12, overflow: 'hidden' }}>
       {cover && (
-        <div style={{ position: 'relative' }}>
+        <div className="yard-sale-screen-cover" style={{ position: 'relative' }}>
           <img src={cover.src} alt={cover.alt} style={{ display: 'block', width: '100%', height: 'auto' }} />
+          <span aria-label={item.status} style={{ ...statusColors(item.status), position: 'absolute', right: 10, bottom: 10, padding: '5px 9px', borderRadius: 999, fontSize: 12, fontWeight: 600, lineHeight: 1.2, boxShadow: '0 1px 5px #0002' }}>{item.status}</span>
+        </div>
+      )}
+      {firstPhoto && (
+        <div className="yard-sale-print-cover" style={{ display: 'none', position: 'relative' }}>
+          <img src={firstPhoto.src} alt={firstPhoto.alt} style={{ display: 'block', width: '100%', height: 'auto' }} />
           <span aria-label={item.status} style={{ ...statusColors(item.status), position: 'absolute', right: 10, bottom: 10, padding: '5px 9px', borderRadius: 999, fontSize: 12, fontWeight: 600, lineHeight: 1.2, boxShadow: '0 1px 5px #0002' }}>{item.status}</span>
         </div>
       )}
