@@ -144,6 +144,8 @@ for (const filename of previousFiles) {
   }
 }
 
+items.sort((a, b) => a.id - b.id)
+
 const data = { refreshedAt: new Date().toISOString(), items }
 await writeFile(outputDataPath, `${JSON.stringify(data, null, 2)}\n`)
 console.log(`Synced ${items.length} yard-sale records and ${generatedImages.size} photos from Notion.`)
