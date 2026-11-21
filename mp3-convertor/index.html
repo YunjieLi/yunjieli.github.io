@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="批量将 YouTube 视频转换成 MP3。">
+  <title>YouTube 转 MP3</title>
+  <link rel="alternate" type="application/rss+xml" title="7MagicFlowers" href="/feed.xml">
+  <style>
+    /* Base Nova / Zinc theme tokens from gh-pages:src/index.css. */
+    :root {
+      --background: oklch(1 0 0);
+      --foreground: oklch(0.141 0.005 285.823);
+      --primary: oklch(0.511 0.096 186.391);
+      --primary-foreground: oklch(0.984 0.014 180.72);
+      --muted-foreground: oklch(0.552 0.016 285.938);
+      --destructive: oklch(0.577 0.245 27.325);
+      --input: oklch(0.92 0.004 286.32);
+      --ring: oklch(0.705 0.015 286.067);
+      --radius: 0.45rem;
+      color-scheme: light dark;
+      font: 100%/1.5 "Inter Variable", system-ui, sans-serif;
+      color: var(--foreground);
+      background: var(--background);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --background: oklch(0.141 0.005 285.823);
+        --foreground: oklch(0.985 0 0);
+        --primary: oklch(0.437 0.078 188.216);
+        --primary-foreground: oklch(0.984 0.014 180.72);
+        --muted-foreground: oklch(0.705 0.015 286.067);
+        --destructive: oklch(0.704 0.191 22.216);
+        --input: oklch(1 0 0 / 15%);
+        --ring: oklch(0.552 0.016 285.938);
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      display: grid;
+      min-height: 100vh;
+      place-items: start center;
+      margin: 0;
+      padding: 1.5rem clamp(1rem, 4vw, 1.5rem);
+    }
+    main { width: min(100%, 36rem); }
+    h1 {
+      margin: 0 0 1.5rem;
+      font-size: 1.875rem;
+      font-weight: 600;
+      letter-spacing: -.035em;
+    }
+    @media (max-width: 40rem) {
+      body { padding-top: 1rem; }
+      h1 { margin-bottom: 1rem; }
+    }
+    label {
+      display: block;
+      margin-bottom: .5rem;
+      font-size: .875rem;
+      font-weight: 500;
+    }
+    .controls { display: flex; flex-wrap: wrap; gap: .5rem; }
+    textarea, .rename-input, .button {
+      min-height: 2.25rem;
+      padding: .375rem .625rem;
+      border: 1px solid transparent;
+      border-radius: var(--radius);
+      font: inherit;
+    }
+    textarea {
+      display: block;
+      min-height: 7rem;
+      margin-bottom: .75rem;
+      resize: vertical;
+      width: 100%;
+      min-width: 0;
+      border-color: var(--input);
+      background: transparent;
+      color: inherit;
+    }
+    textarea::placeholder { color: var(--muted-foreground); }
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .375rem;
+      background: var(--primary);
+      color: var(--primary-foreground);
+      font-size: .875rem;
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .button:hover { background: color-mix(in oklch, var(--primary) 85%, var(--background)); }
+    .button:active { transform: translateY(1px); }
+    .button:disabled { opacity: .5; cursor: wait; }
+    :is(input, textarea, .button):focus-visible {
+      border-color: var(--ring);
+      outline: none;
+      box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
+    }
+    [hidden] { display: none !important; }
+    #results { margin: 1.25rem 0 0; }
+    #results h2 { margin: 0 0 .625rem; font-size: 1rem; font-weight: 600; }
+    #batch-actions { margin-bottom: .75rem; }
+    #files {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      border: 1px solid var(--input);
+      border-radius: var(--radius);
+      overflow: clip;
+    }
+    #files li {
+      display: flex;
+      align-items: center;
+      gap: clamp(.375rem, 2vw, .75rem);
+      padding: .5rem clamp(.375rem, 2vw, .75rem);
+    }
+    #files li:has(> .thumbnail) {
+      padding-block: 0;
+      padding-left: 0;
+    }
+    #files li + li { border-top: 1px solid var(--input); }
+    #files li:nth-child(even) {
+      background: color-mix(in oklab, var(--primary) 10%, var(--background));
+    }
+    .thumbnail {
+      flex: none;
+      align-self: stretch;
+      position: relative;
+      width: clamp(2.75rem, 11vw, 4.5rem);
+      aspect-ratio: 1;
+      background: var(--input);
+    }
+    .thumbnail img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .file-text { flex: 1; min-width: 0; }
+    .file-name { overflow-wrap: anywhere; font-weight: 500; }
+    .file-detail { color: var(--muted-foreground); font-size: .875rem; }
+    .file-duration { flex: none; font-variant-numeric: tabular-nums; }
+    .file-error { color: var(--destructive); overflow-wrap: anywhere; }
+    .row-actions { display: flex; flex: none; gap: .125rem; }
+    .button-ghost {
+      width: 2rem;
+      min-height: 2rem;
+      padding: 0;
+      background: transparent;
+      color: inherit;
+    }
+    .button-ghost svg { width: 1rem; height: 1rem; }
+    .button-ghost:hover, .button-secondary:hover {
+      background: color-mix(in oklch, var(--foreground) 6%, var(--background));
+    }
+    .remove:hover { color: var(--destructive); }
+    .rename-input {
+      width: 100%;
+      min-width: 0;
+      background: transparent;
+      color: inherit;
+      border-color: var(--input);
+    }
+    .button-secondary { background: transparent; color: inherit; border-color: var(--input); }
+    #clear-links:disabled { cursor: default; }
+    #status { margin: 0; }
+    #status:not(:empty) { margin-top: .75rem; }
+    #status[data-error] { color: var(--destructive); }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>YouTube 转 MP3</h1>
+    <form id="converter">
+      <label for="url">YouTube 链接</label>
+      <textarea id="url" data-slot="input" rows="4" placeholder="粘贴一个或多个链接，也可以粘贴带超链接的文本" spellcheck="false" maxlength="20000" required></textarea>
+      <div class="controls">
+        <button class="button" data-slot="button" type="submit">转换 MP3</button>
+        <button id="clear-links" class="button button-secondary" type="button" disabled>清空</button>
+      </div>
+      <p id="status" role="status" aria-live="polite"></p>
+    </form>
+    <section id="results" aria-labelledby="results-heading" hidden>
+      <h2 id="results-heading" tabindex="-1">转换结果</h2>
+      <div class="controls" id="batch-actions" hidden>
+        <button id="rss-all" class="button" data-slot="button" type="button">加入 RSS</button>
+        <a id="download-all" class="button button-secondary" data-slot="button" download>下载</a>
+      </div>
+      <ul id="files" role="list"></ul>
+    </section>
+  </main>
+  <script>
+    const form = document.querySelector('#converter');
+    const input = document.querySelector('#url');
+    const submit = form.querySelector('button[type="submit"]');
+    const clearLinks = document.querySelector('#clear-links');
+    const status = document.querySelector('#status');
+    const results = document.querySelector('#results');
+    const files = document.querySelector('#files');
+    const resultsHeading = document.querySelector('#results-heading');
+    const actions = document.querySelector('#batch-actions');
+    const downloadAll = document.querySelector('#download-all');
+    const rssAll = document.querySelector('#rss-all');
+    const converted = [];
+    const feedLabels = {
+      failed: '未能保存到 RSS',
+      expired: '临时音频已过期',
+    };
+
+    function updateClearLinks() {
+      clearLinks.disabled = input.readOnly || !input.value;
+    }
+
+    input.addEventListener('input', updateClearLinks);
+    window.addEventListener('pageshow', updateClearLinks);
+    clearLinks.addEventListener('click', () => {
+      input.value = '';
+      input.focus();
+      updateClearLinks();
+    });
+
+    input.addEventListener('paste', (event) => {
+      const clipboard = event.clipboardData;
+      const html = clipboard?.getData('text/html');
+      if (!html) return;
+      const template = document.createElement('template');
+      template.innerHTML = html;
+      const links = [...template.content.querySelectorAll('a[href]')]
+        .map((anchor) => anchor.getAttribute('href'))
+        .filter((url) => /^https?:\/\//i.test(url));
+      if (!links.length) return;
+      event.preventDefault();
+      const text = clipboard.getData('text/plain');
+      const combined = [text, ...links.filter((url) => !text.includes(url))].filter(Boolean).join('\n');
+      const available = input.maxLength - input.value.length + input.selectionEnd - input.selectionStart;
+      input.setRangeText(combined.slice(0, available), input.selectionStart, input.selectionEnd, 'end');
+      updateClearLinks();
+    });
+
+    async function post(path, body) {
+      const response = await fetch(path, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || '请求失败，请重试。');
+      return result;
+    }
+
+    function showStatus(message, error = false) {
+      status.textContent = message;
+      status.toggleAttribute('data-error', error);
+    }
+
+    function formatDuration(seconds) {
+      if (seconds === null) return '—';
+      const hours = Math.floor(seconds / 3600);
+      const minutes = Math.floor(seconds / 60) % 60;
+      const remainder = String(seconds % 60).padStart(2, '0');
+      return hours ? hours + ':' + String(minutes).padStart(2, '0') + ':' + remainder
+        : minutes + ':' + remainder;
+    }
+
+    function addRow(name, description, item) {
+      const row = document.createElement('li');
+      const text = document.createElement('div');
+      text.className = 'file-text';
+      const title = document.createElement('div');
+      title.className = 'file-name';
+      title.textContent = name;
+      const details = document.createElement('div');
+      details.className = 'file-detail file-error';
+      details.textContent = description;
+      details.hidden = !description;
+      text.append(title, details);
+      if (item) row.append(videoThumbnail(item.id));
+      row.append(text);
+      if (item) {
+        const duration = document.createElement('span');
+        duration.className = 'file-detail file-duration';
+        duration.textContent = formatDuration(item.duration);
+        if (item.duration === null) duration.title = '时长不可用';
+        row.append(duration);
+        const edit = document.createElement('input');
+        edit.className = 'rename-input';
+        edit.maxLength = 240;
+        edit.setAttribute('aria-label', 'MP3 文件名（不含副档名）');
+        edit.hidden = true;
+        text.insertBefore(edit, details);
+        const rowActions = document.createElement('div');
+        rowActions.className = 'row-actions';
+        const rename = rowButton('改名', '<path d="m13.5 6.5 4 4M4 20l4.5-1 11-11a2.8 2.8 0 0 0-4-4l-11 11L4 20Z"/>');
+        const remove = rowButton('删除', '<path d="m6 6 12 12M18 6 6 18"/>', 'remove');
+        rowActions.append(rename, remove);
+        row.append(rowActions);
+
+        function completeEdit(save) {
+          if (edit.hidden) return;
+          const cleaned = edit.value.trim().replace(/(?:\.mp3)+$/i, '')
+            .replace(/[<>:"/\\|?*\x00-\x1f\x7f]/g, '_').replace(/^[ .]+|[ .]+$/g, '');
+          const bytes = new TextEncoder().encode(cleaned).slice(0, 240);
+          const value = new TextDecoder().decode(bytes).replace(/[\uFFFD .]+$/g, '');
+          if (save && value && value !== title.textContent) {
+            item.titleOverride = value;
+            title.textContent = value;
+          }
+          edit.hidden = true;
+          title.hidden = false;
+          rename.setAttribute('aria-label', '改名 ' + title.textContent);
+          remove.setAttribute('aria-label', '从本批删除 ' + title.textContent);
+          updateActions();
+        }
+
+        rename.setAttribute('aria-label', '改名 ' + name);
+        remove.setAttribute('aria-label', '从本批删除 ' + name);
+        rename.addEventListener('click', () => {
+          edit.value = title.textContent;
+          edit.hidden = false;
+          title.hidden = true;
+          edit.focus();
+          edit.select();
+        });
+        edit.addEventListener('blur', () => completeEdit(true));
+        edit.addEventListener('keydown', (event) => {
+          if (event.isComposing || !['Enter', 'Escape'].includes(event.key)) return;
+          event.preventDefault();
+          completeEdit(event.key === 'Enter');
+          rename.focus();
+        });
+        remove.addEventListener('click', () => {
+          const next = row.nextElementSibling?.querySelector('button')
+            ?? row.previousElementSibling?.querySelector('button');
+          converted.splice(converted.indexOf(item), 1);
+          row.remove();
+          updateActions();
+          (next ?? (results.hidden ? submit : resultsHeading)).focus();
+          showStatus('已从本批删除。');
+        });
+        item.details = details;
+        item.controls = [rename, remove, edit];
+      }
+      files.append(row);
+      results.hidden = false;
+    }
+
+    function videoThumbnail(id) {
+      const thumbnail = document.createElement('div');
+      thumbnail.className = 'thumbnail';
+      const image = document.createElement('img');
+      image.alt = '';
+      image.loading = 'lazy';
+      image.referrerPolicy = 'no-referrer';
+      image.addEventListener('error', () => image.remove(), { once: true });
+      image.src = 'https://i.ytimg.com/vi/' + encodeURIComponent(id) + '/mqdefault.jpg';
+      thumbnail.append(image);
+      return thumbnail;
+    }
+
+    function rowButton(label, path, extraClass = '') {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'button button-ghost ' + extraClass;
+      button.dataset.slot = 'button';
+      button.title = label;
+      button.innerHTML = '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" ' +
+        'stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">' +
+        path + '</svg>';
+      return button;
+    }
+
+    function pendingRss() {
+      return converted.filter((item) => item.feedStatus !== 'expired' &&
+        (!['added', 'existing'].includes(item.feedStatus) || item.titleOverride !== item.publishedOverride));
+    }
+
+    function rssActionLabel(pending) {
+      const updates = pending.filter((item) => ['added', 'existing'].includes(item.feedStatus));
+      if (!updates.length) return '加入 RSS';
+      return updates.length === pending.length ? '更新 RSS' : '加入并更新 RSS';
+    }
+
+    function updateActions() {
+      const params = new URLSearchParams();
+      const available = converted.filter((item) => item.feedStatus !== 'expired');
+      for (const item of available) {
+        params.append('id', item.id);
+        if (item.titleOverride !== undefined) params.set('name-' + item.id, item.titleOverride);
+      }
+      downloadAll.href = (available.length === 1 ? '/batch/mp3?' : '/batch/download?') + params;
+      downloadAll.title = available.length > 1 ? '下载 ZIP' : '下载 MP3';
+      const pending = pendingRss();
+      rssAll.textContent = rssActionLabel(pending);
+      rssAll.disabled = !pending.length;
+      actions.hidden = !available.length;
+      results.hidden = !files.children.length;
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (submit.disabled) return;
+      submit.disabled = true;
+      input.readOnly = true;
+      updateClearLinks();
+      showStatus('正在查找视频链接…');
+      try {
+        const { ids } = await post('/batch/links', { text: input.value });
+        converted.length = 0;
+        files.replaceChildren();
+        results.hidden = true;
+        actions.hidden = true;
+        for (const [index, id] of ids.entries()) {
+          showStatus('正在转换 ' + (index + 1) + '/' + ids.length + '…');
+          try {
+            const item = await post('/convert', {
+              url: 'https://www.youtube.com/watch?v=' + id,
+              addToFeed: false,
+              preview: true,
+            });
+            converted.push(item);
+            addRow(item.name.replace(/(?:\.mp3)+$/i, ''), feedLabels[item.feedStatus], item);
+          } catch (error) {
+            addRow('youtu.be/' + id, error.message);
+          }
+        }
+        updateActions();
+        const failures = ids.length - converted.length;
+        showStatus(failures ? failures + ' 个视频转换失败。' : '', Boolean(failures));
+      } catch (error) {
+        showStatus(error.message || '无法连接本机转换服务。', true);
+      } finally {
+        submit.disabled = false;
+        input.readOnly = false;
+        updateClearLinks();
+      }
+    });
+
+    rssAll.addEventListener('click', async () => {
+      if (submit.disabled || rssAll.disabled) return;
+      const pending = pendingRss();
+      const label = rssActionLabel(pending);
+      submit.disabled = true;
+      rssAll.disabled = true;
+      const controls = converted.flatMap((item) => item.controls);
+      for (const control of controls) control.disabled = true;
+      showStatus('正在' + label + '…');
+      try {
+        const titles = Object.fromEntries(pending
+          .filter((item) => item.titleOverride !== undefined)
+          .map((item) => [item.id, item.titleOverride]));
+        const updates = await post('/batch/rss', { ids: pending.map((item) => item.id), titles });
+        let added = 0;
+        let existing = 0;
+        let updated = 0;
+        for (const item of pending) {
+          item.feedStatus = updates[item.id];
+          if (['added', 'existing'].includes(item.feedStatus)) item.publishedOverride = item.titleOverride;
+          item.details.textContent = feedLabels[item.feedStatus] ?? '';
+          item.details.hidden = !item.details.textContent;
+          if (item.feedStatus === 'added') added++;
+          if (item.feedStatus === 'existing') {
+            if (Object.hasOwn(titles, item.id)) updated++;
+            else existing++;
+          }
+        }
+        const failed = pending.length - added - updated - existing;
+        const messages = [];
+        if (added) messages.push('已加入 ' + added + ' 条');
+        if (updated) messages.push('已更新 ' + updated + ' 条');
+        if (existing) messages.push('已存在 ' + existing + ' 条');
+        if (failed) messages.push(failed + ' 条保存失败');
+        showStatus(messages.join('，') + '。', Boolean(failed));
+      } catch (error) {
+        showStatus(error.message || '无法保存到 RSS，请重试。', true);
+      } finally {
+        for (const control of controls) control.disabled = false;
+        updateActions();
+        submit.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
