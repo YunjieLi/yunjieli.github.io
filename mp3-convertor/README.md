@@ -7,7 +7,7 @@ brew install yt-dlp ffmpeg deno
 python3 mp3-convertor/server.py
 ```
 
-打开 <http://127.0.0.1:8765/mp3-convertor/>。如果端口已被占用，可以传入 `--port 8766` 并打开程序打印的网址。按 `Ctrl+C` 停止服务。
+打开 <http://127.0.0.1:8765/mp3/>。如果端口已被占用，可以传入 `--port 8766` 并打开程序打印的网址。按 `Ctrl+C` 停止服务。
 
 需要 Python 3.9 或更高版本。转换在本机运行，一次处理一个单独视频，支持常规链接、分享链接和 Shorts。服务只监听本机地址，转换结束后清理临时文件。GitHub Pages 的静态托管无法执行转换服务。
 

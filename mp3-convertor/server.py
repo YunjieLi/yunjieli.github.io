@@ -103,7 +103,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_content(status, 'application/json; charset=utf-8', body)
 
     def do_GET(self):
-        if self.path in ('/', '/mp3-convertor', '/mp3-convertor/'):
+        if self.path in ('/', '/mp3', '/mp3/', '/mp3-convertor', '/mp3-convertor/'):
             self.send_content(200, 'text/html; charset=utf-8', PAGE.read_bytes())
         elif self.path == '/feed.xml':
             self.send_content(200, 'application/rss+xml; charset=utf-8',
@@ -393,5 +393,5 @@ if __name__ == '__main__':
         server.library = Library(args.data_dir)
         server.staged = {}
         server.staging = Path(staging)
-        print(f'http://127.0.0.1:{server.server_port}', flush=True)
+        print(f'http://127.0.0.1:{server.server_port}/mp3/', flush=True)
         server.serve_forever()
