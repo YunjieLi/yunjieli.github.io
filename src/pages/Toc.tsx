@@ -13,6 +13,7 @@ const otherPages: { href: string; label: string; sub?: string }[] = [
   { href: '/lily',           label: '子豪+筠洁' },
   { href: '/quip-insights',  label: 'Quip Analytics' },
   { href: '/tuner',          label: 'Online Tuner' },
+  { href: '/mp3-convertor/', label: 'YouTube to MP3',     sub: 'Runs locally on your Mac' },
   { href: '/vanilla-english',label: 'Vanilla English' },
   { href: '/turbines',       label: 'Turbines' },
 ]

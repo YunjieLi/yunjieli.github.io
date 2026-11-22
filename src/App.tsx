@@ -3,6 +3,7 @@ import LegacyPage from './pages/LegacyPage'
 import Home from './pages/Home'
 import Dunhuang from './pages/dunhuang/Dunhuang'
 import Toc from './pages/Toc'
+import Mp3Convertor from './pages/Mp3Convertor'
 import FlipGame from './games/flip'
 import WackAVirus from './games/whack'
 import YardSale from './pages/YardSale'
@@ -13,6 +14,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/toc" element={<Toc />} />
+        <Route path="/mp3-convertor/" element={<Mp3Convertor />} />
         <Route path="/dunhuang" element={<Dunhuang />} />
         <Route path="/yard-sale" element={<YardSale />} />
 
